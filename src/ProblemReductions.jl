@@ -1,5 +1,7 @@
 module ProblemReductions
 
-# Write your package code here.
+using Graphs
+
+include("spinglass.jl")
 
 end
