@@ -2,8 +2,8 @@ using Test, ProblemReductions
 using ProblemReductions: statictrues, staticfalses, StaticBitVector, onehotv
 
 @testset "static bit vector" begin
-    @test statictrues(StaticBitVector{3,1}) == trues(3)
-    @test staticfalses(StaticBitVector{3,1}) == falses(3)
+    @test statictrues(StaticBitVector{3}) == trues(3)
+    @test staticfalses(StaticBitVector{3}) == falses(3)
     @test_throws BoundsError statictrues(StaticBitVector{3,1})[4]
     #@test (@inbounds statictrues(StaticBitVector{3,1})[4]) == 0
     x = rand(Bool, 131)

@@ -141,10 +141,12 @@ _nints(x,s) = (x*s-1)÷64+1
 @generated function Base.zero(::Type{StaticElementVector{N,S,C}}) where {N,S,C}
     Expr(:call, :(StaticElementVector{$N,$S,$C}), Expr(:tuple, zeros(UInt64, C)...))
 end
-staticfalses(::Type{StaticBitVector{N,C}}) where {N,C} = zero(StaticBitVector{N,C})
+Base.zero(::Type{StaticElementVector{N,S}}) where {N,S} = zero(StaticElementVector{N,S,_nints(N,S)})
+staticfalses(::Type{T}) where T<:StaticBitVector = zero(T)
 @generated function statictrues(::Type{StaticBitVector{N,C}}) where {N,C}
     Expr(:call, :(StaticBitVector{$N,$C}), Expr(:tuple, fill(typemax(UInt64), C)...))
 end
+statictrues(::Type{StaticBitVector{N}}) where N = statictrues(StaticBitVector{N,_nints(N,1)})
 
 onehotv(::Type{StaticBitVector{N,C}}, i, v) where {N,C} = v > 0 ? onehotv(StaticBitVector{N,C}, i) : zero(StaticBitVector{N,C})
 function onehotv(::Type{StaticBitVector{N,C}}, i) where {N,C}
@@ -164,7 +166,7 @@ Base.show(io::IO, t::StaticElementVector) = Base.print(io, "$(join(Int.(t), ""))
 Base.show(io::IO, ::MIME"text/plain", t::StaticElementVector) = Base.show(io, t)
 
 function Base.count_ones(x::StaticBitVector)
-    sum(v->count_ones(v),x.data)
+    sum(v->count_ones(v), x.data)
 end
 
 """
