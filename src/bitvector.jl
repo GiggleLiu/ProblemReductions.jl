@@ -12,7 +12,7 @@ Fields
 
 Examples
 -------------------------------
-```jldoctest; setup=:(using GenericTensorNetworks)
+```jldoctest; setup=:(using ProblemReductions)
 julia> ev = StaticElementVector(3, [1,2,0,1,2])
 12012
 
@@ -101,7 +101,7 @@ end
 
 Examples
 -------------------------------
-```jldoctest; setup=:(using GenericTensorNetworks)
+```jldoctest; setup=:(using ProblemReductions)
 julia> sb = StaticBitVector([1,0,0,1,1])
 10011
 

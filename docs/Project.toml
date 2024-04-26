@@ -1,3 +1,5 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+GenericTensorNetworks = "3521c873-ad32-4bb4-b63d-f4f178f42b49"
+LiveServer = "16fef848-5104-11e9-1b77-fb7a48bbb589"
 ProblemReductions = "899c297d-f7d2-4ebf-8815-a35996def416"
