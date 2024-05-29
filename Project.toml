@@ -9,6 +9,7 @@ Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 UnitDiskMapping = "1b61a8d9-79ed-4491-8266-ef37f39e1727"
 
 [compat]
+BitBasis = "0.9"
 Graphs = "1"
 UnitDiskMapping = "0.3"
 julia = "1.10"
