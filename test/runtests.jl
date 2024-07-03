@@ -8,3 +8,7 @@ end
 @testset "sat" begin
     include("sat.jl")
 end
+
+@testset "spinglass" begin
+    include("spinglass.jl")
+end

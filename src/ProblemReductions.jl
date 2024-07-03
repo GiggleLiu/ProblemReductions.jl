@@ -1,6 +1,7 @@
 module ProblemReductions
 
 using Graphs, BitBasis
+using DocStringExtensions
 
 export @bv_str, StaticElementVector, StaticBitVector, statictrues, staticfalses, onehotv
 export Clause, booleans, ¬, ∨, ∧

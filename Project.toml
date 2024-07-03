@@ -5,16 +5,18 @@ version = "1.0.0-DEV"
 
 [deps]
 BitBasis = "50ba71b6-fa0f-514d-ae9a-0916efc90dcf"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 UnitDiskMapping = "1b61a8d9-79ed-4491-8266-ef37f39e1727"
 
 [compat]
 Graphs = "1"
-UnitDiskMapping = "0.3"
+UnitDiskMapping = "0.4"
 julia = "1.10"
 
 [extras]
+GenericTensorNetworks = "3521c873-ad32-4bb4-b63d-f4f178f42b49"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["Test", "GenericTensorNetworks"]
