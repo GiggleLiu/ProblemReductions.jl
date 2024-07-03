@@ -1,17 +1,18 @@
 using ProblemReductions, Test
+using ProblemReductions: BooleanExpr, booleans
 
 @testset "clauses" begin
     a, b, c, d, e = booleans(5)
-    @test typeof(a.mask) == StaticBitVector{5, 1}
-    @test collect(a.mask) == [1, 0, 0, 0, 0]
-    @test collect(d.val) == [0, 0, 0, 1, 0]
+    @test a isa BooleanExpr
+    @test a.head == :var
+    @test a.var == 1
     nota = ¬a
-    @test collect(nota.mask) == [1, 0, 0, 0, 0]
-    @test collect(nota.val) == [0, 0, 0, 0, 0]
+    @test nota isa BooleanExpr
+    @test nota.head == :¬
+    @test nota.args[1] == a
+
     clause = (¬a ∧ b ∧ c ∧ ¬e)
-    @test collect(clause.mask) == [1, 1, 1, 0, 1]
-    @test collect(clause.val) == [0, 1, 1, 0, 0]
+    @test clause.head == :∧
     clause = ¬(¬a ∧ b ∧ c ∧ ¬e)
-    @test collect(clause.mask) == [1, 1, 1, 0, 1]
-    @test collect(clause.val) == [0, 1, 1, 0, 0]
+    @test clause.head == :¬
 end
