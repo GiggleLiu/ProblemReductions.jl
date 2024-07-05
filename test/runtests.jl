@@ -12,3 +12,7 @@ end
 @testset "spinglass" begin
     include("spinglass.jl")
 end
+
+@testset "topology" begin
+    include("topology.jl")
+end

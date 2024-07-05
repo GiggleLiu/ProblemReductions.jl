@@ -1,25 +1,20 @@
 """
 $(TYPEDEF)
-    SpinGlass(n, cliques; weights)
-    SpinGlass(graph::SimpleGraph, J, h=zeros(nv(graph)))
+    SpinGlass(graph::AbstractGraph, J, h=zeros(nv(graph)))
 
 The [spin-glass](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/SpinGlass/) problem.
 
 Positional arguments
 -------------------------------
-* `n` is the number of spins.
-* `cliques` is a vector of cliques, each being a vector of vertices (integers). For simple graph, it is a vector of edges.
+* `graph` is a graph object.
 * `weights` are associated with the cliques.
 """
-struct SpinGlass{WT<:Vector} <: AbstractProblem
-    n::Int
-    cliques::Vector{Vector{Int}}
-    weights::WT
-    function SpinGlass(n::Int, cliques::AbstractVector, weights::Vector)
-        clqs = collect(collect.(cliques))
-        @assert length(weights) == length(clqs)
-        @assert all(c->all(b->1<=b<=n, c), cliques) "vertex index out of bound 1-$n, got: $cliques"
-        return new{typeof(weights)}(n, clqs, weights)
+struct SpinGlass{GT<:AbstractGraph, T} <: AbstractProblem
+    graph::GT
+    weights::Vector{T}
+    function SpinGlass(n::Int, graph::AbstractGraph, weights::Vector{T}) where T
+        @assert length(weights) == ne(graph)
+        return new{typeof(graph), T}(n, graph, weights)
     end
 end
 function SpinGlass(graph::SimpleGraph, J::Vector, h::Vector)
@@ -34,7 +29,9 @@ function spin_glass_from_matrix(M::AbstractMatrix, h::AbstractVector)
 end
 
 function reduceto(::Type{<:SpinGlass}, sat::SATProblem)
-    sat.clauses
+    @assert is_cnf(sat) "SAT problem must be in CNF form"
+    for clause in sat.args
+    end
 end
 
 function problem_reduction()
@@ -53,7 +50,7 @@ function Base.show(io::IO, ga::SGGadget)
     println(io, "Inputs: $(ga.inputs)")
     println(io, "Outputs: $(ga.outputs)")
     print(io, "H = ")
-    for (k, c) in enumerate(ga.sg.cliques)
+    for (k, c) in enumerate(edges(ga.sg.graphs))
         w = ga.sg.weights[k]
         iszero(w) && continue
         k == 1 || print(io, w >= 0 ? " + " : " - ")
@@ -92,6 +89,67 @@ function sg_gadget_or()
     sg = SpinGlass(g, [1, -2, -2], [-1, -1, 2])
     SGGadget(sg, [1, 2], [3])
 end
+
+function to_sg_gadget(sat::CircuitSAT)
+    if sat.head == :¬
+        gnot = sg_gadget_not()
+        a = to_sg_gadget(sat.args[1])
+        return add_sg!(a, gnot.sg, a.outputs=>[gnot.inputs[1]])
+    elseif sat.head == :∧
+        gand = sg_gadget_and()
+        a, b = [to_sg_gadget(a) for a in sat.args]
+        sg = glue(a.sg, gand.sg, a.outputs=>[gand.inputs[1]])
+    elseif sat.head == :∨
+    elseif sat.head == :⊻
+    else
+        error("unsupported logic operation: $(sat.head)")
+    end
+end
+
+# vmap defines a vector of equivalent variables
+function glue(vmap, sgs::SpinGlass{GT, T}...) where {GT, T}
+    nparts = length(sgs)
+    @assert all(x->length(x) == nparts, vmap)
+    @assert all([isunique(vcat(getindex.(vmap, k)...)) for k = 1:nparts])
+
+    sizes = getfield.(sgs, :n)
+    ns = cumsum([0; sizes])
+    _new_indices = [collect(ns[i]+1:ns[i+1]) for i = 1:nparts]
+    _vmap = map(m->[_new_indices[k][m[k]] for k=1:nparts], vmap)
+    @show _vmap
+
+    # find representatives for each equivalent set
+    indexmap = Dict{Int, Int}()
+    for equivalent_set in _vmap
+        elements = vcat(equivalent_set...)
+        representative = elements[1]
+        for e in elements
+            indexmap[e] = representative
+        end
+    end
+
+    # get the new indices
+    _new_indices_mapped = [map(e->get(indexmap, e, e), e) for e in _new_indices]
+    @show _new_indices_mapped
+    unique_indices = unique(vcat(_new_indices_mapped...))
+    @show unique_indices
+    remap = Dict(zip(unique_indices, 1:length(unique_indices)))
+    @show remap
+    new_indices_mapped = [map(e->remap[e], e) for e in _new_indices_mapped]
+    @show new_indices_mapped
+
+    n = length(unique_indices)
+    cliques = Dict{Vector{Int}, T}()
+    for k = 1:nparts
+        sg = sgs[k]
+        for (clique, weight) in zip(edges(sg.graph), sg.weights)
+            new_clique = [new_indices_mapped[k][e] for e in clique]
+            cliques[new_clique] = get(cliques, new_clique, zero(T)) + weight
+        end
+    end
+    return SpinGlass(HyperGraph(n, collect(keys(cliques))), collect(values(weights)))
+end
+isunique(x) = length(unique(x)) == length(x)
 
 function sg_gadget_arraymul()
     #   s_{i+1,j-1}  p_i

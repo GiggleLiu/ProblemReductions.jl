@@ -1,7 +1,6 @@
 struct SATProblem <: AbstractProblem
     clauses
 end
-
 # ET is the boolean type
 # `head` is the operator
 # `args` are the arguments
@@ -20,8 +19,13 @@ function booleans(n::Int)
     return BooleanExpr.(1:n)
 end
 ¬(x::BooleanExpr) = BooleanExpr(:¬, [x])
-∧(x::BooleanExpr, y::BooleanExpr) = BooleanExpr(:∧, [x, y])
-∨(x::BooleanExpr, y::BooleanExpr) = BooleanExpr(:∨, [x, y])
+∧(x::BooleanExpr, ys::BooleanExpr...) = BooleanExpr(:∧, [x, ys...])
+∨(x::BooleanExpr, ys::BooleanExpr...) = BooleanExpr(:∨, [x, ys...])
+⊻(x::BooleanExpr, ys::BooleanExpr...) = BooleanExpr(:⊻, [x, ys...])
+
+is_literal(x::BooleanExpr) = x.head == :var || (x.head == :¬ && x.args[1].head == :var)
+is_cnf(x::BooleanExpr) = x.head == :∧ && all(a->(a.head == :∨ && all(is_literal, a.args)), x.args)
+is_dnf(x::BooleanExpr) = x.head == :∨ && all(a->(a.head == :∧ && all(is_literal, a.args)), x.args)
 
 function maximum_var(x::BooleanExpr)
     if x.head == :var
@@ -30,6 +34,7 @@ function maximum_var(x::BooleanExpr)
         return maximum(maximum_var, x.args)
     end
 end
+
 function dnf(x::BooleanExpr)
     vars = staticbooleans(maximum_var(x))
     return dnf(x, vars)
@@ -44,6 +49,10 @@ function dnf(x::BooleanExpr, vars)
     else  # :var
         return vars[x.var]
     end
+end
+
+struct CircuitSAT <: AbstractProblem
+    expr::BooleanExpr
 end
 
 struct DNFClause{N, C}
