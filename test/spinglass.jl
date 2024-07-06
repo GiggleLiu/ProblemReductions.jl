@@ -1,9 +1,9 @@
 using Test, ProblemReductions
 import GenericTensorNetworks
-using ProblemReductions: SGGadget, sg_gadget_and, sg_gadget_or, sg_gadget_not, sg_gadget_arraymul, SpinGlass
+using ProblemReductions: SGGadget, spinglass_gadget, SpinGlass
 
 function ground_states(sg::SpinGlass)
-    sg = GenericTensorNetworks.SpinGlass(sg.n, sg.cliques, sg.weights)
+    sg = GenericTensorNetworks.SpinGlass(sg.graph.n, sg.graph.edges, sg.weights)
     return GenericTensorNetworks.solve(GenericTensorNetworks.GenericTensorNetwork(sg), GenericTensorNetworks.ConfigsMin())[]
 end
 
@@ -22,22 +22,22 @@ function truth_table(ga::SGGadget)
 end
 
 @testset "gates" begin
-    res = ground_states(sg_gadget_and().sg)
+    res = ground_states(spinglass_gadget(:∧).sg)
     @test collect.(sort(res.c.data)) == collect.(map(x->StaticElementVector(2, x), [[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 1]]))
-    tt = truth_table(sg_gadget_and())
+    tt = truth_table(spinglass_gadget(:∧))
     @test length(tt) == 4
     @test tt[[0, 0]] == tt[[0, 1]] == tt[[1, 0]] == [0]
     @test tt[[1, 1]] == [1]
 
-    res = ground_states(sg_gadget_or().sg)
+    res = ground_states(spinglass_gadget(:∨).sg)
     @test collect.(sort(res.c.data)) == collect.(map(x->StaticElementVector(2, x), [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]))
 
-    res = ground_states(sg_gadget_not().sg)
+    res = ground_states(spinglass_gadget(:¬).sg)
     @test collect.(sort(res.c.data)) == collect.(map(x->StaticElementVector(2, x), [[0, 1], [1, 0]]))
 end
 
 @testset "arraymul" begin
-    arr = sg_gadget_arraymul()
+    arr = spinglass_gadget(:arraymul)
     tt = truth_table(arr)
     @test length(tt) == 16
     @test tt[[0, 0, 0, 0]] == tt[[1, 0, 0, 0]] == tt[[0, 1, 0, 0]] == [0, 0]
@@ -55,4 +55,10 @@ end
     @test length(tt) == 16
     ProblemReductions.set_input!(arr, [0, 1, 0, 1])  # 2 x 2 == 4
     @test truth_table(arr) == Dict([0, 1, 0, 1] => [0, 0, 1, 0])
+end
+
+@testset "compose circuit" begin
+    a, b, c, d, e = ProblemReductions.booleans(5)
+    expr = (a ∧ b) ∨ (c ∧ ¬e)
+    arr = ProblemReductions.compose_circuit(expr)
 end

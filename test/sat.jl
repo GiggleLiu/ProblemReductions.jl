@@ -18,3 +18,12 @@ using ProblemReductions: BooleanExpr, booleans, is_literal, is_cnf, is_dnf
     clause = ∨(∧(a, b), ∧(c, ¬e))
     @test is_dnf(clause)
 end
+
+@testset "hash, eval" begin
+    a, b, c, d, e = booleans(5)
+    expr = (a ∧ b) ∨ (c ∧ ¬e)
+    d = Dict(a=>true, b=>true, c=>true, e=>false)
+    @test Base.eval(a, d)  == true
+    @test d[a] == true
+    @test Base.eval(expr, d) == true
+end

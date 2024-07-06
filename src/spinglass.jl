@@ -7,26 +7,27 @@ The [spin-glass](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/g
 Positional arguments
 -------------------------------
 * `graph` is a graph object.
-* `weights` are associated with the cliques.
+* `weights` are associated with the edges.
 """
 struct SpinGlass{GT<:AbstractGraph, T} <: AbstractProblem
     graph::GT
     weights::Vector{T}
-    function SpinGlass(n::Int, graph::AbstractGraph, weights::Vector{T}) where T
+    function SpinGlass(graph::AbstractGraph, weights::Vector{T}) where T
         @assert length(weights) == ne(graph)
-        return new{typeof(graph), T}(n, graph, weights)
+        return new{typeof(graph), T}(graph, weights)
     end
 end
 function SpinGlass(graph::SimpleGraph, J::Vector, h::Vector)
     @assert length(J) == ne(graph) "length of J must be equal to the number of edges $(ne(graph)), got: $(length(J))"
     @assert length(h) == nv(graph) "length of h must be equal to the number of vertices $(nv(graph)), got: $(length(h))"
-    SpinGlass(nv(graph), [[[src(e), dst(e)] for e in edges(graph)]..., [[i] for i in 1:nv(graph)]...], [J..., h...])
+    SpinGlass(HyperGraph(nv(graph), Vector{Int}[[[src(e), dst(e)] for e in edges(graph)]..., [[i] for i in 1:nv(graph)]...]), [J..., h...])
 end
 function spin_glass_from_matrix(M::AbstractMatrix, h::AbstractVector)
     g = SimpleGraph((!iszero).(M))
     J = [M[e.src, e.dst] for e in edges(g)]
     return SpinGlass(g, J, h)
 end
+nspin(g::SpinGlass) = nv(g.graph)
 
 function reduceto(::Type{<:SpinGlass}, sat::SATProblem)
     @assert is_cnf(sat) "SAT problem must be in CNF form"
@@ -46,11 +47,11 @@ struct SGGadget{WT}
     outputs::Vector{Int}
 end
 function Base.show(io::IO, ga::SGGadget)
-    println(io, "SGGadget with $(ga.sg.n) variables")
+    println(io, "SGGadget with $(nspin(ga.sg)) variables")
     println(io, "Inputs: $(ga.inputs)")
     println(io, "Outputs: $(ga.outputs)")
     print(io, "H = ")
-    for (k, c) in enumerate(edges(ga.sg.graphs))
+    for (k, c) in enumerate(edges(ga.sg.graph))
         w = ga.sg.weights[k]
         iszero(w) && continue
         k == 1 || print(io, w >= 0 ? " + " : " - ")
@@ -59,7 +60,8 @@ function Base.show(io::IO, ga::SGGadget)
 end
 Base.show(io::IO, ::MIME"text/plain", ga::SGGadget) = show(io, ga)
 
-function sg_gadget_and()
+spinglass_gadget(s::Symbol) = spinglass_gadget(Val(s))
+function spinglass_gadget(::Val{:∧})
     g = SimpleGraph(3)
     add_edge!(g, 1, 2)
     add_edge!(g, 1, 3)
@@ -68,20 +70,20 @@ function sg_gadget_and()
     SGGadget(sg, [1, 2], [3])
 end
 
-function sg_gadget_set0()
+function spinglass_gadget(::Val{:set0})
     g = SimpleGraph(1)
     sg = SpinGlass(g, Int[], [-1])
     SGGadget(sg, Int[], [1])
 end
 
-function sg_gadget_not()
+function spinglass_gadget(::Val{:¬})
     g = SimpleGraph(2)
     add_edge!(g, 1, 2)
     sg = SpinGlass(g, [1], [0, 0])
     SGGadget(sg, [1], [2])
 end
 
-function sg_gadget_or()
+function spinglass_gadget(::Val{:∨})
     g = SimpleGraph(3)
     add_edge!(g, 1, 2)
     add_edge!(g, 1, 3)
@@ -90,79 +92,86 @@ function sg_gadget_or()
     SGGadget(sg, [1, 2], [3])
 end
 
-function to_sg_gadget(sat::CircuitSAT)
-    if sat.head == :¬
-        gnot = sg_gadget_not()
-        a = to_sg_gadget(sat.args[1])
-        return add_sg!(a, gnot.sg, a.outputs=>[gnot.inputs[1]])
-    elseif sat.head == :∧
-        gand = sg_gadget_and()
-        a, b = [to_sg_gadget(a) for a in sat.args]
-        sg = glue(a.sg, gand.sg, a.outputs=>[gand.inputs[1]])
-    elseif sat.head == :∨
-    elseif sat.head == :⊻
-    else
-        error("unsupported logic operation: $(sat.head)")
+mutable struct IndexStore
+    N::Int
+    function IndexStore(N::Int=0)
+        new(N)
     end
 end
-
-# vmap defines a vector of equivalent variables
-function glue(vmap, sgs::SpinGlass{GT, T}...) where {GT, T}
-    nparts = length(sgs)
-    @assert all(x->length(x) == nparts, vmap)
-    @assert all([isunique(vcat(getindex.(vmap, k)...)) for k = 1:nparts])
-
-    sizes = getfield.(sgs, :n)
-    ns = cumsum([0; sizes])
-    _new_indices = [collect(ns[i]+1:ns[i+1]) for i = 1:nparts]
-    _vmap = map(m->[_new_indices[k][m[k]] for k=1:nparts], vmap)
-    @show _vmap
-
-    # find representatives for each equivalent set
-    indexmap = Dict{Int, Int}()
-    for equivalent_set in _vmap
-        elements = vcat(equivalent_set...)
-        representative = elements[1]
-        for e in elements
-            indexmap[e] = representative
-        end
-    end
-
-    # get the new indices
-    _new_indices_mapped = [map(e->get(indexmap, e, e), e) for e in _new_indices]
-    @show _new_indices_mapped
-    unique_indices = unique(vcat(_new_indices_mapped...))
-    @show unique_indices
-    remap = Dict(zip(unique_indices, 1:length(unique_indices)))
-    @show remap
-    new_indices_mapped = [map(e->remap[e], e) for e in _new_indices_mapped]
-    @show new_indices_mapped
-
-    n = length(unique_indices)
-    cliques = Dict{Vector{Int}, T}()
-    for k = 1:nparts
-        sg = sgs[k]
-        for (clique, weight) in zip(edges(sg.graph), sg.weights)
-            new_clique = [new_indices_mapped[k][e] for e in clique]
-            cliques[new_clique] = get(cliques, new_clique, zero(T)) + weight
-        end
-    end
-    return SpinGlass(HyperGraph(n, collect(keys(cliques))), collect(values(weights)))
+function newindex!(store::IndexStore)
+    store.N += 1
+    return store.N
 end
-isunique(x) = length(unique(x)) == length(x)
 
-function sg_gadget_arraymul()
-    #   s_{i+1,j-1}  p_i
-    #          \     |
-    #       q_j ------------ q_j
-    #                |
-    #   c_{i,j} ------------ c_{i-1,j}
-    #                |     \
-    #                p_i     s_{i,j} 
-    # variables: p_i, q_j, pq, c_{i-1,j}, s_{i+1,j-1}, c_{i,j}, s_{i,j}
-    # constraints: 2 * c_{i,j} + s_{i,j} = p_i q_j + c_{i-1,j} + s_{i+1,j-1}
-    sg = SpinGlass(7, Vector{Int}[], Int[])
-    add_sg!(sg, sg_gadget_and().sg, [1, 2, 3])
+function compose_circuit(sat::BooleanExpr)
+    store = IndexStore(maximum_var(sat))
+    gadget, variables = compose_circuit!(sat, store)
+    return (; gadget, variables)
+end
+
+function compose_circuit!(expr::BooleanExpr, store::IndexStore)
+    modules = []
+    inputs = Int[]
+    middle = Int[]
+    all_variables = Int[]
+    for a in expr.args
+        if is_var(a)
+            push!(middle, a.var)
+            push!(inputs, a.var)
+            push!(all_variables, a.var)
+        else
+            circ, variables = compose_circuit!(a, store)
+            append!(all_variables, variables)
+            push!(modules, (circ.sg, variables))
+            append!(inputs, variables[circ.inputs])
+            append!(middle, variables[circ.outputs])
+        end
+    end
+    gadget_top = spinglass_gadget(expr.head)
+    # map inputs
+    vmap = zeros(Int, nspin(gadget_top.sg))
+    vmap[gadget_top.inputs] .= middle
+    # map outputs
+    outputs = Int[]
+    for v in gadget_top.outputs
+        vmap[v] = newindex!(store)
+        push!(outputs, vmap[v])
+        push!(all_variables, vmap[v])
+    end
+    # map internal variables
+    for v in setdiff(vertices(gadget_top.sg.graph), gadget_top.outputs)
+        vmap[v] = newindex!(store)
+        push!(all_variables, vmap[v])
+    end
+    sg = SpinGlass(HyperGraph(length(all_variables), Vector{Int}[]), Int[])
+    indexof(v) = findfirst(==(v), all_variables)
+    for (m, variables) in modules
+        add_sg!(sg, m, indexof.(variables))
+    end
+    add_sg!(sg, gadget_top.sg, indexof.(vmap))
+    @assert nspin(sg) == length(all_variables)
+    return SGGadget(sg, indexof.(inputs), indexof.(outputs)), all_variables
+end
+
+"""
+    spinglass_gadget(::Val{:arraymul})
+
+The array multiplier gadget.
+```
+    s_{i+1,j-1}  p_i
+           \\     |
+        q_j ------------ q_j
+                 |
+    c_{i,j} ------------ c_{i-1,j}
+                 |     \\
+                 p_i     s_{i,j} 
+```
+- variables: p_i, q_j, pq, c_{i-1,j}, s_{i+1,j-1}, c_{i,j}, s_{i,j}
+- constraints: 2 * c_{i,j} + s_{i,j} = p_i q_j + c_{i-1,j} + s_{i+1,j-1}
+"""
+function spinglass_gadget(::Val{:arraymul})
+    sg = SpinGlass(HyperGraph(7, Vector{Int}[]), Int[])
+    add_sg!(sg, spinglass_gadget(Val(:∧)).sg, [1, 2, 3])
     for (clique, weight) in [[6, 7] => 2, [6, 3]=>-2, [6, 4]=>-2, [6, 5]=>-2,
                     [7, 3]=>-1, [7, 4]=>-1, [7, 5]=>-1,
                     [3, 4]=>1, [3, 5]=>1, [4, 5]=>1]
@@ -172,27 +181,34 @@ function sg_gadget_arraymul()
 end
 
 function add_sg!(sg::SpinGlass, g::SpinGlass, vmap::Vector{Int})
-    @assert length(vmap) == g.n
-    mapped_cliques = [map(x->vmap[x], clique) for clique in g.cliques]
-    for (clique, weight) in zip(mapped_cliques, g.weights)
+    @assert length(vmap) == nspin(g) "length of vmap must be equal to the number of vertices $(nspin(g)), got: $(length(vmap))"
+    mapped_edges = [map(x->vmap[x], clique) for clique in edges(g.graph)]
+    for (clique, weight) in zip(mapped_edges, g.weights)
         add_clique!(sg, clique, weight)
     end
     return sg
 end
 function add_clique!(sg::SpinGlass, clique::Vector{Int}, weight)
-    for (k, c) in enumerate(sg.cliques)
-        if sort(c) == sort(clique)
+    for (k, c) in enumerate(edges(sg.graph))
+        if sort(_vec(c)) == sort(clique)
             sg.weights[k] += weight
             return sg
         end
     end
-    push!(sg.cliques, clique)
+    _add_edge!(sg.graph, clique)
     push!(sg.weights, weight)
     return sg
 end
+_vec(c::AbstractVector) = c
+_vec(c::Graphs.SimpleEdge) = [c.src, c.dst]
+_add_edge!(g::SimpleGraph, c::Vector{Int}) = add_edge!(g, c...)
+function _add_edge!(g::HyperGraph, c::Vector{Int})
+    @assert all(b->1<=b<=nv(g), c) "vertex index out of bound 1-$(nv(g)), got: $c"
+    push!(g.edges, c)
+end
 
 function compose_multiplier(m::Int, n::Int)
-    component = sg_gadget_arraymul().sg
+    component = spinglass_gadget(Val(:arraymul)).sg
     sg = deepcopy(component)
     modules = []
     N = 0
@@ -201,11 +217,11 @@ function compose_multiplier(m::Int, n::Int)
     q = [newindex!() for _ = 1:n]
     out = Int[]
     spre = [newindex!() for _ = 1:m]
-    for s in spre push!(modules, [sg_gadget_set0().sg, [s]]) end
+    for s in spre push!(modules, [spinglass_gadget(:set0).sg, [s]]) end
     for j = 1:n
         s = [newindex!() for _ = 1:m]
         cpre = newindex!()
-        push!(modules, [sg_gadget_set0().sg, [cpre]])
+        push!(modules, [spinglass_gadget(:set0).sg, [cpre]])
         for i = 1:m
             c = newindex!()
             pins = [p[i], q[j], newindex!(), cpre, spre[i], c, s[i]]
@@ -222,7 +238,7 @@ function compose_multiplier(m::Int, n::Int)
             spre = s
         end
     end
-    sg = SpinGlass(N, Vector{Int}[], Int[])
+    sg = SpinGlass(SimpleGraph(N), Vector{Int}[], Int[])
     for (m, pins) in modules
         add_sg!(sg, m, pins)
     end
