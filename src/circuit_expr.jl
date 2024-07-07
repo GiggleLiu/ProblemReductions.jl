@@ -18,7 +18,7 @@ end
 Base.:(⊻)(x::BooleanExpr, ys::BooleanExpr...) = BooleanExpr(:⊻, [x, ys...])
 function Base.show(io::IO, x::BooleanExpr)
     if x.head == :var
-        print(io, "#", x.var)
+        print(io, x.var)
     else
         print(io, x.head, "(", join(x.args, ", "), ")")
     end
@@ -32,11 +32,11 @@ is_dnf(x::BooleanExpr) = x.head == :∨ && all(a->(a.head == :∧ && all(is_lite
 
 Base.:(==)(x::BooleanExpr, y::BooleanExpr) = x.head == y.head && x.var == y.var && all(x.args .== y.args)
 Base.hash(x::BooleanExpr, h::UInt) = hash(x.head, hash(x.var, hash(x.args, h)))
-function Base.eval(ex::BooleanExpr, dict::Dict{BooleanExpr, Bool})
+function evaluate(ex::BooleanExpr, dict::Dict{Symbol, Bool})
     if ex.head == :var
-        return dict[ex]
+        return dict[ex.var]
     else
-        _eval(Val(ex.head), dict, Base.eval.(ex.args, Ref(dict))...)
+        _eval(Val(ex.head), dict, evaluate.(ex.args, Ref(dict))...)
     end
 end
 _eval(::Val{:¬}, dict, x) = !x
@@ -62,20 +62,44 @@ struct Circuit
     exprs::Vector{Assignment}
 end
 
+function Base.show(io::IO, x::Circuit)
+    for i in 1:length(x.exprs)
+        ex = x.exprs[i]
+        print(io, ex)
+        i < length(x.exprs) && println(io)
+    end
+end
+Base.show(io::IO, ::MIME"text/plain", x::Circuit) = show(io, x)
+Base.show(io::IO, x::Assignment) = print(io, join(string.(x.outputs), ", "), " = ", x.expr)
+Base.show(io::IO, ::MIME"text/plain", x::Assignment) = show(io, x)
+
+function evaluate(c::Circuit, dict::Dict{Symbol, Bool})
+    evaluate!(c.exprs, copy(dict))
+end
+function evaluate!(exprs::Vector{Assignment}, dict::Dict{Symbol, Bool})
+    for ex in exprs
+        for o in ex.outputs
+            dict[o] = evaluate(ex.expr, dict)
+        end
+    end
+    return dict
+end
+
 macro circuit(ex)
     analyse_circuit(ex)
 end
 
 function analyse_circuit(ex)
     @match ex begin
-        :($var = $bex) => begin
-        end
+        :(begin $(exs...) end) => Circuit(analyse_circuit.(filter(x->!(x isa LineNumberNode), exs)))
+        :($(vars...) = $bex) => Assignment(Symbol[vars...], analyse_expr(bex))
+        _ => error("Invalid circuit expression: $ex")
     end
 end
 
-function analyse_circuit(bex)
+function analyse_expr(bex)
     @match bex begin
-        :($f($(args...))) => BooleanExpr(f, analyse_circuit.(args))
+        :($f($(args...))) => BooleanExpr(f, analyse_expr.(args))
         ::Symbol => BooleanExpr(bex)
     end
 end
