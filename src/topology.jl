@@ -1,3 +1,12 @@
+"""
+$TYPEDEF
+
+A hypergraph is a generalization of a graph in which an edge can connect any number of vertices.
+
+### Fields
+- `n::Int`: the number of vertices
+- `edges::Vector{Vector{Int}}`: a vector of vectors of integers, where each vector represents a hyperedge connecting the vertices with the corresponding indices.
+"""
 struct HyperGraph <: Graphs.AbstractGraph{Int}
     n::Int
     edges::Vector{Vector{Int}}
@@ -11,6 +20,16 @@ Graphs.vertices(h::HyperGraph) = 1:nv(h)
 Graphs.ne(h::HyperGraph) = length(h.edges)
 Graphs.edges(h::HyperGraph) = h.edges
 
+"""
+$TYPEDEF
+
+A unit disk graph is a graph in which the vertices are points in a plane and two vertices are connected by an edge if and only if the Euclidean distance between them is at most a given radius.
+
+### Fields
+- `n::Int`: the number of vertices
+- `locations::Vector{NTuple{D, T}}`: the locations of the vertices
+- `radius::T`: the radius of the unit disk
+"""
 struct UnitDiskGraph{D, T} <: Graphs.AbstractGraph{Int}
     locations::Vector{NTuple{D, T}}
     radius::T
@@ -28,6 +47,15 @@ function Graphs.edges(g::UnitDiskGraph)
     return edges
 end
 
+"""
+$TYPEDEF
+
+A grid graph is a graph in which the vertices are arranged in a grid and two vertices are connected by an edge if and only if they are adjacent in the grid.
+
+### Fields
+- `grid::BitMatrix`: a matrix of booleans, where `true` indicates the presence of an edge.
+- `radius::Float64`: the radius of the unit disk
+"""
 struct GridGraph <: Graphs.AbstractGraph{Int}
     grid::BitMatrix
     radius::Float64

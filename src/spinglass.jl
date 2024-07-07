@@ -238,7 +238,7 @@ function compose_multiplier(m::Int, n::Int)
             spre = s
         end
     end
-    sg = SpinGlass(SimpleGraph(N), Vector{Int}[], Int[])
+    sg = SpinGlass(SimpleGraph(N), Vector{Int}[], zeros(Int, N))
     for (m, pins) in modules
         add_sg!(sg, m, pins)
     end

@@ -58,7 +58,7 @@ end
 
 @testset "arraymul compose" begin
     arr = ProblemReductions.compose_multiplier(2, 2)
-    @test arr.sg.n == 20
+    @test nspin(arr.sg) == 20
     tt = truth_table(arr)
     @test length(tt) == 16
     ProblemReductions.set_input!(arr, [0, 1, 0, 1])  # 2 x 2 == 4

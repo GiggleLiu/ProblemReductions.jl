@@ -6,7 +6,20 @@ The truth table.
 ### Fields
 - `inputs::Vector{T}`: The input values.
 - `outputs::Vector{T}`: The output values.
-- `values::Vector{Int}`: The values of the truth table.
+- `values::Vector{BitStr{N, Int}}`: The truth table values.
+
+### Examples
+```jldoctest
+julia> tt = TruthTable(['a', 'b'], ['c'], [bit"0", bit"0", bit"0", bit"1"])
+┌───┬───┬───┐
+│ a │ b │ c │
+├───┼───┼───┤
+│ 0 │ 0 │ 0 │
+│ 1 │ 0 │ 0 │
+│ 0 │ 1 │ 0 │
+│ 1 │ 1 │ 1 │
+└───┴───┴───┘
+```
 """
 struct TruthTable{N, T}
 	inputs::Vector{T}
