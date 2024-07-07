@@ -13,8 +13,9 @@ PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 UnitDiskMapping = "1b61a8d9-79ed-4491-8266-ef37f39e1727"
 
 [compat]
+BitBasis = "0.9"
 Graphs = "1"
-UnitDiskMapping = "0.4"
+UnitDiskMapping = "0.3, 0.4"
 julia = "1.10"
 
 [extras]
