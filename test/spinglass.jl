@@ -1,6 +1,7 @@
 using Test, ProblemReductions
 import GenericTensorNetworks
 using ProblemReductions: SGGadget, spinglass_gadget, SpinGlass
+using ProblemReductions.BitBasis
 
 function ground_states(sg::SpinGlass)
     sg = GenericTensorNetworks.SpinGlass(sg.graph.n, sg.graph.edges, sg.weights)

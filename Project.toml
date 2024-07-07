@@ -18,8 +18,7 @@ UnitDiskMapping = "0.4"
 julia = "1.10"
 
 [extras]
-GenericTensorNetworks = "3521c873-ad32-4bb4-b63d-f4f178f42b49"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "GenericTensorNetworks"]
+test = ["Test"]
