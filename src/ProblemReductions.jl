@@ -13,6 +13,7 @@ export Clause, booleans, ¬, ∨, ∧, ⊻, is_literal, is_cnf, is_dnf, compose_
 export SpinGlass, spinglass_gadget, nspin
 
 include("Core.jl")
+include("circuit_expr.jl")
 include("truth_table.jl")
 include("topology.jl")
 include("bitvector.jl")
