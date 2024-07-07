@@ -59,6 +59,11 @@ end
 
 @testset "compose circuit" begin
     a, b, c, d, e = ProblemReductions.booleans(5)
+    expr = (a ∧ ¬b)
+    gadget, variables = ProblemReductions.compose_circuit(expr)
+    @show truth_table(gadget)
+
     expr = (a ∧ b) ∨ (c ∧ ¬e)
-    arr = ProblemReductions.compose_circuit(expr)
+    gadget, variables = ProblemReductions.compose_circuit(expr)
+    @show truth_table(gadget)
 end
