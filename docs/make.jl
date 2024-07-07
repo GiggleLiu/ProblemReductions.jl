@@ -12,6 +12,7 @@ makedocs(;
         edit_link="main",
         assets=String[],
     ),
+    doctest = ("doctest=true" in ARGS),
     pages=[
         "Home" => "index.md",
     ],

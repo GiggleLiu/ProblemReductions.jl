@@ -1,4 +1,4 @@
-using GenericTensorNetworks
+using GenericTensorNetworks, Random
 
 graph = random_diagonal_coupled_graph(7, 7, 0.8)
 problem = IndependentSet(graph)  # Independent set problem
@@ -14,6 +14,7 @@ show_landscape((x, y)->hamming_distance(x, y) <= 2, res_configs; layout_method=:
 
 
 # set seed
+seed = 2
 Random.seed!(seed)
 
 # setup graph
@@ -27,5 +28,6 @@ show_graph(graph, SpringLayout(; optimal_distance=20))
 # setup problem
 problem = IndependentSet(graph)
 
-viz_landscape(problem; K)
+K = 2
+show_landscape(problem; K)
 viz_hamming_stats(problem; K)
