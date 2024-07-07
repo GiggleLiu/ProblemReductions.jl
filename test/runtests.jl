@@ -16,3 +16,7 @@ end
 @testset "topology" begin
     include("topology.jl")
 end
+
+@testset "truth_table" begin
+    include("truth_table.jl")
+end

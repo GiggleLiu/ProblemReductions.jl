@@ -139,7 +139,7 @@ function compose_circuit!(expr::BooleanExpr, store::IndexStore)
         push!(all_variables, vmap[v])
     end
     # map internal variables
-    for v in setdiff(vertices(gadget_top.sg.graph), gadget_top.outputs)
+    for v in setdiff(vertices(gadget_top.sg.graph), gadget_top.outputs ∪ gadget_top.inputs)
         vmap[v] = newindex!(store)
         push!(all_variables, vmap[v])
     end
