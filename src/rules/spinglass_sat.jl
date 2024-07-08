@@ -1,4 +1,4 @@
-function reduceto(::Type{<:SpinGlass}, sat::SATProblem)
+function reduceto(::Type{<:SpinGlass}, sat::CircuitSAT)
     @assert is_cnf(sat) "SAT problem must be in CNF form"
     for clause in sat.args
     end
@@ -16,7 +16,7 @@ struct SGGadget{WT}
     outputs::Vector{Int}
 end
 function Base.show(io::IO, ga::SGGadget)
-    println(io, "SGGadget with $(nspin(ga.sg)) variables")
+    println(io, "SGGadget with $(num_variables(ga.sg)) variables")
     println(io, "Inputs: $(ga.inputs)")
     println(io, "Outputs: $(ga.outputs)")
     print(io, "H = ")
@@ -91,7 +91,7 @@ function spinglass_gadget(expr::BooleanExpr)
             push!(inputs, a.var)
             push!(all_variables, a.var)
         else
-            circ, variables = spinglass_circuit(a)
+            circ, variables = spinglass_gadget(a)
             append!(all_variables, variables)
             push!(modules, (circ.sg, variables))
             append!(inputs, variables[circ.inputs])
@@ -100,7 +100,7 @@ function spinglass_gadget(expr::BooleanExpr)
     end
     gadget_top = spinglass_gadget(expr.head)
     # map inputs
-    vmap = Vector{Symbol}(undef, nspin(gadget_top.sg))
+    vmap = Vector{Symbol}(undef, num_variables(gadget_top.sg))
     vmap[gadget_top.inputs] .= middle
     # map outputs
     outputs = Symbol[]
@@ -120,7 +120,7 @@ function spinglass_gadget(expr::BooleanExpr)
         add_sg!(sg, m, indexof.(variables))
     end
     add_sg!(sg, gadget_top.sg, indexof.(vmap))
-    @assert nspin(sg) == length(all_variables)
+    @assert num_variables(sg) == length(all_variables)
     return SGGadget(sg, indexof.(inputs), indexof.(outputs)), all_variables
 end
 
@@ -152,7 +152,7 @@ function spinglass_gadget(::Val{:arraymul})
 end
 
 function add_sg!(sg::SpinGlass, g::SpinGlass, vmap::Vector{Int})
-    @assert length(vmap) == nspin(g) "length of vmap must be equal to the number of vertices $(nspin(g)), got: $(length(vmap))"
+    @assert length(vmap) == num_variables(g) "length of vmap must be equal to the number of vertices $(num_variables(g)), got: $(length(vmap))"
     mapped_edges = [map(x->vmap[x], clique) for clique in edges(g.graph)]
     for (clique, weight) in zip(mapped_edges, g.weights)
         add_clique!(sg, clique, weight)

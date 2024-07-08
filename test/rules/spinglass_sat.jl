@@ -21,7 +21,7 @@ function infer_logic(ga::SGGadget)
     end
     return output
 end
-function truth_table(ga::SGGadget; variables=1:nspin(ga.sg))
+function truth_table(ga::SGGadget; variables=1:num_variables(ga.sg))
     return dict2table(variables[ga.inputs], variables[ga.outputs], infer_logic(ga))
 end
 function dict2table(inputs, outputs, d::Dict{Vector{Int}, Vector{Int}})
@@ -59,7 +59,7 @@ end
 
 @testset "arraymul compose" begin
     arr = ProblemReductions.compose_multiplier(2, 2)
-    @test nspin(arr.sg) == 20
+    @test num_variables(arr.sg) == 20
     tt = truth_table(arr)
     @test length(tt) == 16
     ProblemReductions.set_input!(arr, [0, 1, 0, 1])  # 2 x 2 == 4

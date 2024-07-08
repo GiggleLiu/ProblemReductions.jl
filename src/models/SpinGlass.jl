@@ -22,6 +22,7 @@ function SpinGlass(graph::SimpleGraph, J::Vector, h::Vector)
     @assert length(h) == nv(graph) "length of h must be equal to the number of vertices $(nv(graph)), got: $(length(h))"
     SpinGlass(HyperGraph(nv(graph), Vector{Int}[[[src(e), dst(e)] for e in edges(graph)]..., [[i] for i in 1:nv(graph)]...]), [J..., h...])
 end
+Base.:(==)(a::SpinGlass, b::SpinGlass) = a.graph == b.graph && a.weights == b.weights
 function spin_glass_from_matrix(M::AbstractMatrix, h::AbstractVector)
     g = SimpleGraph((!iszero).(M))
     J = [M[e.src, e.dst] for e in edges(g)]

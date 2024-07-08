@@ -48,38 +48,14 @@ _eval(::Val{:∨}, dict, xs...) = any(xs)
 _eval(::Val{:∧}, dict, xs...) = all(xs)
 _eval(::Val{:⊻}, dict, xs...) = reduce(xor, xs)
 
-function maximum_var(x::BooleanExpr)
-    if x.head == :var
-        return x.var
-    else
-        return maximum(maximum_var, x.args)
-    end
-end
-
-# ---------------------------------------
-
+# --------- Assignment --------------
 struct Assignment
     outputs::Vector{Symbol}
     expr::BooleanExpr
 end
-struct Circuit
-    exprs::Vector{Assignment}
-end
-
-function Base.show(io::IO, x::Circuit)
-    for i in 1:length(x.exprs)
-        ex = x.exprs[i]
-        print(io, ex)
-        i < length(x.exprs) && println(io)
-    end
-end
-Base.show(io::IO, ::MIME"text/plain", x::Circuit) = show(io, x)
 Base.show(io::IO, x::Assignment) = print(io, join(string.(x.outputs), ", "), " = ", x.expr)
 Base.show(io::IO, ::MIME"text/plain", x::Assignment) = show(io, x)
 
-function evaluate(c::Circuit, dict::Dict{Symbol, Bool})
-    evaluate!(c.exprs, copy(dict))
-end
 function evaluate!(exprs::Vector{Assignment}, dict::Dict{Symbol, Bool})
     for ex in exprs
         for o in ex.outputs
@@ -89,6 +65,41 @@ function evaluate!(exprs::Vector{Assignment}, dict::Dict{Symbol, Bool})
     return dict
 end
 
+# --------- Circuit --------------
+struct Circuit
+    exprs::Vector{Assignment}
+end
+
+function Base.show(io::IO, x::Circuit)
+    println(io, "Circuit:")
+    for i in 1:length(x.exprs)
+        ex = x.exprs[i]
+        print(io, "| ", ex)
+        i < length(x.exprs) && println(io)
+    end
+end
+Base.show(io::IO, ::MIME"text/plain", x::Circuit) = show(io, x)
+
+function evaluate(c::Circuit, dict::Dict{Symbol, Bool})
+    evaluate!(c.exprs, copy(dict))
+end
+
+"""
+    @circuit circuit_expr
+
+Construct a circuit expression from a block of assignments.
+
+### Examples
+```jldoctest
+julia> @circuit begin
+        x = a ∨ b
+        y = x ∧ c
+       end
+Circuit:
+| x = ∨(a, b)
+| y = ∧(x, c)
+```
+"""
 macro circuit(ex)
     render_circuit(ex)
 end

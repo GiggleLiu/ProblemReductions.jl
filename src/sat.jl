@@ -1,25 +1,3 @@
-struct SATProblem <: AbstractProblem
-    clauses
-end
-# ET is the boolean type
-# `head` is the operator
-# `args` are the arguments
-function dnf(x::BooleanExpr)
-    vars = staticbooleans(maximum_var(x))
-    return dnf(x, vars)
-end
-function dnf(x::BooleanExpr, vars)
-    if x.head == :∧
-        return reduce(∧, map(DNF, x.args))
-    elseif x.head == :∨
-        return reduce(∨, map(DNF, x.args))
-    elseif x.head == :¬
-        return x
-    else  # :var
-        return vars[x.var]
-    end
-end
-
 struct CircuitSAT <: AbstractProblem
     expr::BooleanExpr
 end
