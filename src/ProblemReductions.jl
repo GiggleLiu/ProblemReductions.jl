@@ -17,9 +17,9 @@ export Circuit, Assignment, ssa_form, CircuitSAT, @circuit, booleans, ¬, ∨, �
 export SpinGlass, spinglass_gadget
 
 # rules
-export target_problem, AbstractReductionResult
+export target_problem, AbstractReductionResult, reduceto, extract_solution
 export spinglass_circuit
-export findbest
+export findbest, BruteForce
 
 include("Core.jl")
 include("truth_table.jl")

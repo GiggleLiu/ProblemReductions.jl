@@ -5,19 +5,20 @@ using Test
 end
 
 @testset "rules" begin
-    circuit = @circuit begin
+    circuit = CircuitSAT(@circuit begin
         x = a ∨ ¬b
         y = ¬c ∨ b
         z = x ∧ y ∧ a
-    end
+    end)
+
     for (source, target_type) in [
             circuit => SpinGlass
         ]
-        best_source = findbest(source)
-        result = reduceto(target_type, best_source)
+        best_source = findbest(source, BruteForce())
+        result = reduceto(target_type, source)
         target = target_problem(result)
-        best_target = findbest(target)
-        best_source_extracted = extract_solution(result, best_target)
-        @test best_source == best_source_extracted
+        best_target = findbest(target, BruteForce())
+        best_source_extracted = extract_solution.(Ref(result), best_target)
+        @test sort(best_source) == sort(best_source_extracted)
     end
 end

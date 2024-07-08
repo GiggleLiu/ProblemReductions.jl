@@ -5,20 +5,25 @@ The reduction result of a circuit to a spin glass problem.
 
 ### Fields
 - `spinglass::SpinGlass{GT, T}`: the spin glass problem.
-- `variables::Vector{Symbol}`: the variables in the spin glass problem.
+- `variables::Vector{Int}`: the variables in the spin glass problem.
 """
 struct ReductionCircuitToSpinGlass{GT, T}
+    num_source_vars::Int
     spinglass::SpinGlass{GT, T}
-    variables::Vector{Symbol}
+    variables::Vector{Int}
 end
 target_problem(res::ReductionCircuitToSpinGlass) = res.spinglass
 
-function reduceto(::Type{<:SpinGlass}, sat::Circuit)
-    ssa = ssa_form(sat)
+function reduceto(::Type{<:SpinGlass}, sat::CircuitSAT)
+    sg, all_variables = circuit2spinglass(sat.circuit)
+    return ReductionCircuitToSpinGlass(num_variables(sat), sg, [findfirst(==(v), sat.symbols) for v in all_variables])
+end
+function circuit2spinglass(c::Circuit)
+    ssa = ssa_form(c)
     all_variables = Symbol[]
     modules = []
     for assignment in ssa.exprs
-        gadget, variables = spinglass_gadget(assignment.expr)
+        gadget, variables = expr_to_spinglass_gadget(assignment.expr)
         variables[gadget.outputs] .= assignment.outputs
         append!(all_variables, variables)
         push!(modules, (gadget.sg, variables))
@@ -29,15 +34,15 @@ function reduceto(::Type{<:SpinGlass}, sat::Circuit)
     for (m, variables) in modules
         add_sg!(sg, m, indexof.(variables))
     end
-    return ReductionCircuitToSpinGlass(sg, all_variables)
+    return sg, all_variables
 end
 
-function extract_solution(::Type{<:Circuit}, sg::ReductionCircuitToSpinGlass, sol)
-    dict = Dict{Symbol, Bool}()
-    for (v, s) in zip(sg.variables, sol)
-        dict[v] = s == 1
+function extract_solution(res::ReductionCircuitToSpinGlass, sol)
+    out = zeros(eltype(sol), res.num_source_vars)
+    for (k, v) in enumerate(res.variables)
+        out[v] = sol[k]
     end
-    evaluate(sg.sg, dict)
+    return out
 end
 
 # Ref:
@@ -94,7 +99,7 @@ function spinglass_gadget(::Val{:∨})
     SGGadget(sg, [1, 2], [3])
 end
 
-function spinglass_gadget(expr::BooleanExpr)
+function expr_to_spinglass_gadget(expr::BooleanExpr)
     modules = []
     inputs = Symbol[]
     middle = Symbol[]
@@ -105,7 +110,7 @@ function spinglass_gadget(expr::BooleanExpr)
             push!(inputs, a.var)
             push!(all_variables, a.var)
         else
-            circ, variables = spinglass_gadget(a)
+            circ, variables = expr_to_spinglass_gadget(a)
             append!(all_variables, variables)
             push!(modules, (circ.sg, variables))
             append!(inputs, variables[circ.inputs])
@@ -236,4 +241,10 @@ function set_input!(ga::SGGadget, inputs::Vector{Int})
         add_clique!(ga.sg, [k], v == 1 ? 1 : -1)  # 1 for down, 0 for up
     end
     return ga
+end
+
+function truth_table(ga::SGGadget; variables=1:num_variables(ga.sg), solver=BruteForce())
+    res = findbest(ga.sg, solver)
+    dict = infer_logic(res, ga.inputs, ga.outputs)
+    return dict2table(variables[ga.inputs], variables[ga.outputs], dict)
 end

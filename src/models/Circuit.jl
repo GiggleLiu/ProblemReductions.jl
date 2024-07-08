@@ -198,7 +198,7 @@ end
 
 function evaluate(sat::CircuitSAT, config)
     @assert length(config) == num_variables(sat)
-    dict = Dict(sat.symbols[i]=>config[i] for i in 1:length(sat.symbols))
+    dict = Dict(sat.symbols[i]=>Bool(config[i]) for i in 1:length(sat.symbols))
     for ex in sat.circuit.exprs
         for o in ex.outputs
             @assert haskey(dict, o) "The output variable `$o` is not in the configuration"

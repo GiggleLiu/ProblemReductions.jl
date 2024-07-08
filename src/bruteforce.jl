@@ -1,4 +1,6 @@
-function findbest(problem::AbstractProblem)
+struct BruteForce end
+
+function findbest(problem::AbstractProblem, method::BruteForce)
     best_size = typemax(energy_type(problem))
     best_configs = Vector{Int}[]
     for config in Iterators.product([flavors(problem) for i in 1:num_variables(problem)]...)
