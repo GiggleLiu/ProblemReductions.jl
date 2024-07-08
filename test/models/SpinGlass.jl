@@ -21,7 +21,7 @@ using ProblemReductions, Test, Graphs
     @test get_weights(sg, 1) == [-1, 1]
 
     @test evaluate(sg, [0, 0, 0]) == -3
-    configs = findbest(sg)
+    configs = findbest(sg, BruteForce())
     for cfg in configs
         @test cfg[3] == cfg[1] & cfg[2]
     end

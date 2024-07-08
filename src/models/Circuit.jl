@@ -202,8 +202,8 @@ function evaluate(sat::CircuitSAT, config)
     for ex in sat.circuit.exprs
         for o in ex.outputs
             @assert haskey(dict, o) "The output variable `$o` is not in the configuration"
-            dict[o] != evaluate(ex.expr, dict) && return false
+            dict[o] != evaluate(ex.expr, dict) && return 1  # this is the loss!
         end
     end
-    return true
+    return 0
 end

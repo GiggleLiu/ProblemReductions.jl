@@ -15,7 +15,12 @@ UnitDiskMapping = "1b61a8d9-79ed-4491-8266-ef37f39e1727"
 
 [compat]
 BitBasis = "0.9"
+DocStringExtensions = "0.9"
+Documenter = "1"
+GenericTensorNetworks = "2"
 Graphs = "1"
+MLStyle = "0.4"
+PrettyTables = "2"
 UnitDiskMapping = "0.3, 0.4"
 julia = "1.10"
 
