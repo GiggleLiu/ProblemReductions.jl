@@ -97,3 +97,4 @@ nflavor(::Type{GT}) where GT = length(flavors(GT))
 nflavor(::GT) where GT<:AbstractProblem = nflavor(GT)
 
 include("SpinGlass.jl")
+include("Circuit.jl")

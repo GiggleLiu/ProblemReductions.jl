@@ -1,10 +1,43 @@
-function reduceto(::Type{<:SpinGlass}, sat::CircuitSAT)
-    @assert is_cnf(sat) "SAT problem must be in CNF form"
-    for clause in sat.args
+"""
+$TYPEDEF
+
+The reduction result of a circuit to a spin glass problem.
+
+### Fields
+- `spinglass::SpinGlass{GT, T}`: the spin glass problem.
+- `variables::Vector{Symbol}`: the variables in the spin glass problem.
+"""
+struct ReductionCircuitToSpinGlass{GT, T}
+    spinglass::SpinGlass{GT, T}
+    variables::Vector{Symbol}
+end
+target_problem(res::ReductionCircuitToSpinGlass) = res.spinglass
+
+function reduceto(::Type{<:SpinGlass}, sat::Circuit)
+    ssa = ssa_form(sat)
+    all_variables = Symbol[]
+    modules = []
+    for assignment in ssa.exprs
+        gadget, variables = spinglass_gadget(assignment.expr)
+        variables[gadget.outputs] .= assignment.outputs
+        append!(all_variables, variables)
+        push!(modules, (gadget.sg, variables))
     end
+    unique!(all_variables)
+    indexof(v) = findfirst(==(v), all_variables)
+    sg = SpinGlass(HyperGraph(length(all_variables), Vector{Int}[]), Int[])
+    for (m, variables) in modules
+        add_sg!(sg, m, indexof.(variables))
+    end
+    return ReductionCircuitToSpinGlass(sg, all_variables)
 end
 
-function problem_reduction()
+function extract_solution(::Type{<:Circuit}, sg::ReductionCircuitToSpinGlass, sol)
+    dict = Dict{Symbol, Bool}()
+    for (v, s) in zip(sg.variables, sol)
+        dict[v] = s == 1
+    end
+    evaluate(sg.sg, dict)
 end
 
 # Ref:
@@ -59,25 +92,6 @@ function spinglass_gadget(::Val{:∨})
     add_edge!(g, 2, 3)
     sg = SpinGlass(g, [1, -2, -2], [-1, -1, 2])
     SGGadget(sg, [1, 2], [3])
-end
-
-function spinglass_circuit(sat::Circuit)
-    ssa = ssa_form(sat)
-    all_variables = Symbol[]
-    modules = []
-    for assignment in ssa.exprs
-        gadget, variables = spinglass_gadget(assignment.expr)
-        variables[gadget.outputs] .= assignment.outputs
-        append!(all_variables, variables)
-        push!(modules, (gadget.sg, variables))
-    end
-    unique!(all_variables)
-    indexof(v) = findfirst(==(v), all_variables)
-    sg = SpinGlass(HyperGraph(length(all_variables), Vector{Int}[]), Int[])
-    for (m, variables) in modules
-        add_sg!(sg, m, indexof.(variables))
-    end
-    return sg, all_variables
 end
 
 function spinglass_gadget(expr::BooleanExpr)

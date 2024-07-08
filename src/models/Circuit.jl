@@ -9,6 +9,13 @@ struct BooleanExpr
         new(head, args)
     end
 end
+function extract_symbols!(ex::BooleanExpr, vars::Vector{Symbol})
+    if ex.head == :var
+        push!(vars, ex.var)
+    else
+        map(v->extract_symbols!(v, vars), ex.args)
+    end
+end
 function booleans(n::Int)
     return BooleanExpr.(Symbol.(1:n))
 end
@@ -55,6 +62,10 @@ struct Assignment
 end
 Base.show(io::IO, x::Assignment) = print(io, join(string.(x.outputs), ", "), " = ", x.expr)
 Base.show(io::IO, ::MIME"text/plain", x::Assignment) = show(io, x)
+function extract_symbols!(ex::Assignment, vars::Vector{Symbol})
+    append!(vars, ex.outputs)
+    extract_symbols!(ex.expr, vars)
+end
 
 function evaluate!(exprs::Vector{Assignment}, dict::Dict{Symbol, Bool})
     for ex in exprs
@@ -79,6 +90,14 @@ function Base.show(io::IO, x::Circuit)
     end
 end
 Base.show(io::IO, ::MIME"text/plain", x::Circuit) = show(io, x)
+
+function symbols(c::Circuit)
+    vars = Symbol[]
+    for ex in c.exprs
+        extract_symbols!(ex, vars)
+    end
+    return unique!(vars)
+end
 
 function evaluate(c::Circuit, dict::Dict{Symbol, Bool})
     evaluate!(c.exprs, copy(dict))
@@ -138,4 +157,53 @@ function handle_assign!(new_exprs, ex::Assignment)
         end
     end
     push!(new_exprs, Assignment(ex.outputs, BooleanExpr(ex.expr.head, BooleanExpr.(newargs))))
+end
+
+# --------- CircuitSAT --------------
+"""
+$TYPEDEF
+
+Circuit satisfiability problem.
+
+### Fields
+- `circuit::Circuit`: The circuit expression in SSA form.
+- `symbols::Vector{Symbol}`: The variables in the circuit.
+"""
+struct CircuitSAT <: AbstractProblem
+    circuit::Circuit
+    symbols::Vector{Symbol}
+end
+function CircuitSAT(circuit::Circuit)
+    ssa = ssa_form(circuit)
+    vars = symbols(ssa)
+    CircuitSAT(ssa, vars)
+end
+
+# variables interface
+variables(c::CircuitSAT) = collect(1:length(c.symbols))
+flavors(::Type{<:CircuitSAT}) = [0, 1]
+
+# weights interface
+get_weights(sat::CircuitSAT, i::Int) = [0, 1]
+function terms(sat::CircuitSAT)
+    vmap = Dict(sat.symbols[i]=>i for i in 1:length(sat.symbols))
+    terms = Vector{Int}[]
+    for ex in sat.circuit.exprs
+        term = Symbol[]
+        extract_symbols!(ex, term)
+        push!(terms, map(v->vmap[v], term))
+    end
+    return terms
+end
+
+function evaluate(sat::CircuitSAT, config)
+    @assert length(config) == num_variables(sat)
+    dict = Dict(sat.symbols[i]=>config[i] for i in 1:length(sat.symbols))
+    for ex in sat.circuit.exprs
+        for o in ex.outputs
+            @assert haskey(dict, o) "The output variable `$o` is not in the configuration"
+            dict[o] != evaluate(ex.expr, dict) && return false
+        end
+    end
+    return true
 end

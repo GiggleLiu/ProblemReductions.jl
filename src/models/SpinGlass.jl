@@ -28,6 +28,8 @@ function spin_glass_from_matrix(M::AbstractMatrix, h::AbstractVector)
     J = [M[e.src, e.dst] for e in edges(g)]
     return SpinGlass(g, J, h)
 end
+
+# variables interface
 variables(gp::SpinGlass) = collect(1:nv(gp.graph))
 flavors(::Type{<:SpinGlass}) = [0, 1]
 

@@ -23,3 +23,18 @@ using ProblemReductions, Test
     res = ProblemReductions.evaluate(ssa, Dict(:x => true, :y => false, :z => false))
     @test res[:x] && !res[:y] && !res[:z] && !res[:c] && res[:d]
 end
+
+@testset "properties" begin
+    circuit = @circuit begin
+        c = x ∧ y
+        d = x ∨ (c ∧ ¬z)
+    end
+    sat = CircuitSAT(circuit)
+    @test sat.symbols[[1, 2, 3, 5, 7]] == [:c, :x, :y, :z, :d]
+    @test variables(sat) == collect(1:7)
+    @test num_variables(sat) == 7
+    @test terms(sat) == [[1, 2, 3], [4, 5], [6, 1, 4], [7, 2, 6]]
+    @test !evaluate(sat, [true, false, false, true, false, true, false])
+                          # c    x      y      ¬z     z    c ∧ ¬z   d
+    @test evaluate(sat, [false, false, false, true, false, false, false])
+end
