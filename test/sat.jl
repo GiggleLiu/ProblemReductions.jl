@@ -5,7 +5,7 @@ using ProblemReductions: BooleanExpr, booleans, is_literal, is_cnf, is_dnf
     a, b, c, d, e = booleans(5)
     @test a isa BooleanExpr
     @test a.head == :var
-    @test a.var == 1
+    @test a.var == Symbol(1)
     nota = ¬a
     @test is_literal(a)
     @test is_literal(¬a)
@@ -23,7 +23,7 @@ end
     a, b, c, d, e = booleans(5)
     expr = (a ∧ b) ∨ (c ∧ ¬e)
     d = Dict(a=>true, b=>true, c=>true, e=>false)
-    @test Base.eval(a, d)  == true
+    @test ProblemReductions.evaluate(a, d)  == true
     @test d[a] == true
-    @test Base.eval(expr, d) == true
+    @test ProblemReductions.evaluate(expr, d) == true
 end

@@ -32,6 +32,10 @@ is_dnf(x::BooleanExpr) = x.head == :∨ && all(a->(a.head == :∧ && all(is_lite
 
 Base.:(==)(x::BooleanExpr, y::BooleanExpr) = x.head == y.head && x.var == y.var && all(x.args .== y.args)
 Base.hash(x::BooleanExpr, h::UInt) = hash(x.head, hash(x.var, hash(x.args, h)))
+function evaluate(ex::BooleanExpr, dict::Dict{BooleanExpr, Bool})
+    @assert all(is_var, keys(dict))
+    evaluate(ex, Dict(k.var=>v for (k,v) in dict))
+end
 function evaluate(ex::BooleanExpr, dict::Dict{Symbol, Bool})
     if ex.head == :var
         return dict[ex.var]
