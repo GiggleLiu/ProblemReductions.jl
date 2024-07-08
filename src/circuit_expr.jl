@@ -86,12 +86,12 @@ function evaluate!(exprs::Vector{Assignment}, dict::Dict{Symbol, Bool})
 end
 
 macro circuit(ex)
-    analyse_circuit(ex)
+    render_circuit(ex)
 end
 
-function analyse_circuit(ex)
+function render_circuit(ex)
     @match ex begin
-        :(begin $(exs...) end) => Circuit(analyse_circuit.(filter(x->!(x isa LineNumberNode), exs)))
+        :(begin $(exs...) end) => Circuit(render_circuit.(filter(x->!(x isa LineNumberNode), exs)))
         :($(vars...) = $bex) => Assignment(Symbol[vars...], analyse_expr(bex))
         _ => error("Invalid circuit expression: $ex")
     end
@@ -102,4 +102,25 @@ function analyse_expr(bex)
         :($f($(args...))) => BooleanExpr(f, analyse_expr.(args))
         ::Symbol => BooleanExpr(bex)
     end
+end
+
+function ssa_form(c::Circuit)
+    new_exprs = Assignment[]
+    for ex in c.exprs
+        handle_assign!(new_exprs, ex)
+    end
+    return Circuit(new_exprs)
+end
+
+function handle_assign!(new_exprs, ex::Assignment)
+    newargs = map(ex.expr.args) do arg
+        if arg.head == :var
+            arg.var
+        else
+            out = gensym("var")
+            handle_assign!(new_exprs, Assignment([out], arg))
+            out
+        end
+    end
+    push!(new_exprs, Assignment(ex.outputs, BooleanExpr(ex.expr.head, BooleanExpr.(newargs))))
 end
