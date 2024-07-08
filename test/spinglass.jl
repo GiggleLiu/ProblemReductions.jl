@@ -69,7 +69,7 @@ end
 @testset "compose circuit" begin
     a, b, c, d, e = ProblemReductions.booleans(5)
     expr = (a ∧ ¬b)
-    gadget, variables = ProblemReductions.spinglass_circuit(expr)
+    gadget, variables = ProblemReductions.spinglass_gadget(expr)
     tb = truth_table(gadget; variables)
     @test tb[bit"00"] == bit"0"
     @test tb[bit"01"] == bit"1"
@@ -77,7 +77,7 @@ end
     @test tb[bit"11"] == bit"0"
 
     expr = (a ∧ b) ∨ (c ∧ ¬e)
-    gadget, variables = ProblemReductions.spinglass_circuit(expr)
+    gadget, variables = ProblemReductions.spinglass_gadget(expr)
     tb = truth_table(gadget; variables)
     @test tb.inputs == [a.var, b.var, c.var, e.var]
     @test tb[bit"0000"] == bit"0"
@@ -96,4 +96,16 @@ end
     @test tb[bit"1101"] == bit"0"
     @test tb[bit"1110"] == bit"0"
     @test tb[bit"1111"] == bit"1"
+end
+
+@testset "spinglass circuit" begin
+    circuit = @circuit begin
+        c = x ∧ y
+        d = x ∨ (c ∧ ¬z)
+    end
+    spinglass, variables = spinglass_circuit(circuit)
+    indexof(x) = findfirst(==(x), variables)
+    gadget = SGGadget(spinglass, indexof.([:x, :y, :z]), [indexof(:d)])
+    tb = truth_table(gadget; variables)
+    @test tb.values == vec([(x & y & (1-z)) | x for x in [0, 1], y in [0, 1], z in [0, 1]])
 end

@@ -92,12 +92,26 @@ function spinglass_gadget(::Val{:∨})
     SGGadget(sg, [1, 2], [3])
 end
 
-function spinglass_circuit(sat::BooleanExpr)
-    gadget, variables = spinglass_circuit!(sat)
-    return (; gadget, variables)
+function spinglass_circuit(sat::Circuit)
+    ssa = ssa_form(sat)
+    all_variables = Symbol[]
+    modules = []
+    for assignment in ssa.exprs
+        gadget, variables = spinglass_gadget(assignment.expr)
+        variables[gadget.outputs] .= assignment.outputs
+        append!(all_variables, variables)
+        push!(modules, (gadget.sg, variables))
+    end
+    unique!(all_variables)
+    indexof(v) = findfirst(==(v), all_variables)
+    sg = SpinGlass(HyperGraph(length(all_variables), Vector{Int}[]), Int[])
+    for (m, variables) in modules
+        add_sg!(sg, m, indexof.(variables))
+    end
+    return sg, all_variables
 end
 
-function spinglass_circuit!(expr::BooleanExpr)
+function spinglass_gadget(expr::BooleanExpr)
     modules = []
     inputs = Symbol[]
     middle = Symbol[]
@@ -108,7 +122,7 @@ function spinglass_circuit!(expr::BooleanExpr)
             push!(inputs, a.var)
             push!(all_variables, a.var)
         else
-            circ, variables = spinglass_circuit!(a)
+            circ, variables = spinglass_circuit(a)
             append!(all_variables, variables)
             push!(modules, (circ.sg, variables))
             append!(inputs, variables[circ.inputs])
