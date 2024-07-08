@@ -1,34 +1,3 @@
-"""
-$(TYPEDEF)
-    SpinGlass(graph::AbstractGraph, J, h=zeros(nv(graph)))
-
-The [spin-glass](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/SpinGlass/) problem.
-
-Positional arguments
--------------------------------
-* `graph` is a graph object.
-* `weights` are associated with the edges.
-"""
-struct SpinGlass{GT<:AbstractGraph, T} <: AbstractProblem
-    graph::GT
-    weights::Vector{T}
-    function SpinGlass(graph::AbstractGraph, weights::Vector{T}) where T
-        @assert length(weights) == ne(graph)
-        return new{typeof(graph), T}(graph, weights)
-    end
-end
-function SpinGlass(graph::SimpleGraph, J::Vector, h::Vector)
-    @assert length(J) == ne(graph) "length of J must be equal to the number of edges $(ne(graph)), got: $(length(J))"
-    @assert length(h) == nv(graph) "length of h must be equal to the number of vertices $(nv(graph)), got: $(length(h))"
-    SpinGlass(HyperGraph(nv(graph), Vector{Int}[[[src(e), dst(e)] for e in edges(graph)]..., [[i] for i in 1:nv(graph)]...]), [J..., h...])
-end
-function spin_glass_from_matrix(M::AbstractMatrix, h::AbstractVector)
-    g = SimpleGraph((!iszero).(M))
-    J = [M[e.src, e.dst] for e in edges(g)]
-    return SpinGlass(g, J, h)
-end
-nspin(g::SpinGlass) = nv(g.graph)
-
 function reduceto(::Type{<:SpinGlass}, sat::SATProblem)
     @assert is_cnf(sat) "SAT problem must be in CNF form"
     for clause in sat.args

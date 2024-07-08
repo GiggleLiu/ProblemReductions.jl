@@ -1,0 +1,1 @@
+include("spinglass_sat.jl")

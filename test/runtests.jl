@@ -6,12 +6,16 @@ using Documenter
     include("bitvector.jl")
 end
 
-@testset "sat" begin
-    include("sat.jl")
+@testset "models" begin
+    include("models/models.jl")
 end
 
-@testset "spinglass" begin
-    include("spinglass.jl")
+@testset "rules" begin
+    include("rules/rules.jl")
+end
+
+@testset "sat" begin
+    include("sat.jl")
 end
 
 @testset "topology" begin
