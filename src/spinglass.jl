@@ -92,35 +92,23 @@ function spinglass_gadget(::Val{:∨})
     SGGadget(sg, [1, 2], [3])
 end
 
-mutable struct IndexStore
-    N::Int
-    function IndexStore(N::Int=0)
-        new(N)
-    end
-end
-function newindex!(store::IndexStore)
-    store.N += 1
-    return store.N
-end
-
-function compose_circuit(sat::BooleanExpr)
-    store = IndexStore(maximum_var(sat))
-    gadget, variables = compose_circuit!(sat, store)
+function spinglass_circuit(sat::BooleanExpr)
+    gadget, variables = spinglass_circuit!(sat)
     return (; gadget, variables)
 end
 
-function compose_circuit!(expr::BooleanExpr, store::IndexStore)
+function spinglass_circuit!(expr::BooleanExpr)
     modules = []
-    inputs = Int[]
-    middle = Int[]
-    all_variables = Int[]
+    inputs = Symbol[]
+    middle = Symbol[]
+    all_variables = Symbol[]
     for a in expr.args
         if is_var(a)
             push!(middle, a.var)
             push!(inputs, a.var)
             push!(all_variables, a.var)
         else
-            circ, variables = compose_circuit!(a, store)
+            circ, variables = spinglass_circuit!(a)
             append!(all_variables, variables)
             push!(modules, (circ.sg, variables))
             append!(inputs, variables[circ.inputs])
@@ -129,18 +117,18 @@ function compose_circuit!(expr::BooleanExpr, store::IndexStore)
     end
     gadget_top = spinglass_gadget(expr.head)
     # map inputs
-    vmap = zeros(Int, nspin(gadget_top.sg))
+    vmap = Vector{Symbol}(undef, nspin(gadget_top.sg))
     vmap[gadget_top.inputs] .= middle
     # map outputs
-    outputs = Int[]
+    outputs = Symbol[]
     for v in gadget_top.outputs
-        vmap[v] = newindex!(store)
+        vmap[v] = gensym("spin")
         push!(outputs, vmap[v])
         push!(all_variables, vmap[v])
     end
     # map internal variables
     for v in setdiff(vertices(gadget_top.sg.graph), gadget_top.outputs ∪ gadget_top.inputs)
-        vmap[v] = newindex!(store)
+        vmap[v] = gensym("spin")
         push!(all_variables, vmap[v])
     end
     sg = SpinGlass(HyperGraph(length(all_variables), Vector{Int}[]), Int[])

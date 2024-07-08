@@ -69,7 +69,7 @@ end
 @testset "compose circuit" begin
     a, b, c, d, e = ProblemReductions.booleans(5)
     expr = (a ∧ ¬b)
-    gadget, variables = ProblemReductions.compose_circuit(expr)
+    gadget, variables = ProblemReductions.spinglass_circuit(expr)
     tb = truth_table(gadget; variables)
     @test tb[bit"00"] == bit"0"
     @test tb[bit"01"] == bit"1"
@@ -77,7 +77,7 @@ end
     @test tb[bit"11"] == bit"0"
 
     expr = (a ∧ b) ∨ (c ∧ ¬e)
-    gadget, variables = ProblemReductions.compose_circuit(expr)
+    gadget, variables = ProblemReductions.spinglass_circuit(expr)
     tb = truth_table(gadget; variables)
     @test tb.inputs == [a.var, b.var, c.var, e.var]
     @test tb[bit"0000"] == bit"0"
