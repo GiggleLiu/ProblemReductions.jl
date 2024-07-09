@@ -1,41 +1,48 @@
 """
-$(TYPEDEF)
-    SpinGlass(graph::AbstractGraph, J, h=zeros(nv(graph)))
+$TYPEDEF
 
-The [spin-glass](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/SpinGlass/) problem.
+The reduction result of a circuit to a spin glass problem.
 
-Positional arguments
--------------------------------
-* `graph` is a graph object.
-* `weights` are associated with the edges.
+### Fields
+- `spinglass::SpinGlass{GT, T}`: the spin glass problem.
+- `variables::Vector{Int}`: the variables in the spin glass problem.
 """
-struct SpinGlass{GT<:AbstractGraph, T} <: AbstractProblem
-    graph::GT
-    weights::Vector{T}
-    function SpinGlass(graph::AbstractGraph, weights::Vector{T}) where T
-        @assert length(weights) == ne(graph)
-        return new{typeof(graph), T}(graph, weights)
-    end
+struct ReductionCircuitToSpinGlass{GT, T}
+    num_source_vars::Int
+    spinglass::SpinGlass{GT, T}
+    variables::Vector{Int}
 end
-function SpinGlass(graph::SimpleGraph, J::Vector, h::Vector)
-    @assert length(J) == ne(graph) "length of J must be equal to the number of edges $(ne(graph)), got: $(length(J))"
-    @assert length(h) == nv(graph) "length of h must be equal to the number of vertices $(nv(graph)), got: $(length(h))"
-    SpinGlass(HyperGraph(nv(graph), Vector{Int}[[[src(e), dst(e)] for e in edges(graph)]..., [[i] for i in 1:nv(graph)]...]), [J..., h...])
-end
-function spin_glass_from_matrix(M::AbstractMatrix, h::AbstractVector)
-    g = SimpleGraph((!iszero).(M))
-    J = [M[e.src, e.dst] for e in edges(g)]
-    return SpinGlass(g, J, h)
-end
-nspin(g::SpinGlass) = nv(g.graph)
+target_problem(res::ReductionCircuitToSpinGlass) = res.spinglass
 
-function reduceto(::Type{<:SpinGlass}, sat::SATProblem)
-    @assert is_cnf(sat) "SAT problem must be in CNF form"
-    for clause in sat.args
+function reduceto(::Type{<:SpinGlass}, sat::CircuitSAT)
+    sg, all_variables = circuit2spinglass(sat.circuit)
+    return ReductionCircuitToSpinGlass(num_variables(sat), sg, [findfirst(==(v), sat.symbols) for v in all_variables])
+end
+function circuit2spinglass(c::Circuit)
+    ssa = ssa_form(c)
+    all_variables = Symbol[]
+    modules = []
+    for assignment in ssa.exprs
+        gadget, variables = expr_to_spinglass_gadget(assignment.expr)
+        variables[gadget.outputs] .= assignment.outputs
+        append!(all_variables, variables)
+        push!(modules, (gadget.sg, variables))
     end
+    unique!(all_variables)
+    indexof(v) = findfirst(==(v), all_variables)
+    sg = SpinGlass(HyperGraph(length(all_variables), Vector{Int}[]), Int[])
+    for (m, variables) in modules
+        add_sg!(sg, m, indexof.(variables))
+    end
+    return sg, all_variables
 end
 
-function problem_reduction()
+function extract_solution(res::ReductionCircuitToSpinGlass, sol)
+    out = zeros(eltype(sol), res.num_source_vars)
+    for (k, v) in enumerate(res.variables)
+        out[v] = sol[k]
+    end
+    return out
 end
 
 # Ref:
@@ -47,7 +54,7 @@ struct SGGadget{WT}
     outputs::Vector{Int}
 end
 function Base.show(io::IO, ga::SGGadget)
-    println(io, "SGGadget with $(nspin(ga.sg)) variables")
+    println(io, "SGGadget with $(num_variables(ga.sg)) variables")
     println(io, "Inputs: $(ga.inputs)")
     println(io, "Outputs: $(ga.outputs)")
     print(io, "H = ")
@@ -92,35 +99,18 @@ function spinglass_gadget(::Val{:∨})
     SGGadget(sg, [1, 2], [3])
 end
 
-mutable struct IndexStore
-    N::Int
-    function IndexStore(N::Int=0)
-        new(N)
-    end
-end
-function newindex!(store::IndexStore)
-    store.N += 1
-    return store.N
-end
-
-function compose_circuit(sat::BooleanExpr)
-    store = IndexStore(maximum_var(sat))
-    gadget, variables = compose_circuit!(sat, store)
-    return (; gadget, variables)
-end
-
-function compose_circuit!(expr::BooleanExpr, store::IndexStore)
+function expr_to_spinglass_gadget(expr::BooleanExpr)
     modules = []
-    inputs = Int[]
-    middle = Int[]
-    all_variables = Int[]
+    inputs = Symbol[]
+    middle = Symbol[]
+    all_variables = Symbol[]
     for a in expr.args
         if is_var(a)
             push!(middle, a.var)
             push!(inputs, a.var)
             push!(all_variables, a.var)
         else
-            circ, variables = compose_circuit!(a, store)
+            circ, variables = expr_to_spinglass_gadget(a)
             append!(all_variables, variables)
             push!(modules, (circ.sg, variables))
             append!(inputs, variables[circ.inputs])
@@ -129,18 +119,18 @@ function compose_circuit!(expr::BooleanExpr, store::IndexStore)
     end
     gadget_top = spinglass_gadget(expr.head)
     # map inputs
-    vmap = zeros(Int, nspin(gadget_top.sg))
+    vmap = Vector{Symbol}(undef, num_variables(gadget_top.sg))
     vmap[gadget_top.inputs] .= middle
     # map outputs
-    outputs = Int[]
+    outputs = Symbol[]
     for v in gadget_top.outputs
-        vmap[v] = newindex!(store)
+        vmap[v] = gensym("spin")
         push!(outputs, vmap[v])
         push!(all_variables, vmap[v])
     end
     # map internal variables
     for v in setdiff(vertices(gadget_top.sg.graph), gadget_top.outputs ∪ gadget_top.inputs)
-        vmap[v] = newindex!(store)
+        vmap[v] = gensym("spin")
         push!(all_variables, vmap[v])
     end
     sg = SpinGlass(HyperGraph(length(all_variables), Vector{Int}[]), Int[])
@@ -149,7 +139,7 @@ function compose_circuit!(expr::BooleanExpr, store::IndexStore)
         add_sg!(sg, m, indexof.(variables))
     end
     add_sg!(sg, gadget_top.sg, indexof.(vmap))
-    @assert nspin(sg) == length(all_variables)
+    @assert num_variables(sg) == length(all_variables)
     return SGGadget(sg, indexof.(inputs), indexof.(outputs)), all_variables
 end
 
@@ -181,7 +171,7 @@ function spinglass_gadget(::Val{:arraymul})
 end
 
 function add_sg!(sg::SpinGlass, g::SpinGlass, vmap::Vector{Int})
-    @assert length(vmap) == nspin(g) "length of vmap must be equal to the number of vertices $(nspin(g)), got: $(length(vmap))"
+    @assert length(vmap) == num_variables(g) "length of vmap must be equal to the number of vertices $(num_variables(g)), got: $(length(vmap))"
     mapped_edges = [map(x->vmap[x], clique) for clique in edges(g.graph)]
     for (clique, weight) in zip(mapped_edges, g.weights)
         add_clique!(sg, clique, weight)
@@ -251,4 +241,10 @@ function set_input!(ga::SGGadget, inputs::Vector{Int})
         add_clique!(ga.sg, [k], v == 1 ? 1 : -1)  # 1 for down, 0 for up
     end
     return ga
+end
+
+function truth_table(ga::SGGadget; variables=1:num_variables(ga.sg), solver=BruteForce())
+    res = findbest(ga.sg, solver)
+    dict = infer_logic(res, ga.inputs, ga.outputs)
+    return dict2table(variables[ga.inputs], variables[ga.outputs], dict)
 end

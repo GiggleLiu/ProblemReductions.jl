@@ -45,3 +45,21 @@ function Base.show(io::IO, tb::TruthTable)
 	pretty_table(io, entries; header=vcat(tb.inputs, tb.outputs))
 	return nothing
 end
+
+function infer_logic(configs, inputs::Vector{Int}, outputs::Vector{Int})
+    output = Dict{Vector{Int}, Vector{Int}}()
+    for c in configs
+        key = c[inputs]
+        if haskey(output, key)
+            @assert output[key] == max(output[key], c[outputs])
+        else
+            output[key] = c[outputs]
+        end
+    end
+    return output
+end
+function dict2table(inputs, outputs, d::Dict{Vector{Int}, Vector{Int}})
+    ni, no = length(inputs), length(outputs)
+    @assert length(d) == 2^ni
+    return TruthTable(inputs, outputs, [BitStr(d[[readbit(k, i) for i=1:ni]]) for k in 0:length(d)-1])
+end

@@ -15,6 +15,7 @@ struct HyperGraph <: Graphs.AbstractGraph{Int}
         new(n, cliques)
     end
 end
+Base.:(==)(a::HyperGraph, b::HyperGraph) = a.n == b.n && a.edges == b.edges
 Graphs.nv(h::HyperGraph) = h.n
 Graphs.vertices(h::HyperGraph) = 1:nv(h)
 Graphs.ne(h::HyperGraph) = length(h.edges)
@@ -34,6 +35,7 @@ struct UnitDiskGraph{D, T} <: Graphs.AbstractGraph{Int}
     locations::Vector{NTuple{D, T}}
     radius::T
 end
+Base.:(==)(a::UnitDiskGraph, b::UnitDiskGraph) = a.locations == b.locations && a.radius == b.radius
 Graphs.nv(g::UnitDiskGraph) = length(g.locations)
 Graphs.vertices(g::UnitDiskGraph) = 1:nv(g)
 Graphs.ne(g::UnitDiskGraph) = length(Graphs.edges(g))
@@ -60,6 +62,7 @@ struct GridGraph <: Graphs.AbstractGraph{Int}
     grid::BitMatrix
     radius::Float64
 end
+Base.:(==)(a::GridGraph, b::GridGraph) = a.grid == b.grid && a.radius == b.radius
 Graphs.nv(g::GridGraph) = sum(g.grid)
 Graphs.vertices(g::GridGraph) = 1:nv(g)
 Graphs.ne(g::GridGraph) = length(Graphs.edges(g))

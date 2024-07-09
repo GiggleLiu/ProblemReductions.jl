@@ -4,19 +4,29 @@ using Graphs, BitBasis
 using DocStringExtensions
 using PrettyTables
 using BitBasis
+using MLStyle
 
 export @bit_str
 export TruthTable
 export HyperGraph, UnitDiskGraph, GridGraph, PlanarGraph, SimpleGraph
 export @bv_str, StaticElementVector, StaticBitVector, statictrues, staticfalses, onehotv
-export Clause, booleans, ¬, ∨, ∧, ⊻, is_literal, is_cnf, is_dnf, compose_circuit
-export SpinGlass, spinglass_gadget, nspin
+export num_terms, num_variables, num_flavors, terms, variables, flavors, get_weights, chweights, evaluate
+
+# models
+export Circuit, Assignment, ssa_form, CircuitSAT, @circuit, booleans, ¬, ∨, ∧, ⊻, is_literal, is_cnf, is_dnf
+export SpinGlass, spinglass_gadget
+
+# rules
+export target_problem, AbstractReductionResult, reduceto, extract_solution
+export spinglass_circuit
+export findbest, BruteForce
 
 include("Core.jl")
 include("truth_table.jl")
 include("topology.jl")
 include("bitvector.jl")
-include("sat.jl")
-include("spinglass.jl")
+include("models/models.jl")
+include("rules/rules.jl")
+include("bruteforce.jl")
 
 end
