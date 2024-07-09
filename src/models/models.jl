@@ -5,21 +5,11 @@ The abstract base type of graph problems.
 """
 abstract type AbstractProblem end
 
-struct UnitWeight end
-Base.getindex(::UnitWeight, i) = 1
-Base.eltype(::UnitWeight) = Int
-
-struct ZeroWeight end
-Base.getindex(::ZeroWeight, i) = 0
-Base.eltype(::ZeroWeight) = Int
-
 ######## Interfaces for graph problems ##########
 """
     get_weights(problem::AbstractProblem[, i::Int]) -> Vector
 
-The weights for the `problem` or the weights for the degree of freedom specified by the `i`-th term if a second argument is provided.
-Weights are associated with [`terms`](@ref) in the graph problem.
-In graph polynomial, integer weights can be the exponents.
+Energies associated with [`terms`](@ref). Returns the weights for the `i`-th term if a second argument is provided.
 """
 function get_weights end
 get_weights(c::AbstractProblem) = map(i->get_weights(c, i), 1:num_terms(c))
@@ -28,16 +18,13 @@ get_weights(c::AbstractProblem) = map(i->get_weights(c, i), 1:num_terms(c))
     chweights(problem::AbstractProblem, weights) -> AbstractProblem
 
 Change the weights for the `problem` and return a new problem instance.
-Weights are associated with [`terms`](@ref) in the graph problem.
-In graph polynomial, integer weights can be the exponents.
 """
 function chweights end
 
 """
     variables(problem::AbstractProblem) -> Vector
 
-The variables of a problem is defined as the degrees of freedoms in the graph problem.
-e.g. for the maximum independent set problems, they are the indices of vertices: 1, 2, 3...,
+The degrees of freedoms in the graph problem. e.g. for the maximum independent set problems, they are the indices of vertices: 1, 2, 3...,
 while for the max cut problem, they are the edges.
 """
 function variables end
@@ -64,37 +51,40 @@ The number of terms in the graph problem.
 num_terms(c::AbstractProblem) = length(terms(c))
 
 """
-    local_energy(problem::AbstractProblem[, i::Int]) -> Vector
+    weight_type(problem::AbstractProblem) -> Type
 
-The local energy( of the `i`-th term) in the graph problem.
+The data type of the weights in the graph problem.
 """
-function local_energy end
-local_energy(c::AbstractProblem) = map(i->local_energy(c, i), 1:num_terms(c))
-
-"""
-    energy_type(problem::AbstractProblem) -> Type
-
-The energy type of the graph problem.
-"""
-energy_type(gp::AbstractProblem) = eltype(eltype(get_weights(gp)))
+weight_type(gp::AbstractProblem) = eltype(eltype(get_weights(gp)))
 
 """
     flavors(::Type{<:AbstractProblem}) -> Vector
 
-It returns a vector of integers as the flavors of a degree of freedom.
-Its size is the same as the degree of freedom on a single vertex/edge.
+Returns a vector of integers as the flavors (domain) of a degree of freedom.
 """
 flavors(::GT) where GT<:AbstractProblem = flavors(GT)
+
+"""
+    num_flavors(::Type{<:AbstractProblem}) -> Int
+
+Returns the number of flavors (domain) of a degree of freedom.
+"""
 num_flavors(::GT) where GT<:AbstractProblem = length(flavors(GT))
 
 """
-    nflavor(::Type{<:AbstractProblem}) -> Int
-    nflavor(::GT) where GT<:AbstractProblem -> Int
+    evaluate(problem::AbstractProblem, config) -> Real
 
-Bond size is equal to the number of flavors.
+Evaluate the energy of the `problem` given the configuration `config`.
+The lower the energy, the better the configuration.
 """
-nflavor(::Type{GT}) where GT = length(flavors(GT))
-nflavor(::GT) where GT<:AbstractProblem = nflavor(GT)
+function evaluate end
+
+"""
+    findbest(problem::AbstractProblem, method) -> Vector
+
+Find the best configurations of the `problem` using the `method`.
+"""
+function findbest end
 
 include("SpinGlass.jl")
 include("Circuit.jl")

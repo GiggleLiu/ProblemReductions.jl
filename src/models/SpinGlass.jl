@@ -44,8 +44,8 @@ function evaluate(sg::SpinGlass, config)
 end
 
 """
-    spinglass_energy(g::SimpleGraph, config; J, h=ZeroWeight())
-    spinglass_energy(cliques::AbstractVector{Vector{Int}}, config; weights=UnitWeight())
+    spinglass_energy(g::SimpleGraph, config; J, h)
+    spinglass_energy(cliques::AbstractVector{Vector{Int}}, config; weights)
 
 Compute the spin glass state energy for the vertex configuration `config`.
 In the configuration, the spin ↑ is mapped to configuration 0, while spin ↓ is mapped to configuration 1.
@@ -61,7 +61,7 @@ H = \\sum_{c \\in C} w_c \\prod_{i \\in c} s_i,
 ```
 where ``C`` is the set of cliques, and ``w_c`` is the weight of the clique ``c``.
 """
-function spinglass_energy(cliques::AbstractVector{Vector{Int}}, config; weights=UnitWeight())::Real
+function spinglass_energy(cliques::AbstractVector{Vector{Int}}, config; weights)::Real
     size = zero(eltype(weights))
     @assert all(x->x == 0 || x == 1, config)
     s = 1 .- 2 .* Int.(config)  # 0 -> spin 1, 1 -> spin -1
@@ -70,7 +70,7 @@ function spinglass_energy(cliques::AbstractVector{Vector{Int}}, config; weights=
     end
     return size
 end
-function spinglass_energy(g::SimpleGraph, config; J, h=ZeroWeight())
+function spinglass_energy(g::SimpleGraph, config; J, h)
     eng = zero(promote_type(eltype(J), eltype(h)))
     # NOTE: cast to Int to avoid using unsigned :nt
     s = 1 .- 2 .* Int.(config)  # 0 -> spin 1, 1 -> spin -1

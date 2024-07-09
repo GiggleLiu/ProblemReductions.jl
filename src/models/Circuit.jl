@@ -83,10 +83,12 @@ end
 
 function Base.show(io::IO, x::Circuit)
     println(io, "Circuit:")
-    for i in 1:length(x.exprs)
-        ex = x.exprs[i]
+    print_statements(io, x.exprs)
+end
+function print_statements(io::IO, exprs)
+    for (i, ex) in enumerate(exprs)
         print(io, "| ", ex)
-        i < length(x.exprs) && println(io)
+        i < length(exprs) && println(io)
     end
 end
 Base.show(io::IO, ::MIME"text/plain", x::Circuit) = show(io, x)
@@ -163,7 +165,7 @@ end
 """
 $TYPEDEF
 
-Circuit satisfiability problem.
+Circuit satisfiability problem, where the goal is to find an assignment that satisfies the circuit.
 
 ### Fields
 - `circuit::Circuit`: The circuit expression in SSA form.
@@ -178,6 +180,13 @@ function CircuitSAT(circuit::Circuit)
     vars = symbols(ssa)
     CircuitSAT(ssa, vars)
 end
+function Base.show(io::IO, x::CircuitSAT)
+    println(io, "CircuitSAT:")
+    print_statements(io, x.circuit.exprs)
+    println(io)
+    print(io, "Symbols: ", x.symbols)
+end
+Base.show(io::IO, ::MIME"text/plain", x::CircuitSAT) = show(io, x)
 
 # variables interface
 variables(c::CircuitSAT) = collect(1:length(c.symbols))
