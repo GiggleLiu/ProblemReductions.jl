@@ -15,7 +15,12 @@ makedocs(;
     doctest = ("doctest=true" in ARGS),
     pages=[
         "Home" => "index.md",
-        "Interfaces" => ["models.md"],
+        "Interfaces" => ["models.md", "rules.md"],
+        "Models" => [
+            "models/CircuitSAT.md",
+            "models/SpinGlass.md"
+        ],
+        "Reference" => "ref.md",
     ],
 )
 

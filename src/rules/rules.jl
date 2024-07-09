@@ -1,3 +1,8 @@
+"""
+$TYPEDEF
+
+The base type for a reduction result.
+"""
 abstract type AbstractReductionResult end
 
 """
@@ -20,14 +25,13 @@ Returns an instance of `AbstractReductionResult`.
 function reduceto end
 
 """
-    extract_solution(::Type{TA}, y::AbstractProblem, sol)
+    extract_solution(reduction::AbstractReductionResult, solution)
 
-Extract the solution `sol` of the target problem of type `TA` to the original problem `y`.
+Extract the solution `solution` of the target problem to the original problem.
 
 ### Arguments
-- `TA`: The target problem type.
-- `y`: The original problem.
-- `sol`: The solution of the target problem.
+- `reduction`: The reduction result.
+- `solution`: The solution of the target problem.
 """
 function extract_solution end
 

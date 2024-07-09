@@ -1,3 +1,8 @@
+"""
+    BruteForce
+
+A brute force method to find the best configuration of a problem.
+"""
 struct BruteForce end
 
 function findbest(problem::AbstractProblem, method::BruteForce)

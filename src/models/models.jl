@@ -71,5 +71,20 @@ Returns the number of flavors (domain) of a degree of freedom.
 """
 num_flavors(::GT) where GT<:AbstractProblem = length(flavors(GT))
 
+"""
+    evaluate(problem::AbstractProblem, config) -> Real
+
+Evaluate the energy of the `problem` given the configuration `config`.
+The lower the energy, the better the configuration.
+"""
+function evaluate end
+
+"""
+    findbest(problem::AbstractProblem, method) -> Vector
+
+Find the best configurations of the `problem` using the `method`.
+"""
+function findbest end
+
 include("SpinGlass.jl")
 include("Circuit.jl")
