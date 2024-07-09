@@ -7,19 +7,18 @@ abstract type AbstractProblem end
 
 ######## Interfaces for graph problems ##########
 """
-    get_weights(problem::AbstractProblem[, i::Int]) -> Vector
+    parameters(problem::AbstractProblem) -> Vector
 
-Energies associated with [`terms`](@ref). Returns the weights for the `i`-th term if a second argument is provided.
+Parameters associated with [`terms`](@ref).
 """
-function get_weights end
-get_weights(c::AbstractProblem) = map(i->get_weights(c, i), 1:num_terms(c))
+function parameters end
 
 """
-    chweights(problem::AbstractProblem, weights) -> AbstractProblem
+    set_parameters(problem::AbstractProblem, parameters) -> AbstractProblem
 
-Change the weights for the `problem` and return a new problem instance.
+Change the parameters for the `problem` and return a new problem instance.
 """
-function chweights end
+function set_parameters end
 
 """
     variables(problem::AbstractProblem) -> Vector
@@ -51,11 +50,11 @@ The number of terms in the graph problem.
 num_terms(c::AbstractProblem) = length(terms(c))
 
 """
-    weight_type(problem::AbstractProblem) -> Type
+    parameter_type(problem::AbstractProblem) -> Type
 
-The data type of the weights in the graph problem.
+The data type of the parameters in the graph problem.
 """
-weight_type(gp::AbstractProblem) = eltype(eltype(get_weights(gp)))
+parameter_type(gp::AbstractProblem) = eltype(parameters(gp))
 
 """
     flavors(::Type{<:AbstractProblem}) -> Vector

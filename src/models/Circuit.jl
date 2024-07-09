@@ -192,8 +192,8 @@ Base.show(io::IO, ::MIME"text/plain", x::CircuitSAT) = show(io, x)
 variables(c::CircuitSAT) = collect(1:length(c.symbols))
 flavors(::Type{<:CircuitSAT}) = [0, 1]
 
-# weights interface
-get_weights(sat::CircuitSAT, i::Int) = [0, 1]
+# parameters interface
+parameters(sat::CircuitSAT) = Int[]
 function terms(sat::CircuitSAT)
     vmap = Dict(sat.symbols[i]=>i for i in 1:length(sat.symbols))
     terms = Vector{Int}[]

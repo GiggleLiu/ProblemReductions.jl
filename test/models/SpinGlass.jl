@@ -14,11 +14,10 @@ using ProblemReductions, Test, Graphs
     @test flavors(sg) == [0, 1]
     @test num_flavors(sg) == 2
 
-    # weights
+    # parameters
     @test num_terms(sg) == 6
-    @test get_weights(sg) == [[-1, 1], [2, -2], [2, -2], [-1, 1], [-1, 1], [2, -2]]
-    @test chweights(sg, [1, 2, 2, -1, -1, -2]) == SpinGlass(g, [1, 2, 2], [-1, -1, -2])
-    @test get_weights(sg, 1) == [-1, 1]
+    @test parameters(sg) == [1, -2, -2, 1, 1, -2]
+    @test set_parameters(sg, [1, 2, 2, -1, -1, -2]) == SpinGlass(g, [1, 2, 2], [-1, -1, -2])
 
     @test evaluate(sg, [0, 0, 0]) == -3
     configs = findbest(sg, BruteForce())

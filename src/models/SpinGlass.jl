@@ -34,8 +34,8 @@ variables(gp::SpinGlass) = collect(1:nv(gp.graph))
 flavors(::Type{<:SpinGlass}) = [0, 1]
 
 # weights interface
-get_weights(gp::SpinGlass, i::Int) = [-gp.weights[i], gp.weights[i]]
-chweights(c::SpinGlass, weights) = SpinGlass(c.graph, weights)
+parameters(gp::SpinGlass) = gp.weights
+set_parameters(c::SpinGlass, weights) = SpinGlass(c.graph, weights)
 terms(gp::SpinGlass) = edges(gp.graph)
 
 function evaluate(sg::SpinGlass, config)
