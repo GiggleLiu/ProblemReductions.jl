@@ -1,5 +1,4 @@
 using Test, ProblemReductions
-import GenericTensorNetworks
 using ProblemReductions: SGGadget, spinglass_gadget, SpinGlass, truth_table
 using ProblemReductions.BitBasis
 
