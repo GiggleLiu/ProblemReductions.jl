@@ -21,7 +21,6 @@ export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extra
 export spinglass_circuit
 export findbest, BruteForce
 
-include("Core.jl")
 include("truth_table.jl")
 include("topology.jl")
 include("bitvector.jl")

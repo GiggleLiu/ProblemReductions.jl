@@ -14,10 +14,6 @@ end
     include("rules/rules.jl")
 end
 
-@testset "sat" begin
-    include("sat.jl")
-end
-
 @testset "topology" begin
     include("topology.jl")
 end
