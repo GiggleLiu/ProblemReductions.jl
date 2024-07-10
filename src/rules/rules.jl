@@ -25,6 +25,17 @@ Returns an instance of `AbstractReductionResult`.
 function reduceto end
 
 """
+    reduction_complexity(::Type{TA}, x::AbstractProblem) -> Int
+
+The complexity of the reduction from the original problem to the target problem.
+
+### Arguments
+- `TA`: The target problem type.
+- `x`: The original problem.
+"""
+function reduction_complexity end
+
+"""
     extract_solution(reduction::AbstractReductionResult, solution)
 
 Extract the solution `solution` of the target problem to the original problem.

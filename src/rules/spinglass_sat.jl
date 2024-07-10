@@ -18,6 +18,7 @@ function reduceto(::Type{<:SpinGlass}, sat::CircuitSAT)
     sg, all_variables = circuit2spinglass(sat.circuit)
     return ReductionCircuitToSpinGlass(num_variables(sat), sg, [findfirst(==(v), sat.symbols) for v in all_variables])
 end
+
 function circuit2spinglass(c::Circuit)
     ssa = ssa_form(c)
     all_variables = Symbol[]
