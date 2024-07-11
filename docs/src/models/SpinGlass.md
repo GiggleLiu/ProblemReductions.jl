@@ -1,2 +1,33 @@
 # Spin Glass
 
+Spin Glass is a type of disordered magnetic system that exhibits a glassy behavior. The Hamiltonian of the system on a simple graph $G$ is given by
+```math
+H(G, \sigma) = \sum_{(i,j) \in E(G)} J_{ij} \sigma_i \sigma_j
+```
+where $J_{ij}$ is the coupling strength between spins $i$ and $j$ and $\sigma_i$ is the spin variable that can take values in $\{-1, 1\}$.
+
+This definition naturally extends to the case of a [`HyperGraph`](@ref).
+
+## Interfaces
+
+To define a [`SpinGlass`](@ref) problem, we need to specify the graph, the coupling strength $J_{ij}$, and possibly the external field $h_i$ for each spin $i$.
+
+```@repl spinglass
+using ProblemReductions, Graphs
+
+graph = smallgraph(:petersen)
+J = rand([1, -1], ne(graph))  # coupling strength
+h = rand([1, -1], nv(graph))  # external field
+spinglass = SpinGlass(graph, J, h)  # Define a spin glass problem
+```
+Here, we also define an external field $h_i$ for each spin $i$. The resulting spin glass problem is defined on a [`HyperGraph`](@ref), where external fields are associated with hyperedges connecting single spins.
+
+
+The required functions, [`variables`](@ref), [`flavors`](@ref), and [`evaluate`](@ref), and optional functions, [`findbest`](@ref), are implemented for the spin glass problem.
+
+```@repl spinglass
+variables(spinglass)  # degrees of freedom
+flavors(spinglass)  # flavors of the spins
+evaluate(spinglass, [0, 1, 1, 0, 1, 1, 1, 0, 0, 1])  # energy of a configuration
+findbest(spinglass, BruteForce())  # solve the problem with brute force
+```
