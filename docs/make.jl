@@ -20,6 +20,9 @@ makedocs(;
             "models/CircuitSAT.md",
             "models/SpinGlass.md"
         ],
+        "Rules" => [
+            "rules/spinglass_sat.md",
+        ],
         "Reference" => "ref.md",
     ],
 )

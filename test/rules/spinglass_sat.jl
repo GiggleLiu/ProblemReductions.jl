@@ -1,19 +1,19 @@
 using Test, ProblemReductions
-using ProblemReductions: SGGadget, spinglass_gadget, SpinGlass, truth_table
+using ProblemReductions: spinglass_gadget, SpinGlass, truth_table
 using ProblemReductions.BitBasis
 
 @testset "gates" begin
-    res = findbest(spinglass_gadget(:∧).sg, BruteForce())
+    res = findbest(spinglass_gadget(:∧).problem, BruteForce())
     @test collect.(sort(res)) == [[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 1]]
     tt = truth_table(spinglass_gadget(:∧))
     @test length(tt) == 4
     @test tt[bit"00"] == tt[bit"01"] == tt[bit"10"] == bit"0"
     @test tt[bit"11"] == bit"1"
 
-    res = findbest(spinglass_gadget(:∨).sg, BruteForce())
+    res = findbest(spinglass_gadget(:∨).problem, BruteForce())
     @test collect.(sort(res)) == [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]
 
-    res = findbest(spinglass_gadget(:¬).sg, BruteForce())
+    res = findbest(spinglass_gadget(:¬).problem, BruteForce())
     @test collect.(sort(res)) == [[0, 1], [1, 0]]
 end
 
@@ -31,11 +31,11 @@ end
 
 @testset "arraymul compose" begin
     arr = ProblemReductions.compose_multiplier(2, 2)
-    @test num_variables(arr.sg) == 20
+    @test num_variables(arr.problem) == 20
     tt = truth_table(arr)
     @test length(tt) == 16
     ProblemReductions.set_input!(arr, [0, 1, 0, 1])  # 2 x 2 == 4
-    res = findbest(arr.sg, BruteForce())
+    res = findbest(arr.problem, BruteForce())
     @test ProblemReductions.infer_logic(res, arr.inputs, arr.outputs) == Dict([0, 1, 0, 1] => [0, 0, 1, 0])
 end
 
@@ -78,7 +78,7 @@ end
     end
     sg, variables = ProblemReductions.circuit2spinglass(circuit)
     indexof(x) = findfirst(==(x), variables)
-    gadget = SGGadget(sg, indexof.([:x, :y, :z]), [indexof(:d)])
+    gadget = LogicGadget(sg, indexof.([:x, :y, :z]), [indexof(:d)])
     tb = truth_table(gadget; variables)
     @test tb.values == vec([(x & y & (1-z)) | x for x in [0, 1], y in [0, 1], z in [0, 1]])
 end

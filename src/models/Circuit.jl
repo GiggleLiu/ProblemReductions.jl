@@ -77,6 +77,14 @@ function evaluate!(exprs::Vector{Assignment}, dict::Dict{Symbol, Bool})
 end
 
 # --------- Circuit --------------
+"""
+$TYPEDEF
+
+A circuit expression is a sequence of assignments.
+
+### Fields
+- `exprs::Vector{Assignment}`: The assignments in the circuit.
+"""
 struct Circuit
     exprs::Vector{Assignment}
 end

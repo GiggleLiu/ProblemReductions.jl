@@ -27,7 +27,7 @@ function circuit2spinglass(c::Circuit)
         gadget, variables = expr_to_spinglass_gadget(assignment.expr)
         variables[gadget.outputs] .= assignment.outputs
         append!(all_variables, variables)
-        push!(modules, (gadget.sg, variables))
+        push!(modules, (gadget.problem, variables))
     end
     unique!(all_variables)
     indexof(v) = findfirst(==(v), all_variables)
@@ -49,24 +49,18 @@ end
 # Ref:
 # - https://support.dwavesys.com/hc/en-us/community/posts/1500000470701-What-are-the-cost-function-for-NAND-and-NOR-gates
 # - https://journals.aps.org/prxquantum/abstract/10.1103/PRXQuantum.4.010316
-struct SGGadget{WT}
-    sg::SpinGlass{WT}
+struct LogicGadget{PT<:AbstractProblem}
+    problem::PT
     inputs::Vector{Int}
     outputs::Vector{Int}
 end
-function Base.show(io::IO, ga::SGGadget)
-    println(io, "SGGadget with $(num_variables(ga.sg)) variables")
-    println(io, "Inputs: $(ga.inputs)")
-    println(io, "Outputs: $(ga.outputs)")
-    print(io, "H = ")
-    for (k, c) in enumerate(edges(ga.sg.graph))
-        w = ga.sg.weights[k]
-        iszero(w) && continue
-        k == 1 || print(io, w >= 0 ? " + " : " - ")
-        print(io, abs(w), "*", join(["s$ci" for ci in c], ""))
-    end
+function Base.show(io::IO, ga::LogicGadget)
+    println(io, "LogicGadget:")
+    println(io, "| Problem: $(ga.problem)")
+    println(io, "| Inputs: $(ga.inputs)")
+    println(io, "| Outputs: $(ga.outputs)")
 end
-Base.show(io::IO, ::MIME"text/plain", ga::SGGadget) = show(io, ga)
+Base.show(io::IO, ::MIME"text/plain", ga::LogicGadget) = show(io, ga)
 
 spinglass_gadget(s::Symbol) = spinglass_gadget(Val(s))
 function spinglass_gadget(::Val{:∧})
@@ -75,20 +69,20 @@ function spinglass_gadget(::Val{:∧})
     add_edge!(g, 1, 3)
     add_edge!(g, 2, 3)
     sg = SpinGlass(g, [1, -2, -2], [1, 1, -2])
-    SGGadget(sg, [1, 2], [3])
+    LogicGadget(sg, [1, 2], [3])
 end
 
 function spinglass_gadget(::Val{:set0})
     g = SimpleGraph(1)
     sg = SpinGlass(g, Int[], [-1])
-    SGGadget(sg, Int[], [1])
+    LogicGadget(sg, Int[], [1])
 end
 
 function spinglass_gadget(::Val{:¬})
     g = SimpleGraph(2)
     add_edge!(g, 1, 2)
     sg = SpinGlass(g, [1], [0, 0])
-    SGGadget(sg, [1], [2])
+    LogicGadget(sg, [1], [2])
 end
 
 function spinglass_gadget(::Val{:∨})
@@ -97,7 +91,7 @@ function spinglass_gadget(::Val{:∨})
     add_edge!(g, 1, 3)
     add_edge!(g, 2, 3)
     sg = SpinGlass(g, [1, -2, -2], [-1, -1, 2])
-    SGGadget(sg, [1, 2], [3])
+    LogicGadget(sg, [1, 2], [3])
 end
 
 function expr_to_spinglass_gadget(expr::BooleanExpr)
@@ -113,14 +107,14 @@ function expr_to_spinglass_gadget(expr::BooleanExpr)
         else
             circ, variables = expr_to_spinglass_gadget(a)
             append!(all_variables, variables)
-            push!(modules, (circ.sg, variables))
+            push!(modules, (circ.problem, variables))
             append!(inputs, variables[circ.inputs])
             append!(middle, variables[circ.outputs])
         end
     end
     gadget_top = spinglass_gadget(expr.head)
     # map inputs
-    vmap = Vector{Symbol}(undef, num_variables(gadget_top.sg))
+    vmap = Vector{Symbol}(undef, num_variables(gadget_top.problem))
     vmap[gadget_top.inputs] .= middle
     # map outputs
     outputs = Symbol[]
@@ -130,7 +124,7 @@ function expr_to_spinglass_gadget(expr::BooleanExpr)
         push!(all_variables, vmap[v])
     end
     # map internal variables
-    for v in setdiff(vertices(gadget_top.sg.graph), gadget_top.outputs ∪ gadget_top.inputs)
+    for v in setdiff(vertices(gadget_top.problem.graph), gadget_top.outputs ∪ gadget_top.inputs)
         vmap[v] = gensym("spin")
         push!(all_variables, vmap[v])
     end
@@ -139,9 +133,9 @@ function expr_to_spinglass_gadget(expr::BooleanExpr)
     for (m, variables) in modules
         add_sg!(sg, m, indexof.(variables))
     end
-    add_sg!(sg, gadget_top.sg, indexof.(vmap))
+    add_sg!(sg, gadget_top.problem, indexof.(vmap))
     @assert num_variables(sg) == length(all_variables)
-    return SGGadget(sg, indexof.(inputs), indexof.(outputs)), all_variables
+    return LogicGadget(sg, indexof.(inputs), indexof.(outputs)), all_variables
 end
 
 """
@@ -162,13 +156,13 @@ The array multiplier gadget.
 """
 function spinglass_gadget(::Val{:arraymul})
     sg = SpinGlass(HyperGraph(7, Vector{Int}[]), Int[])
-    add_sg!(sg, spinglass_gadget(Val(:∧)).sg, [1, 2, 3])
+    add_sg!(sg, spinglass_gadget(Val(:∧)).problem, [1, 2, 3])
     for (clique, weight) in [[6, 7] => 2, [6, 3]=>-2, [6, 4]=>-2, [6, 5]=>-2,
                     [7, 3]=>-1, [7, 4]=>-1, [7, 5]=>-1,
                     [3, 4]=>1, [3, 5]=>1, [4, 5]=>1]
         add_clique!(sg, clique, weight)
     end
-    return SGGadget(sg, [1, 2, 4, 5], [6, 7])
+    return LogicGadget(sg, [1, 2, 4, 5], [6, 7])
 end
 
 function add_sg!(sg::SpinGlass, g::SpinGlass, vmap::Vector{Int})
@@ -199,7 +193,7 @@ function _add_edge!(g::HyperGraph, c::Vector{Int})
 end
 
 function compose_multiplier(m::Int, n::Int)
-    component = spinglass_gadget(Val(:arraymul)).sg
+    component = spinglass_gadget(Val(:arraymul)).problem
     sg = deepcopy(component)
     modules = []
     N = 0
@@ -208,11 +202,11 @@ function compose_multiplier(m::Int, n::Int)
     q = [newindex!() for _ = 1:n]
     out = Int[]
     spre = [newindex!() for _ = 1:m]
-    for s in spre push!(modules, [spinglass_gadget(:set0).sg, [s]]) end
+    for s in spre push!(modules, [spinglass_gadget(:set0).problem, [s]]) end
     for j = 1:n
         s = [newindex!() for _ = 1:m]
         cpre = newindex!()
-        push!(modules, [spinglass_gadget(:set0).sg, [cpre]])
+        push!(modules, [spinglass_gadget(:set0).problem, [cpre]])
         for i = 1:m
             c = newindex!()
             pins = [p[i], q[j], newindex!(), cpre, spre[i], c, s[i]]
@@ -233,19 +227,19 @@ function compose_multiplier(m::Int, n::Int)
     for (m, pins) in modules
         add_sg!(sg, m, pins)
     end
-    return SGGadget(sg, [p..., q...], out)
+    return LogicGadget(sg, [p..., q...], out)
 end
 
-function set_input!(ga::SGGadget, inputs::Vector{Int})
+function set_input!(ga::LogicGadget, inputs::Vector{Int})
     @assert length(inputs) == length(ga.inputs)
     for (k, v) in zip(ga.inputs, inputs)
-        add_clique!(ga.sg, [k], v == 1 ? 1 : -1)  # 1 for down, 0 for up
+        add_clique!(ga.problem, [k], v == 1 ? 1 : -1)  # 1 for down, 0 for up
     end
     return ga
 end
 
-function truth_table(ga::SGGadget; variables=1:num_variables(ga.sg), solver=BruteForce())
-    res = findbest(ga.sg, solver)
+function truth_table(ga::LogicGadget; variables=1:num_variables(ga.problem), solver=BruteForce())
+    res = findbest(ga.problem, solver)
     dict = infer_logic(res, ga.inputs, ga.outputs)
     return dict2table(variables[ga.inputs], variables[ga.outputs], dict)
 end
