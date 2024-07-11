@@ -46,9 +46,20 @@ function extract_solution(res::ReductionCircuitToSpinGlass, sol)
     return out
 end
 
-# Ref:
-# - https://support.dwavesys.com/hc/en-us/community/posts/1500000470701-What-are-the-cost-function-for-NAND-and-NOR-gates
-# - https://journals.aps.org/prxquantum/abstract/10.1103/PRXQuantum.4.010316
+"""
+$TYPEDEF
+
+The logic gadget defined on an computational model.
+
+### Fields
+- `problem::PT`: the computational model, e.g., `SpinGlass`.
+- `inputs::Vector{Int}`: the input variables.
+- `outputs::Vector{Int}`: the output variables.
+
+### References
+- [What are the cost function for NAND and NOR gates?](https://support.dwavesys.com/hc/en-us/community/posts/1500000470701-What-are-the-cost-function-for-NAND-and-NOR-gates)
+- Nguyen, M.-T., Liu, J.-G., Wurtz, J., Lukin, M.D., Wang, S.-T., Pichler, H., 2023. Quantum Optimization with Arbitrary Connectivity Using Rydberg Atom Arrays. [PRX Quantum 4, 010316.](https://doi.org/10.1103/PRXQuantum.4.010316)
+"""
 struct LogicGadget{PT<:AbstractProblem}
     problem::PT
     inputs::Vector{Int}
@@ -238,6 +249,18 @@ function set_input!(ga::LogicGadget, inputs::Vector{Int})
     return ga
 end
 
+"""
+    truth_table(ga::LogicGadget; variables=1:num_variables(ga.problem), solver=BruteForce())
+
+Compute the truth table of a logic gadget.
+
+### Arguments
+- `ga::LogicGadget`: the logic gadget.
+
+### Keyword Arguments
+- `variables::Vector{Int}`: the variables to be displayed.
+- `solver::AbstractSolver`: the solver to be used.
+"""
 function truth_table(ga::LogicGadget; variables=1:num_variables(ga.problem), solver=BruteForce())
     res = findbest(ga.problem, solver)
     dict = infer_logic(res, ga.inputs, ga.outputs)

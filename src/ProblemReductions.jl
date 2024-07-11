@@ -18,7 +18,7 @@ export SpinGlass, spinglass_gadget
 
 # rules
 export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, reduction_complexity
-export LogicGadget
+export LogicGadget, truth_table
 export spinglass_circuit, ReductionCircuitToSpinGlass
 export findbest, BruteForce
 
