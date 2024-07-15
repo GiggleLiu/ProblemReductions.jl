@@ -41,7 +41,7 @@ function evaluate(c::Coloring, config)
     coloring_energy(terms(c), config)
 end
 
-coloring_energy(terms::AbstractVector, config) = sum([config[e[1]] == config[e[2]] for e in terms])
+coloring_energy(terms::AbstractVector, weights, config) = sum([(config[e[1]] == config[e[2]]) * w for (e, w) in zip(terms, weights)])
 
 
 
