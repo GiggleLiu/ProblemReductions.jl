@@ -18,10 +18,10 @@ struct Coloring{K, WT<:Union{UnitWeight, Vector}} <:AbstractProblem
     end
 end
 
-variables(gp::Coloring) = collect(1:nv(gp.graph))
+variables(gp::Coloring{K}) where K = collect(1:nv(gp.graph))
 flavors(::Type{<:Coloring{K}}) where K = collect(0:K-1) # colors
 num_flavors(c::Type{<:Coloring{K}}) where K = length(flavors(c)) # number of colors
-terms(gp::Coloring) = [[minmax(e.src,e.dst)...] for e in Graphs.edges(gp.graph)] # return the edges of the graph
+terms(gp::Coloring{K}) where K = [[minmax(e.src,e.dst)...] for e in Graphs.edges(gp.graph)] # return the edges of the graph
  
 
 # weights interface
@@ -41,7 +41,8 @@ function evaluate(c::Coloring, config)
     coloring_energy(terms(c), config)
 end
 
-coloring_energy(terms::AbstractMatrix, config) = sum([config[e[1]] == config[e[2]] for e in terms])
+coloring_energy(terms::AbstractVector, config) = sum([config[e[1]] == config[e[2]] for e in terms])
+
 
 
 """
