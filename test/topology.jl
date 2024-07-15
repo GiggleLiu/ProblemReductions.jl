@@ -13,7 +13,8 @@ end
     udg = UnitDiskGraph([(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0)], 1.2)
     @test ne(udg) == 4
     @test nv(udg) == 4
-    @test edges(udg) == [SimpleEdge(1, 2), SimpleEdge(1, 3), SimpleEdge(2, 4), SimpleEdge(3, 4)]
+    @test SimpleEdge(3, 4) in edges(udg)
+    @test collect(edges(udg)) == [SimpleEdge(1, 2), SimpleEdge(1, 3), SimpleEdge(2, 4), SimpleEdge(3, 4)]
     @test vertices(udg) == 1:4
 end
 
@@ -21,6 +22,7 @@ end
     gg = GridGraph(Bool[1 0; 1 1], 1.2)
     @test ne(gg) == 2
     @test nv(gg) == 3
-    @test edges(gg) == [SimpleEdge(1, 2), SimpleEdge(2, 3)]
+    @test SimpleEdge(2, 3) in edges(gg)
+    @test collect(edges(gg)) == [SimpleEdge(1, 2), SimpleEdge(2, 3)]
     @test vertices(gg) == 1:3
 end

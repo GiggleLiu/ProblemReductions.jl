@@ -38,8 +38,22 @@ end
 Base.:(==)(a::UnitDiskGraph, b::UnitDiskGraph) = a.locations == b.locations && a.radius == b.radius
 Graphs.nv(g::UnitDiskGraph) = length(g.locations)
 Graphs.vertices(g::UnitDiskGraph) = 1:nv(g)
-Graphs.ne(g::UnitDiskGraph) = length(Graphs.edges(g))
-function Graphs.edges(g::UnitDiskGraph)
+Graphs.ne(g::UnitDiskGraph) = length(all_edges(g))
+
+Graphs.edges(g::UnitDiskGraph) = Graphs.SimpleGraphs.SimpleEdgeIter(g)
+
+function Graphs.has_edge(g::UnitDiskGraph, s, d)
+    verts = vertices(g)
+    (s in verts && d in verts) || return false  # edge out of bounds
+    return sum(abs2, g.locations[s] .- g.locations[d]) ≤ g.radius^2
+end
+
+function Graphs.has_edge(g::UnitDiskGraph, e::Graphs.SimpleGraphEdge{T}) where {T}
+    s, d = T.(Tuple(e))
+    return has_edge(g, s, d)
+end
+
+function all_edges(g::UnitDiskGraph)
     edges = Graphs.SimpleEdge{Int}[]
     for i in 1:nv(g), j in i+1:nv(g)
         if sum(abs2, g.locations[i] .- g.locations[j]) ≤ g.radius^2
@@ -47,6 +61,35 @@ function Graphs.edges(g::UnitDiskGraph)
         end
     end
     return edges
+end
+
+Base.eltype(::Type{Graphs.SimpleGraphs.SimpleEdgeIter{UnitDiskGraph{D,T}}}) where {D,T} = Graphs.SimpleGraphEdge{Int}
+
+@inline function Base.iterate(
+    eit::Graphs.SimpleGraphs.SimpleEdgeIter{G}, state=(1, 2)
+) where {G<:UnitDiskGraph}
+    g = eit.g
+    n = nv(g)
+    i, j = state
+
+    @inbounds while i <= n
+        if j > n
+            i += 1
+            j = i + 1
+            continue
+        end
+
+        # return the next edge if it exists
+        if sum(abs2, g.locations[i] .- g.locations[j]) ≤ g.radius^2
+            e = Graphs.SimpleEdge(i, j)
+            state = (i, j + 1)
+            return e, state
+        end
+        
+        j += 1
+    end
+
+    return nothing
 end
 
 """
