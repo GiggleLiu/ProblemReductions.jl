@@ -21,12 +21,10 @@ Base.:(==)(a::Coloring, b::Coloring) = a.graph == b.graph && a.weights == b.weig
 
 variables(gp::Coloring{K}) where K = collect(1:nv(gp.graph))
 flavors(::Type{<:Coloring{K}}) where K = collect(0:K-1) # colors
-num_flavors(c::Type{<:Coloring{K}}) where K = length(flavors(c)) # number of colors
+num_flavors(::Type{<:Coloring{K}}) where K = K # number of colors
 terms(gp::Coloring{K}) where K = [[minmax(e.src,e.dst)...] for e in Graphs.edges(gp.graph)] # return the edges of the graph
- 
 
 # weights interface
-# ?whether weights information would be useful here? I think in sat-coloring, we only need to consider unweighted graphs
 parameters(c::Coloring) = c.weights
 set_parameters(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
 
@@ -41,8 +39,8 @@ function evaluate(c::Coloring, config)
     coloring_energy(terms(c), c.weights,config)
 end
 
-coloring_energy(terms::AbstractVector, weights::AbstractVector, config) = sum([(config[e[1]] == config[e[2]]) * w for (e, w) in zip(terms, weights)])
-coloring_energy(terms::AbstractVector,::UnitWeight, config) = sum([(config[e[1]] == config[e[2]]) for e in terms])
+coloring_energy(terms::AbstractVector, weights::AbstractVector, config) = sum(ew->(config[ew[1][1]] == config[ew[1][2]]) * ew[2], zip(terms, weights))
+coloring_energy(terms::AbstractVector,::UnitWeight, config) = sum(e->(config[e[1]] == config[e[2]]), terms)
 
 
 """
