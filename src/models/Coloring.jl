@@ -38,11 +38,11 @@ Compute the energy of the vertex coloring configuration `config`, the energy is 
 """
 function evaluate(c::Coloring, config)
     @assert length(config) == nv(c.graph)
-    coloring_energy(terms(c), config)
+    coloring_energy(terms(c), c.weights,config)
 end
 
-coloring_energy(terms::AbstractVector, config) = sum([config[e[1]] == config[e[2]] for e in terms])
-
+coloring_energy(terms::AbstractVector, weights::AbstractVector, config) = sum([(config[e[1]] == config[e[2]]) * w for (e, w) in zip(terms, weights)])
+coloring_energy(terms::AbstractVector,::UnitWeight, config) = sum([(config[e[1]] == config[e[2]]) for e in terms])
 
 
 """

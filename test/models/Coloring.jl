@@ -24,7 +24,8 @@ using ProblemReductions: Coloring, SimpleGraph, add_edge!, UnitWeight, variables
     @test set_parameters(c, [1, 2, 2, 1]) == Coloring{3}(g, [1, 2, 2, 1])
 
     # evaluate,here I found the definition of Config is not clear, so I can't test the evaluate function
-    @test evaluate(c, [0, 1, 2, 0]) == 1
+    @test evaluate(c,[0, 1, 2, 0]) == 1
+    @test coloring_energy(terms(c),[1, 3, 2, 5],[0, 1, 2, 0]) == 3
    
     
 end
