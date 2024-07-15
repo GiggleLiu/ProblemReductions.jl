@@ -22,6 +22,7 @@ function SpinGlass(graph::SimpleGraph, J::Vector, h::Vector)
     @assert length(h) == nv(graph) "length of h must be equal to the number of vertices $(nv(graph)), got: $(length(h))"
     SpinGlass(HyperGraph(nv(graph), Vector{Int}[[[src(e), dst(e)] for e in edges(graph)]..., [[i] for i in 1:nv(graph)]...]), [J..., h...])
 end
+# Base.:(<symbol>) to overload the operators
 Base.:(==)(a::SpinGlass, b::SpinGlass) = a.graph == b.graph && a.weights == b.weights
 function spin_glass_from_matrix(M::AbstractMatrix, h::AbstractVector)
     g = SimpleGraph((!iszero).(M))
@@ -72,7 +73,7 @@ function spinglass_energy(cliques::AbstractVector{Vector{Int}}, config; weights)
 end
 function spinglass_energy(g::SimpleGraph, config; J, h)
     eng = zero(promote_type(eltype(J), eltype(h)))
-    # NOTE: cast to Int to avoid using unsigned :nt
+    # NOTE: cast to Int to avoid using unsigned Int
     s = 1 .- 2 .* Int.(config)  # 0 -> spin 1, 1 -> spin -1
     # coupling terms
     for (i, e) in enumerate(edges(g))

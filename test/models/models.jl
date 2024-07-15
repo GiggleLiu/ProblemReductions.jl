@@ -7,3 +7,7 @@ end
 @testset "SpinGlass" begin
     include("SpinGlass.jl")
 end
+
+@testset "Coloring" begin
+    include("Coloring.jl")
+end

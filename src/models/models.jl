@@ -85,5 +85,11 @@ Find the best configurations of the `problem` using the `method`.
 """
 function findbest end
 
+struct UnitWeight end
+Base.getindex(::UnitWeight, i) = 1
+Base.eltype(::UnitWeight) = Int
+
+
 include("SpinGlass.jl")
 include("Circuit.jl")
+include("Coloring.jl")
