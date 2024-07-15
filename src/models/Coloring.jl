@@ -17,6 +17,7 @@ struct Coloring{K, WT<:Union{UnitWeight, Vector}} <:AbstractProblem
         new{K, typeof(weights)}(graph, weights)
     end
 end
+Base.:(==)(a::Coloring, b::Coloring) = a.graph == b.graph && a.weights == b.weights
 
 variables(gp::Coloring{K}) where K = collect(1:nv(gp.graph))
 flavors(::Type{<:Coloring{K}}) where K = collect(0:K-1) # colors
@@ -26,9 +27,8 @@ terms(gp::Coloring{K}) where K = [[minmax(e.src,e.dst)...] for e in Graphs.edges
 
 # weights interface
 # ?whether weights information would be useful here? I think in sat-coloring, we only need to consider unweighted graphs
-get_weights(c::Coloring) = c.weights
-get_weights(c::Coloring{K}, i::Int) where K = fill(c.weights[i], K)
-chweights(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
+parameters(c::Coloring) = c.weights
+set_parameters(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
 
 # utilities
 """

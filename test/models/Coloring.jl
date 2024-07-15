@@ -1,6 +1,6 @@
 using Test, ProblemReductions, Graphs
-using ProblemReductions: Coloring, SimpleGraph, add_edge!, UnitWeight, variables, flavors, num_flavors, terms,
-    get_weights, evaluate, coloring_energy, is_vertex_coloring,chweights
+using ProblemReductions: Coloring, SimpleGraph, add_edge!, UnitWeight, variables, flavors, num_flavors,
+ terms, evaluate, coloring_energy, is_vertex_coloring,set_parameters,parameters
 
 # create a graph
 
@@ -20,8 +20,8 @@ using ProblemReductions: Coloring, SimpleGraph, add_edge!, UnitWeight, variables
     @test terms(c)==[[1, 2],[1,4],[2, 3], [3, 4]]
 
     # weights interface
-    @test get_weights(c) == UnitWeight()
-    @test get_weights(c, 1) == fill(UnitWeight(), 3)
+    @test parameters(c) == UnitWeight()
+    @test set_parameters(c, [1, 2, 2, 1]) == Coloring{3}(g, [1, 2, 2, 1])
 
     # evaluate,here I found the definition of Config is not clear, so I can't test the evaluate function
     @test evaluate(c, [0, 1, 2, 0]) == 1
