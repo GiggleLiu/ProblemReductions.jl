@@ -15,6 +15,6 @@ using ProblemReductions: BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, varia
 
     @test sat_test isa Satisfiability
     @test is_kSAT(sat_test) == 3
-    @test variables(sat_test) == ["x", "y", "z", "w"]
+    @test Set( variables(sat_test) ) == Set( ["x", "y", "z", "w"] )
     @test terms(sat_test) == [clause1, clause2]
 end
