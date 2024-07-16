@@ -19,16 +19,14 @@ struct Coloring{K, WT<:Union{UnitWeight, Vector}} <:AbstractProblem
 end
 Base.:(==)(a::Coloring, b::Coloring) = a.graph == b.graph && a.weights == b.weights
 
-# variables interface
 variables(gp::Coloring{K}) where K = collect(1:nv(gp.graph))
 flavors(::Type{<:Coloring{K}}) where K = collect(0:K-1) # colors
 num_flavors(::Type{<:Coloring{K}}) where K = K # number of colors
+terms(gp::Coloring{K}) where K = [[minmax(e.src,e.dst)...] for e in Graphs.edges(gp.graph)] # return the edges of the graph
 
 # weights interface
 parameters(c::Coloring) = c.weights
 set_parameters(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
-terms(gp::Coloring{K}) where K = [[minmax(e.src,e.dst)...] for e in Graphs.edges(gp.graph)] # return the edges of the graph
-
 
 # utilities
 """
