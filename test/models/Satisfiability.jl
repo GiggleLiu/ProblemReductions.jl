@@ -1,5 +1,5 @@
 using ProblemReductions, Test, Graphs
-using ProblemReductions: BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, variables, terms
+using ProblemReductions: BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, variables
 
 @testset "satisfiability" begin
     bv1 = BoolVar("x")
@@ -16,4 +16,5 @@ using ProblemReductions: BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, varia
     @test sat_test isa Satisfiability
     @test is_kSAT(sat_test) == 3
     @test Set( variables(sat_test) ) == Set( [1, 2, 3, 4] )
+    @test num_variables(sat_test) == 4
 end

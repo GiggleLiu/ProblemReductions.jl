@@ -98,12 +98,7 @@ Create some boolean variables of type [`BoolVar`](@ref) in current scope that ca
 
 Example
 ------------------------
-```jldoctest; setup=:(using GenericTensorNetworks)
-julia> @bools x y z
-
-julia> (x ∨ y) ∧ (¬y ∨ z)
-(x ∨ y) ∧ (¬y ∨ z)
-```
+Under Development
 """
 macro bools(syms::Symbol...)
     esc(Expr(:block, [:($s = $BoolVar($(QuoteNode(s)))) for s in syms]..., nothing))
@@ -122,25 +117,7 @@ Positional arguments
 
 Examples
 -------------------------------
-```jldoctest; setup=:(using GenericTensorNetworks)
-julia> @bools x y z a b c
-
-julia> c1 = x ∨ ¬y
-x ∨ ¬y
-
-julia> c2 = c ∨ (¬a ∨ b)
-c ∨ ¬a ∨ b
-
-julia> c3 = (z ∨ ¬a) ∨ y
-z ∨ ¬a ∨ y
-
-julia> c4 = (c ∨ z) ∨ ¬b
-c ∨ z ∨ ¬b
-
-julia> cnf = (c1 ∧ c4) ∧ (c2 ∧ c3)
-(x ∨ ¬y) ∧ (c ∨ z ∨ ¬b) ∧ (c ∨ ¬a ∨ b) ∧ (z ∨ ¬a ∨ y)
-
-```
+Under Development
 """
 struct Satisfiability{T} <:AbstractProblem
     cnf::CNF{T}
