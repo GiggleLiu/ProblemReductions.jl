@@ -61,14 +61,6 @@ end
 function Base.show(io::IO, c::CNF)
     print(io, join(["($k)" for k in c.clauses], " ∧ "))
 end
-function is_kSAT(x::CNF)
-    len_lst = [length(x.clauses[i]) for i = 1:length(x.clauses)]
-    if length( unique(len_lst) ) == 1
-        return len_lst[1]
-    else
-        return false
-    end
-end
 Base.:(==)(x::CNF, y::CNF) = x.clauses == y.clauses
 Base.length(x::CNF) = length(x.clauses)
 
@@ -167,11 +159,28 @@ function variables(c::Satisfiability)
             push!(var_names, var.name)
         end
     end
-    return collect(var_names)  # Convert the set back to a vector if needed
+    return collect(var_names) 
 end
 flavors(::Type{<:Satisfiability}) = [0, 1]  # false, true
 terms(c::Satisfiability) = collect(c.cnf.clauses)
 parameters(sat::Satisfiability) = Int[]
+
+function is_kSAT(x)
+    if isa(x, Satisfiability)
+        cnf = x.cnf
+    elseif isa(x, CNF)
+        cnf = x
+    else
+        error("Unsupported type")
+    end
+
+    len_lst = [length(clause.vars) for clause in cnf.clauses]
+    if length(unique(len_lst)) == 1
+        return len_lst[1]
+    else
+        return false
+    end
+end
 
 """
     satisfiable(cnf::CNF, config::AbstractDict)
