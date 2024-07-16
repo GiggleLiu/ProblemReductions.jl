@@ -57,7 +57,7 @@ function is_kSAT(cnf::CNF)
     if length(unique(len_lst)) == 1
         return len_lst[1]
     else
-        return false
+        return -1
     end
 end
 
