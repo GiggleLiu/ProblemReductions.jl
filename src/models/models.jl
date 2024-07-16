@@ -93,3 +93,4 @@ Base.eltype(::UnitWeight) = Int
 include("SpinGlass.jl")
 include("Circuit.jl")
 include("Coloring.jl")
+include("Satisfiability.jl")
