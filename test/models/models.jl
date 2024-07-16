@@ -11,3 +11,7 @@ end
 @testset "Coloring" begin
     include("Coloring.jl")
 end
+
+@testset "SetCovering" begin
+    include("SetCovering.jl")
+end
