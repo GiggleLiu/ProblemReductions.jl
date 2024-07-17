@@ -15,3 +15,7 @@ end
 @testset "Satisfiability" begin
     include("Satisfiability.jl")
 end
+
+@testset "SetCovering" begin
+    include("SetCovering.jl")
+end
