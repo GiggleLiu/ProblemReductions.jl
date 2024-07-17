@@ -7,6 +7,7 @@ using ProblemReductions: SetCovering, variables, flavors, terms, evaluate, set_p
     @test variables(c)==[[1,2],[2,3],[2,3,4]]
     @test num_variables(c) == 3
     @test flavors(SetCovering) == [0, 1]
+    @test terms(c) == [[1], [2], [3]]
     
     # weights interface
     @test parameters(c) == [1, 1, 2]
