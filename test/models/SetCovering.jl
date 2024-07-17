@@ -14,14 +14,16 @@ using ProblemReductions: SetCovering, variables, flavors, terms, evaluate, set_p
     @test set_parameters(c, [1, 2, 3]) == SetCovering([[1, 2], [2, 3], [2, 3, 4]], [1, 2, 3])
     
     # evaluate
-    @test evaluate(c, [0, 1, 1]) == 3
-    @test set_covering_energy([1, 1, 2], [0, 0, 1]) == 2
+    @test evaluate(c, [0, 1, 1]) == typemax(Int)
+    @test evaluate(c, [1, 0, 1]) == 3
+    println(c)
+    @test set_covering_energy(c.sets, [1, 1, 2], [0, 0, 1]) == typemax(Int)
     @test is_set_covering(c,[1,0,1]) == true
     @test is_set_covering(c,[0,0,1]) == false
     
     # findbest
-    @test findbest(c) == (1,0,1)
-    @test findbest(c, "bruteforce") == (1,0,1)
+    @test findbest(c, BruteForce()) == [[1, 0, 1]]
+    @test findbest(c, BruteForce()) == [[1, 0, 1]]
     g = SetCovering([[1, 2], [1, 3, 4], [2, 3]], [1, 1, 2])
-    @test findbest(g) == (1,1,0)
+    @test findbest(g, BruteForce()) == [[1, 1, 0]]
 end
