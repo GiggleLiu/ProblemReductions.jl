@@ -52,14 +52,6 @@ function Base.show(io::IO, c::CNF)
 end
 Base.:(==)(x::CNF, y::CNF) = x.clauses == y.clauses
 Base.length(x::CNF) = length(x.clauses)
-function is_kSAT(cnf::CNF)
-    len_lst = [length(clause.vars) for clause in cnf.clauses]
-    if length(unique(len_lst)) == 1
-        return len_lst[1]
-    else
-        return -1
-    end
-end
 
 """
     ¬(var::BoolVar)
@@ -126,21 +118,32 @@ struct Satisfiability{T} <:AbstractProblem
     end
 end
 
+struct KSatisfiability{K, T} <:AbstractProblem
+    cnf::CNF{T}
+    function KSatisfiability{K}(cnf::CNF{T}) where {K, T}
+        @assert is_kSAT(cnf, K) "The CNF is not a $K-SAT problem"
+        new{K, T}(cnf)
+    end
+end
+is_kSAT(cnf::CNF, k::Int) = all(c -> k == length(c.vars), cnf.clauses)
 
-function variables(c::Satisfiability)
-    var_names = Set{}()
+function variables(c::Satisfiability{T}) where T
+    var_names = T[]
     for clause in c.cnf.clauses
         for var in clause.vars
             push!(var_names, var.name)
         end
     end
-    return collect(1:length(var_names)) 
+    return unique(var_names)
 end
 num_variables(c::Satisfiability) = length(variables(c))
 flavors(::Type{<:Satisfiability}) = [0, 1]  # false, true
-parameters(sat::Satisfiability) = Int[]
-is_kSAT(s::Satisfiability) = is_kSAT(s.cnf)
 
+function evaluate(c::Satisfiability, config)
+    @assert length(config) == num_variables(c)
+    dict = Dict(zip(variables(c), config))
+    count(x->!satisfiable(x, dict), c.cnf.clauses)
+end
 
 """
     satisfiable(cnf::CNF, config::AbstractDict)

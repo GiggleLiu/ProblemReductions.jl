@@ -21,6 +21,7 @@ export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extra
 export LogicGadget, truth_table
 export spinglass_circuit, ReductionCircuitToSpinGlass
 export findbest, BruteForce
+export CNF
 
 include("truth_table.jl")
 include("topology.jl")
