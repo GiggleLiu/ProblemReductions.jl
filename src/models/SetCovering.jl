@@ -45,6 +45,30 @@ function evaluate(c::SetCovering, config)
 end
 set_covering_energy(weights::AbstractVector, config) = sum(weights[i]*config[i] for i=1:length(weights))
 
+"""
+    findbest(c::SetCovering) -> Vector
+
+Find the best configurations of the `c` using the `method`. We offer bruteforce search as the default method.
+
+"""
+
+function findbest(c::SetCovering, method="bruteforce")
+    best = nothing
+    best_energy = Inf 
+    for config in Iterators.product((fill([0,1],num_variables(c)))...)
+        if sum(config) == 0
+            continue
+        end
+        if is_set_covering(c,config)
+            energy = evaluate(c,config)
+            if energy < best_energy
+                best = config
+                best_energy = energy
+            end
+        end
+    end
+    return best
+end
 
 """
     is_set_covering(sets::AbstractVector, config)
