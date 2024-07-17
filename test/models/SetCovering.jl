@@ -16,7 +16,6 @@ using ProblemReductions: SetCovering, variables, flavors, terms, evaluate, set_p
     # evaluate
     @test evaluate(c, [0, 1, 1]) == typemax(Int)
     @test evaluate(c, [1, 0, 1]) == 3
-    println(c)
     @test set_covering_energy(c.sets, [1, 1, 2], [0, 0, 1]) == typemax(Int)
     @test is_set_covering(c,[1,0,1]) == true
     @test is_set_covering(c,[0,0,1]) == false
