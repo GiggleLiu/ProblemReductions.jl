@@ -90,7 +90,7 @@ struct Circuit
 end
 
 function Base.show(io::IO, x::Circuit)
-    println(io, "Circuit:")
+    printstyled("Circuit:\n"; color = :blue, bold=true)
     print_statements(io, x.exprs)
 end
 function print_statements(io::IO, exprs)
