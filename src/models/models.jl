@@ -9,7 +9,7 @@ abstract type AbstractProblem end
 """
     parameters(problem::AbstractProblem) -> Vector
 
-Parameters associated with [`terms`](@ref).
+The parameters of the computational problem.
 """
 function parameters end
 
@@ -34,20 +34,6 @@ function variables end
 The number of variables in the computational problem.
 """
 num_variables(c::AbstractProblem) = length(variables(c))
-
-"""
-    terms(problem::AbstractProblem) -> Vector
-
-The energy terms of a computational problem is defined as the variables that carrying local energies (or weights) in the computational problem.
-"""
-function terms end
-
-"""
-    num_terms(problem::AbstractProblem) -> Int
-
-The number of terms in the computational problem.
-"""
-num_terms(c::AbstractProblem) = length(terms(c))
 
 """
     parameter_type(problem::AbstractProblem) -> Type
@@ -85,9 +71,11 @@ Find the best configurations of the `problem` using the `method`.
 """
 function findbest end
 
-struct UnitWeight end
+struct UnitWeight <: AbstractVector{Int}
+    n::Int
+end
 Base.getindex(::UnitWeight, i) = 1
-Base.eltype(::UnitWeight) = Int
+Base.size(w::UnitWeight) = (w.n,)
 
 
 include("SpinGlass.jl")

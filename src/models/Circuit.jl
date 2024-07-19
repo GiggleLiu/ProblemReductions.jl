@@ -202,16 +202,6 @@ flavors(::Type{<:CircuitSAT}) = [0, 1]
 
 # parameters interface
 parameters(sat::CircuitSAT) = Int[]
-function terms(sat::CircuitSAT)
-    vmap = Dict(sat.symbols[i]=>i for i in 1:length(sat.symbols))
-    terms = Vector{Int}[]
-    for ex in sat.circuit.exprs
-        term = Symbol[]
-        extract_symbols!(ex, term)
-        push!(terms, map(v->vmap[v], term))
-    end
-    return terms
-end
 
 function evaluate(sat::CircuitSAT, config)
     @assert length(config) == num_variables(sat)

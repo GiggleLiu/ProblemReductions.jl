@@ -9,12 +9,12 @@ Positional arguments
 * `graph` is a graph object.
 * `weights` are associated with the edges.
 """
-struct SpinGlass{GT<:AbstractGraph, T} <: AbstractProblem
+struct SpinGlass{GT<:AbstractGraph, WT<:AbstractVector} <: AbstractProblem
     graph::GT
-    weights::Vector{T}
-    function SpinGlass(graph::AbstractGraph, weights::Vector{T}) where T
+    weights::WT
+    function SpinGlass(graph::AbstractGraph, weights::WT) where WT <: AbstractVector
         @assert length(weights) == ne(graph)
-        return new{typeof(graph), T}(graph, weights)
+        return new{typeof(graph), WT}(graph, weights)
     end
 end
 function SpinGlass(graph::SimpleGraph, J::Vector, h::Vector)
@@ -37,11 +37,10 @@ flavors(::Type{<:SpinGlass}) = [0, 1]
 # weights interface
 parameters(gp::SpinGlass) = gp.weights
 set_parameters(c::SpinGlass, weights) = SpinGlass(c.graph, weights)
-terms(gp::SpinGlass) = edges(gp.graph)
 
 function evaluate(sg::SpinGlass, config)
     @assert length(config) == num_variables(sg)
-    spinglass_energy(terms(sg), config; weights=sg.weights)
+    spinglass_energy(vedges(sg.graph), config; weights=sg.weights)
 end
 
 """

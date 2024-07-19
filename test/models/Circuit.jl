@@ -1,5 +1,4 @@
 using ProblemReductions, Test
-using ProblemReductions: BooleanExpr, booleans, is_literal, is_cnf, is_dnf
 
 @testset "clauses" begin
     a, b, c, d, e = booleans(5)
@@ -61,7 +60,6 @@ end
     @test sat.symbols[[1, 2, 3, 5, 7]] == [:c, :x, :y, :z, :d]
     @test variables(sat) == collect(1:7)
     @test num_variables(sat) == 7
-    @test terms(sat) == [[1, 2, 3], [4, 5], [6, 1, 4], [7, 2, 6]]
     @test evaluate(sat, [true, false, false, true, false, true, false]) == 1
                           # c    x      y      ¬z     z    c ∧ ¬z   d
     @test evaluate(sat, [false, false, false, true, false, false, false]) == 0
