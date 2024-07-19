@@ -19,3 +19,7 @@ end
 @testset "SetCovering" begin
     include("SetCovering.jl")
 end
+
+@testset "Maxcut" begin
+    include("MaxCut.jl")
+end
