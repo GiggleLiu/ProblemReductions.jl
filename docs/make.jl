@@ -1,5 +1,15 @@
 using ProblemReductions
 using Documenter
+using Literate
+
+# Literate
+for each in readdir(pkgdir(ProblemReductions, "examples"))
+    input_file = pkgdir(ProblemReductions, "examples", each)
+    endswith(input_file, ".jl") || continue
+    @info "building" input_file
+    output_dir = pkgdir(ProblemReductions, "docs", "src", "generated")
+    Literate.markdown(input_file, output_dir; name=each[1:end-3], execute=false)
+end
 
 DocMeta.setdocmeta!(ProblemReductions, :DocTestSetup, :(using ProblemReductions); recursive=true)
 
@@ -22,6 +32,9 @@ makedocs(;
         ],
         "Rules" => [
             "rules/spinglass_sat.md",
+        ],
+        "Examples" => [
+            "generated/material_compute.md",
         ],
         "Reference" => "ref.md",
     ],
