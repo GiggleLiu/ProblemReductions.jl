@@ -195,8 +195,6 @@ function add_clique!(sg::SpinGlass, clique::Vector{Int}, weight)
     push!(sg.weights, weight)
     return sg
 end
-_vec(c::AbstractVector) = c
-_vec(c::Graphs.SimpleEdge) = [c.src, c.dst]
 _add_edge!(g::SimpleGraph, c::Vector{Int}) = add_edge!(g, c...)
 function _add_edge!(g::HyperGraph, c::Vector{Int})
     @assert all(b->1<=b<=nv(g), c) "vertex index out of bound 1-$(nv(g)), got: $c"

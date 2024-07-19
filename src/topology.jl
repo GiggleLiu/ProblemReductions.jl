@@ -121,4 +121,4 @@ end
 ##### Extra interfaces #####
 vedges(g::AbstractGraph) = [_vec(e) for e in edges(g)]
 _vec(e::Graphs.SimpleEdge) = [src(e), dst(e)]
-_vec(e::Vector) = e
+_vec(e::AbstractVector) = e

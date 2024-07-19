@@ -10,11 +10,11 @@ Positional arguments
 * `graph` is the problem graph.
 * `edge_weights` are associated with the edges of the `graph`.
 """
-struct MaxCut{WT1<:Union{UnitWeight, Vector}} <: AbstractProblem
+struct MaxCut{WT1<:AbstractVector} <: AbstractProblem
     graph::SimpleGraph{Int}
     edge_weights::WT1
-    function MaxCut(g::SimpleGraph,edge_weights::Union{UnitWeight, Vector}=UnitWeight()) 
-        @assert edge_weights isa UnitWeight || length(edge_weights) == ne(g)
+    function MaxCut(g::SimpleGraph,edge_weights::AbstractVector=UnitWeight(ne(g))) 
+        @assert length(edge_weights) == ne(g)
         new{typeof(edge_weights)}(g, edge_weights)
     end
 end
@@ -41,7 +41,7 @@ function evaluate(c::MaxCut, config)
     -cut_size(vedges(c.graph), config; edge_weights=c.edge_weights)
 end
 
-function cut_size(terms, config; edge_weights=UnitWeight())
+function cut_size(terms, config; edge_weights=UnitWeight(length(terms)))
     size = zero(promote_type(eltype(edge_weights)))
     for (i,j)in zip(terms, edge_weights)            # we have ensure that the edge_weights are in the same order as the edges in terms, so we could use zip()
         size += (config[i[1]] != config[i[2]]) * j  # terms are the edges,and terms[1],terms[2] are the two vertices of the edge.

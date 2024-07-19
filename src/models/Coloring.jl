@@ -1,19 +1,19 @@
 """
 $(TYPEDEF)
-    Coloring{K}(graph; weights=UnitWeight())
+    Coloring{K}(graph; weights=UnitWeight(nv(graph)))
 
 The [Vertex Coloring](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/Coloring/) problem.
 
 Positional arguments
 -------------------------------
 * `graph` is the problem graph.
-* `weights` are associated with the edges of the `graph`, default to `UnitWeight()`.
+* `weights` are associated with the edges of the `graph`, default to `UnitWeight(nv(graph))`.
 """
-struct Coloring{K, WT<:Union{UnitWeight, Vector}} <:AbstractProblem
+struct Coloring{K, WT<:AbstractVector} <:AbstractProblem
     graph::SimpleGraph{Int64}
     weights::WT
-    function Coloring{K}(graph::SimpleGraph{Int64}, weights::Union{UnitWeight, Vector}=UnitWeight()) where {K}
-        @assert weights isa UnitWeight || length(weights) == ne(graph) "length of weights must be equal to the number of edges $(ne(graph)), got: $(length(weights))"
+    function Coloring{K}(graph::SimpleGraph{Int64}, weights::AbstractVector=UnitWeight(nv(graph))) where {K}
+        @assert length(weights) == ne(graph) "length of weights must be equal to the number of edges $(ne(graph)), got: $(length(weights))"
         new{K, typeof(weights)}(graph, weights)
     end
 end
@@ -40,7 +40,6 @@ function evaluate(c::Coloring, config)
 end
 
 coloring_energy(terms::AbstractVector, weights::AbstractVector, config) = sum(ew->(config[ew[1][1]] == config[ew[1][2]]) * ew[2], zip(terms, weights))
-coloring_energy(terms::AbstractVector,::UnitWeight, config) = sum(e->(config[e[1]] == config[e[2]]), terms)
 
 
 """

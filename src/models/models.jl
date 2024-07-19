@@ -71,9 +71,11 @@ Find the best configurations of the `problem` using the `method`.
 """
 function findbest end
 
-struct UnitWeight end
+struct UnitWeight <: AbstractVector{Int}
+    n::Int
+end
 Base.getindex(::UnitWeight, i) = 1
-Base.eltype(::UnitWeight) = Int
+Base.size(w::UnitWeight) = (w.n,)
 
 
 include("SpinGlass.jl")

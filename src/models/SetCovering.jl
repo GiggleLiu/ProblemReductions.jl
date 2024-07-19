@@ -9,11 +9,11 @@ Positional arguments
 * `weights` are associated with sets.
 """
 
-struct SetCovering{ET, WT<:Union{UnitWeight, Vector}} <: AbstractProblem
+struct SetCovering{ET, WT<:AbstractVector} <: AbstractProblem
     sets::Vector{Vector{ET}}
     weights::WT
-    function SetCovering(sets::Vector{Vector{ET}}, weights::Union{UnitWeight, Vector}=UnitWeight()) where {ET}
-        @assert weights isa UnitWeight || length(weights) == length(sets)
+    function SetCovering(sets::Vector{Vector{ET}}, weights::AbstractVector=UnitWeight(length(sets))) where {ET}
+        @assert length(weights) == length(sets)
         new{ET, typeof(weights)}(sets, weights)
     end
 end
