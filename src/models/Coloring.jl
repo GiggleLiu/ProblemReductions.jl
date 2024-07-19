@@ -19,6 +19,7 @@ struct Coloring{K, WT<:Union{UnitWeight, Vector}} <:AbstractProblem
 end
 Base.:(==)(a::Coloring, b::Coloring) = a.graph == b.graph && a.weights == b.weights
 
+# variables interface
 variables(gp::Coloring{K}) where K = collect(1:nv(gp.graph))
 flavors(::Type{<:Coloring{K}}) where K = collect(0:K-1) # colors
 num_flavors(::Type{<:Coloring{K}}) where K = K # number of colors
