@@ -23,7 +23,6 @@ Base.:(==)(a::Coloring, b::Coloring) = a.graph == b.graph && a.weights == b.weig
 variables(gp::Coloring{K}) where K = collect(1:nv(gp.graph))
 flavors(::Type{<:Coloring{K}}) where K = collect(0:K-1) # colors
 num_flavors(::Type{<:Coloring{K}}) where K = K # number of colors
-terms(gp::Coloring{K}) where K = [[minmax(e.src,e.dst)...] for e in Graphs.edges(gp.graph)] # return the edges of the graph
 
 # weights interface
 parameters(c::Coloring) = c.weights
@@ -37,7 +36,7 @@ Compute the energy of the vertex coloring configuration `config`, the energy is 
 """
 function evaluate(c::Coloring, config)
     @assert length(config) == nv(c.graph)
-    coloring_energy(terms(c), c.weights,config)
+    coloring_energy(vedges(c.graph), c.weights,config)
 end
 
 coloring_energy(terms::AbstractVector, weights::AbstractVector, config) = sum(ew->(config[ew[1][1]] == config[ew[1][2]]) * ew[2], zip(terms, weights))

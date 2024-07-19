@@ -15,7 +15,6 @@ using ProblemReductions, Test, Graphs
     @test num_flavors(sg) == 2
 
     # parameters
-    @test num_terms(sg) == 6
     @test parameters(sg) == [1, -2, -2, 1, 1, -2]
     @test set_parameters(sg, [1, 2, 2, -1, -1, -2]) == SpinGlass(g, [1, 2, 2], [-1, -1, -2])
 

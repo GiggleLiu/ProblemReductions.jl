@@ -26,7 +26,6 @@ flavors(::Type{<:SetCovering}) = [0, 1] # whether the set is selected (1) or not
 # weights interface
 parameters(c::SetCovering) = c.weights
 set_parameters(c::SetCovering, weights) = SetCovering(c.sets, weights)
-terms(gp::SetCovering) = [[i] for i=1:length(gp.sets)] # return the index of sets
 
 """
     evaluate(c::SetCovering, config)

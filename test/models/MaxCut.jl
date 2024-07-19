@@ -1,5 +1,4 @@
 using Test, ProblemReductions, Graphs
-using ProblemReductions: MaxCut, variables, num_variables, flavors,  evaluate, set_parameters, parameters, findbest, terms
 
 @testset "maxcut" begin
     # construct a graph
@@ -16,7 +15,6 @@ using ProblemReductions: MaxCut, variables, num_variables, flavors,  evaluate, s
     @test variables(mc) == [1, 2, 3, 4]
     @test num_variables(mc) == 4
     @test flavors(MaxCut) == [0, 1]
-    @test terms(mc) == [[1, 2], [1, 3], [2, 3], [3, 4]] 
 
     # parameters
     @test parameters(mc) == [1, 3, 1, 4]
