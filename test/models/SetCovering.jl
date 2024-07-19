@@ -1,5 +1,4 @@
 using Test, ProblemReductions, Graphs
-using ProblemReductions: SetCovering, variables, flavors, evaluate, set_parameters, parameters,is_set_covering,set_covering_energy, findbest
 
 @testset "setcovering" begin
     c = SetCovering([[1, 2], [2, 3], [2, 3, 4]], [1, 1, 2])

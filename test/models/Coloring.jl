@@ -1,5 +1,4 @@
 using Test, ProblemReductions, Graphs
-using ProblemReductions
 
 # create a graph
 

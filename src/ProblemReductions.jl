@@ -14,10 +14,11 @@ export num_variables, num_flavors, variables, flavors, parameters, set_parameter
 export UnitWeight
 
 # models
-export Circuit, Assignment, ssa_form, CircuitSAT, @circuit, booleans, ¬, ∨, ∧, ⊻, is_literal, is_cnf, is_dnf
+export BooleanExpr, Circuit, Assignment, ssa_form, CircuitSAT, @circuit, booleans, ¬, ∨, ∧, ⊻, is_literal, is_cnf, is_dnf
 export SpinGlass, spinglass_gadget
 export Coloring, coloring_energy, is_vertex_coloring
 export SetCovering, is_set_covering, set_covering_energy
+export BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, satisfiable
 export MaxCut
 
 # rules

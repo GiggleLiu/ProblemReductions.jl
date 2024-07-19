@@ -1,5 +1,4 @@
 using ProblemReductions, Test, Graphs
-using ProblemReductions: BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, variables, satisfiable
 
 @testset "satisfiability" begin
     bv1 = BoolVar("x")

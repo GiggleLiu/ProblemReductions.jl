@@ -1,5 +1,4 @@
 using ProblemReductions, Test
-using ProblemReductions: BooleanExpr, booleans, is_literal, is_cnf, is_dnf
 
 @testset "clauses" begin
     a, b, c, d, e = booleans(5)
