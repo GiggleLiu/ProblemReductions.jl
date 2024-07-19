@@ -20,7 +20,6 @@ struct MaxCut{WT1<:Union{UnitWeight, Vector}} <: AbstractProblem
 end
 Base.:(==)(a::MaxCut, b::MaxCut) = a.graph == b.graph && a.edge_weights == b.edge_weights
 
-
 # varibles interface 
 variables(gp::MaxCut) = [1:nv(gp.graph)...]
 num_variables(gp::MaxCut) = nv(gp.graph)
