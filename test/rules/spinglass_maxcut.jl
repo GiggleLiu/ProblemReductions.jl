@@ -1,5 +1,5 @@
 using Test, ProblemReductions, Graphs
-using ProblemReductions: reduceto, maxcut2spinglass, extract_solution, ReductionMaxCutToSpinGlass
+using ProblemReductions: maxcut2spinglass
 
 # add a simple test to check the reduction process
 @testset "spinglass_maxcut" begin

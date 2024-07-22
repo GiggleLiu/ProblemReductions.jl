@@ -24,7 +24,7 @@ export MaxCut
 # rules
 export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, reduction_complexity
 export LogicGadget, truth_table
-export spinglass_circuit, ReductionCircuitToSpinGlass
+export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut
 export findbest, BruteForce
 export CNF
 
