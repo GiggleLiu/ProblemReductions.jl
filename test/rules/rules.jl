@@ -1,4 +1,4 @@
-using Test
+using Test, ProblemReductions, Graphs
 
 @testset "spinglass_sat" begin
     include("spinglass_sat.jl")
@@ -10,10 +10,15 @@ end
         y = ¬c ∨ b
         z = x ∧ y ∧ a
     end)
+    graph = smallgraph(:petersen)
+    maxcut = MaxCut(graph)
+    spinglass = SpinGlass(graph, [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1])
 
     for (source, target_type) in [
             # please add more tests here
-            circuit => SpinGlass
+            circuit => SpinGlass,
+            maxcut => SpinGlass,
+            spinglass => MaxCut,
         ]
         # directly solve
         best_source = findbest(source, BruteForce())
