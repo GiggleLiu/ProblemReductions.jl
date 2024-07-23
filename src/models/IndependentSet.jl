@@ -32,5 +32,5 @@ Count the edges connecting the input 'config' (a subset of vertices)
 
 function evaluate(c::IndependentSet, config)
     @assert length(config) == num_variables(c)
-    return count(e -> config[e.src] == 1 && config[e.dst] == 1, edges(g))
+    return count(e -> config[e.src] == 1 && config[e.dst] == 1, edges(c.graph))
 end
