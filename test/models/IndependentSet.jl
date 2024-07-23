@@ -26,7 +26,10 @@ using Test, ProblemReductions, Graphs
 
     # evaluate
     # Positive example
-    @test evaluate(IS_01, [1, 0, 0, 1]) == 0
-    @test evaluate(IS_01, [0, 1, 0, 1]) == 0
-    @test evaluate(IS_01, [0, 1, 1, 0]) == 1
+    @test evaluate(IS_01, [1, 0, 0, 1]) == -2
+    @test evaluate(IS_01, [0, 1, 0, 1]) == -2
+    # Negative example
+    @test evaluate(IS_01, [0, 1, 1, 0]) == Inf
+
+    @test findbest(IS_01, BruteForce()) == [[0, 1, 0, 1], [1, 0, 0, 1]]
 end
