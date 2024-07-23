@@ -47,3 +47,4 @@ Extract the solution `solution` of the target problem to the original problem.
 function extract_solution end
 
 include("spinglass_sat.jl")
+include("spinglass_maxcut.jl")

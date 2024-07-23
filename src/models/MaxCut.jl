@@ -8,17 +8,17 @@ weights of the edges that are cut.
 Positional arguments
 -------------------------------
 * `graph` is the problem graph.
-* `edge_weights` are associated with the edges of the `graph`.
+* `weights` are associated with the edges of the `graph`. We have ensure that the `weights` are in the same order as the edges in `edges(graph)`.
 """
-struct MaxCut{WT1<:AbstractVector} <: AbstractProblem
+struct MaxCut{WT<:AbstractVector} <: AbstractProblem
     graph::SimpleGraph{Int}
-    edge_weights::WT1
-    function MaxCut(g::SimpleGraph,edge_weights::AbstractVector=UnitWeight(ne(g))) 
-        @assert length(edge_weights) == ne(g)
-        new{typeof(edge_weights)}(g, edge_weights)
+    weights::WT
+    function MaxCut(g::SimpleGraph,weights::AbstractVector=UnitWeight(ne(g))) 
+        @assert length(weights) == ne(g)
+        new{typeof(weights)}(g, weights)
     end
 end
-Base.:(==)(a::MaxCut, b::MaxCut) = a.graph == b.graph && a.edge_weights == b.edge_weights
+Base.:(==)(a::MaxCut, b::MaxCut) = a.graph == b.graph && a.weights == b.weights
 
 # varibles interface 
 variables(gp::MaxCut) = [1:nv(gp.graph)...]
@@ -26,7 +26,7 @@ num_variables(gp::MaxCut) = nv(gp.graph)
 flavors(::Type{<:MaxCut}) = [0, 1] #choose it or not
                             
 # weights interface
-parameters(c::MaxCut) = [[c.edge_weights[i] for i=1:ne(c.graph)]...]
+parameters(c::MaxCut) = [[c.weights[i] for i=1:ne(c.graph)]...]
 set_parameters(c::MaxCut, weights) = MaxCut(c.graph, weights[1:ne(c.graph)])
 
 
@@ -38,12 +38,12 @@ sum of the weights of the edges that are cut.
 """
 function evaluate(c::MaxCut, config)
     @assert length(config) == nv(c.graph)
-    -cut_size(vedges(c.graph), config; edge_weights=c.edge_weights)
+    -cut_size(vedges(c.graph), config; weights=c.weights)
 end
 
-function cut_size(terms, config; edge_weights=UnitWeight(length(terms)))
-    size = zero(promote_type(eltype(edge_weights)))
-    for (i,j)in zip(terms, edge_weights)            # we have ensure that the edge_weights are in the same order as the edges in terms, so we could use zip()
+function cut_size(terms, config; weights=UnitWeight(length(terms)))
+    size = zero(promote_type(eltype(weights)))
+    for (i,j)in zip(terms, weights)
         size += (config[i[1]] != config[i[2]]) * j  # terms are the edges,and terms[1],terms[2] are the two vertices of the edge.
     end
     return size
