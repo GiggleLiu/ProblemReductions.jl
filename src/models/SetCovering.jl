@@ -31,7 +31,8 @@ set_parameters(c::SetCovering, weights) = SetCovering(c.sets, weights)
     evaluate(c::SetCovering, config)
    
 evaluate the energy of the set covering configuration `config`, the energy is the
-sum of the weights of the sets that are selected. Config is a vector of boolean numbers.
+sum of the weights of the sets that are selected but return typemax(eltype(weights)) if the set is not covered.
+Config is a vector of boolean numbers.
 """ 
 
 function evaluate(c::SetCovering, config)
