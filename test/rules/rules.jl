@@ -4,6 +4,10 @@ using Test, ProblemReductions, Graphs
     include("spinglass_sat.jl")
 end
 
+@testset "spinglass_sat" begin
+    include("spinglass_maxcut.jl")
+end
+
 @testset "rules" begin
     circuit = CircuitSAT(@circuit begin
         x = a ∨ ¬b
