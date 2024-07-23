@@ -1,6 +1,6 @@
 using Test, ProblemReductions, Graphs
 
-@testset "IndependentSet" begin
+@testset "independentset" begin
     # construct a graph
     g01 = SimpleGraph(4)
     add_edge!(g01, 1, 2) 
