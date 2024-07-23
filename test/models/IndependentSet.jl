@@ -31,5 +31,6 @@ using Test, ProblemReductions, Graphs
     # Negative example
     @test evaluate(IS_01, [0, 1, 1, 0]) == Inf
 
-    @test findbest(IS_01, BruteForce()) == [[0, 1, 0, 1], [1, 0, 0, 1]]
+    #@test findbest(IS_01, BruteForce()) == [[0, 1, 0, 1], [1, 0, 0, 1]]
+    @test findbest(IS_01, BruteForce()) == [[1, 0, 0, 1], [0, 1, 0, 1]]
 end
