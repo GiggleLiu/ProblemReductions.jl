@@ -21,7 +21,7 @@ end
 Base.:(==)(a::IndependentSet, b::IndependentSet) = ( a.graph == b.graph )
 
 # Variables Interface
-variables(gp::IndependentSet) = [1:nv(gp.graph)]
+variables(gp::IndependentSet) = [1:nv(gp.graph)...]
 flavors(::Type{<:IndependentSet}) = [0, 1]
 
 """
