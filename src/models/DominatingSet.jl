@@ -12,7 +12,7 @@ We don't have weights for this problem.
 """
 struct DominatingSet{ GT<:AbstractGraph} <: AbstractProblem
     graph::GT
-    function IndependentSet( graph::AbstractGraph)
+    function DominatingSet( graph::AbstractGraph)
         return new{typeof(graph)}(graph)
     end
 end
