@@ -13,7 +13,7 @@ Examples
 -------------------------------
 Under Development
 """
-struct SetPacking{ET <: Vector} <: AbstractProblem
+struct SetPacking{ET <: AbstractVector} <: AbstractProblem
     sets::Vector{Vector{ET}}
     function SetPacking(sets::Vector{Vector{ET}} ) where {ET}
         new{ET}(sets)
