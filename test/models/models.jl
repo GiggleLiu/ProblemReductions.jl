@@ -23,3 +23,7 @@ end
 @testset "Maxcut" begin
     include("MaxCut.jl")
 end
+
+@testset "DominatingSet" begin
+    include("DominatingSet.jl")
+end
