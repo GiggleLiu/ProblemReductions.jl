@@ -17,8 +17,9 @@ using Test, ProblemReductions, Graphs
 
     # evaluate
     @test evaluate(vc, [1, 0, 0, 1]) == typemax(Int)
-    @test evaluate(set_parameters(vc,[1,2,4,1]), [0, 1, 1, 0]) == 8
+    @test evaluate(set_parameters(vc,[1,2,4,1]), [0, 1, 1, 0]) == 6
     @test is_vertex_covering(vc.graph, [1, 0, 0, 1]) == false
     
     #findbest
+    @test findbest(vc, BruteForce()) == [[1,0,1,0]] 
 end
