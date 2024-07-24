@@ -33,5 +33,5 @@ using Test, ProblemReductions, Graphs
     @test evaluate(DS_01, [0, 1, 1, 0, 0]) == Inf
     @test evaluate(DS_01, [1, 0, 0, 0, 1]) == Inf
     # findbest function
-    @test findbest(DS_01, BruteForce()) == [0, 1, 0, 1, 0]
+    @test findbest(DS_01, BruteForce()) == [[1, 0, 0, 1, 0], [0, 1, 0, 1, 0], [0, 1, 0, 0, 1]]
 end
