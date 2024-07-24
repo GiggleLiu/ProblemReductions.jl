@@ -26,11 +26,12 @@ using Test, ProblemReductions, Graphs
 
     # evaluate
     # Positive examples
-    @test evaluate(DS_01, [1, 0, 1, 0, 1]) == -3
-    @test evaluate(DS_01, [0, 1, 0, 1, 0]) == -2
+    @test evaluate(DS_01, [1, 0, 1, 0, 1]) == 3
+    @test evaluate(DS_01, [0, 1, 0, 1, 0]) == 2
+    @test evaluate(DS_01, [1, 1, 1, 1, 0]) == 4
     # Negative examples
     @test evaluate(DS_01, [0, 1, 1, 0, 0]) == Inf
     @test evaluate(DS_01, [1, 0, 0, 0, 1]) == Inf
     # findbest function
-    @test findbest(DS_01, BruteForce()) == [[1, 0, 1, 0, 1], [0, 1, 0, 1, 0]]
+    @test findbest(DS_01, BruteForce()) == [0, 1, 0, 1, 0]
 end

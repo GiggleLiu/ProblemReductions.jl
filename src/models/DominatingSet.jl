@@ -28,14 +28,14 @@ flavors(::Type{<:DominatingSet}) = [0, 1]
 Firstly, we count the number of vertices outside the dominating set and the neighbours of the dominating set: 
 If this number is zero, this configuration corresponds to a dominating set. 
 * If the configuration is not a dominating set return Inf;
-* If the configuration is a dominating set return -( size(dominating set) ).
+* If the configuration is a dominating set return size(dominating set).
 """
 
 function evaluate(c::DominatingSet, config)
     g = c.graph
     num_outside_vertices = count(w -> config[w] == 0 && all(v-> config[v] == 0, neighbors(g, w)), Graphs.vertices(g))
     if num_outside_vertices == 0
-        return - count(x -> x == 1, config)
+        return count(x -> x == 1, config)
     else
         return Inf
     end
