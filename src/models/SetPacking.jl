@@ -31,11 +31,6 @@ flavors(::Type{<:SetPacking}) = [0, 1]
 * First step: We check if `config` (a vector of boolean numbers as the mask of sets) is a set packing of `sets`;
 * Second step: If it is a set packing, we return - (size(set packing)); Otherwise, we return Inf.
 """
-"""
-    is_set_packing(sets::AbstractVector, config)
-
-Return true if `config` (a vector of boolean numbers as the mask of sets) is a set packing of `sets`.
-"""
 function evaluate(c::SetPacking, config)
     @assert length(config) == num_variables(c)
     if is_set_packing(c.sets, config)
@@ -44,6 +39,11 @@ function evaluate(c::SetPacking, config)
         return Inf
     end
 end
+"""
+    is_set_packing(sets::AbstractVector, config)
+
+Return true if `config` (a vector of boolean numbers as the mask of sets) is a set packing of `sets`.
+"""
 function is_set_packing(sets::AbstractVector{ST}, config) where ST
     d = Dict{eltype(ST), Int}()
     for i=1:length(sets)
