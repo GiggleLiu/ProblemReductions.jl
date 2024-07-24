@@ -21,11 +21,12 @@ export SetCovering, is_set_covering, set_covering_energy
 export BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, satisfiable
 export MaxCut
 export IndependentSet
+export VertexCovering, is_vertex_covering, vertex_covering_energy
 
 # rules
 export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, reduction_complexity
 export LogicGadget, truth_table
-export spinglass_circuit, ReductionCircuitToSpinGlass
+export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut
 export findbest, BruteForce
 export CNF
 

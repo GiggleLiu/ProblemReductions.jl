@@ -25,5 +25,9 @@ end
 end
 
 @testset "IndependentSet" begin
-    include("IndependentSet.jl")
+  include("IndependentSet.jl")
+end
+
+@testset "VertexCovering" begin
+    include("VertexCovering.jl")
 end
