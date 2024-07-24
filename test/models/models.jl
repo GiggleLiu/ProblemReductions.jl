@@ -24,6 +24,14 @@ end
     include("MaxCut.jl")
 end
 
+@testset "IndependentSet" begin
+  include("IndependentSet.jl")
+end
+
+@testset "VertexCovering" begin
+    include("VertexCovering.jl")
+end
+
 @testset "DominatingSet" begin
     include("DominatingSet.jl")
 end
