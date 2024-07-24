@@ -31,7 +31,8 @@ If this number is zero, this configuration corresponds to a dominating set.
 * If the configuration is a dominating set return -( size(dominating set) ).
 """
 
-function evaluate(g::DominatingSet, config)
+function evaluate(c::DominatingSet, config)
+    g = c.graph
     num_outside_vertices = count(w -> config[w] == 0 && all(v-> config[v] == 0, neighbors(g, w)), Graphs.vertices(g))
     if num_outside_vertices == 0
         return - count(x -> x == 1, config)
