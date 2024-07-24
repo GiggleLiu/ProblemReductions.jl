@@ -31,3 +31,7 @@ end
 @testset "VertexCovering" begin
     include("VertexCovering.jl")
 end
+
+@testset "SetPacking" begin
+    include("SetPacking.jl")
+end
