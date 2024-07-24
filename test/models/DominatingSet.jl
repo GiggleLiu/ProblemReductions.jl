@@ -9,10 +9,10 @@ using Test, ProblemReductions, Graphs
     add_edge!(g01, 4, 5)
 
     g02 = SimpleGraph(5)
-    add_edge!(g01, 4, 5)
-    add_edge!(g01, 1, 2)
-    add_edge!(g01, 3, 4)
-    add_edge!(g01, 2, 3)
+    add_edge!(g02, 4, 5)
+    add_edge!(g02, 1, 2)
+    add_edge!(g02, 3, 4)
+    add_edge!(g02, 2, 3)
     
     # construct corresponding DominatingSet problems
     DS_01 = DominatingSet(g01)
