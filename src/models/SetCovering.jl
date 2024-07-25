@@ -21,7 +21,6 @@ Base.:(==)(a::SetCovering, b::SetCovering) = a.sets == b.sets && a.weights == b.
 
 #variables interface
 variables(gp::SetCovering) = [1:length(gp.sets)...]
-num_variables(gp::SetCovering) = length(gp.sets)
 flavors(::Type{<:SetCovering}) = [0, 1] # whether the set is selected (1) or not (0)
 
 # weights interface
