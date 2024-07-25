@@ -20,12 +20,12 @@ using Test, ProblemReductions
     # a Positive examples
     cfg01 = [1, 0, 0, 1, 0]
     @test evaluate(SP_01, cfg01) == -2
-    is_set_packing(SP_01, cfg01) == true
+    is_set_packing(SP_01.sets, cfg01) == true
 
     # a Negative example
     cfg02 = [1, 0, 1, 1, 0]
     @test evaluate(SP_01, cfg02) == Inf
-    is_set_packing(SP_01, cfg02) == false
+    is_set_packing(SP_01.sets, cfg02) == false
 
     # test findbest function
     cfg03 = [0, 1, 1, 0, 0]
