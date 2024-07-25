@@ -24,7 +24,7 @@ using Test, ProblemReductions
 
     # a Negative example
     cfg02 = [1, 0, 1, 1, 0]
-    @test evaluate(SP_01, cfg02) == Inf
+    @test evaluate(SP_01, cfg02) == 6
     is_set_packing(SP_01.sets, cfg02) == false
 
     # test findbest function

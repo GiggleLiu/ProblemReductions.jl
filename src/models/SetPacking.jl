@@ -29,16 +29,17 @@ flavors(::Type{<:SetPacking}) = [0, 1]
     evaluate(c::SetPacking, config)
 
 * First step: We check if `config` (a vector of boolean numbers as the mask of sets) is a set packing of `sets`;
-* Second step: If it is a set packing, we return - (size(set packing)); Otherwise, we return Inf.
+* Second step: If it is a set packing, we return - (size(set packing)); Otherwise, we return size(variables) + 1.
 """
 function evaluate(c::SetPacking, config)
     @assert length(config) == num_variables(c)
     if is_set_packing(c.sets, config)
         return - count(x -> x == 1, config)
     else
-        return Inf
+        return length(config) + 1
     end
 end
+
 """
     is_set_packing(sets::AbstractVector, config)
 
