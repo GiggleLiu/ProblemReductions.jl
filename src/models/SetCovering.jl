@@ -20,7 +20,7 @@ end
 Base.:(==)(a::SetCovering, b::SetCovering) = a.sets == b.sets && a.weights == b.weights
 
 #variables interface
-variables(gp::SetCovering) = gp.sets
+variables(gp::SetCovering) = [1:length(gp.sets)...]
 flavors(::Type{<:SetCovering}) = [0, 1] # whether the set is selected (1) or not (0)
 
 # weights interface
@@ -46,7 +46,7 @@ function set_covering_energy(sets::AbstractVector, weights::AbstractVector, conf
 end
 
 """
-    is_set_covering(sets::AbstractVector, config)
+    is_set_covering(sets::SetCovering, config)
 
 Return true if `config` (a vector of boolean numbers as the mask of sets) is a set covering of `sets`.
 """
