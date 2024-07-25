@@ -18,19 +18,15 @@ using Test, ProblemReductions
 
     # evaluate
     # a Positive examples
-    cfg_values01 = [1, 0, 0, 1, 0]
-    cfg01 = Dict(zip(sets01, cfg_values01))
+    cfg01 = [1, 0, 0, 1, 0]
     @test evaluate(SP_01, cfg01) == -2
-    
+
     # a Negative example
-    cfg_values02 = [1, 0, 1, 1, 0]
-    cfg02 = Dict(zip(sets01, cfg_values02))
+    cfg02 = [1, 0, 1, 1, 0]
     @test evaluate(SP_01, cfg02) == Inf
 
     # test findbest function
-    cfg_values03 = [0, 1, 1, 0, 0]
-    cfg03 = Dict(zip(sets01, cfg_values03))
-    cfg_values04 = [0, 0, 1, 1, 0]
-    cfg04 = Dict(zip(sets01, cfg_values04))
+    cfg03 = [0, 1, 1, 0, 0]
+    cfg04 = [0, 0, 1, 1, 0]
     @test findbest(SP_01, BruteForce()) == [cfg01, cfg03, cg04] # "1" is superior to "0"
 end
