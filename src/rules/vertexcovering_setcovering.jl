@@ -9,42 +9,20 @@ The reduction result of a vertex covering to a set covering problem.
 """
 struct ReductionVertexCoveringToSetCovering{ET, WT<:AbstractVector}
     setcovering::SetCovering{ET, WT}
-    edgelabel::Dict{AbstractVector, Int}
+    edgelabel::Dict{Vector{Int}, Int}
 end
 Base.:(==)(a::ReductionVertexCoveringToSetCovering, b::ReductionVertexCoveringToSetCovering) = a.setcovering == b.setcovering && a.edgelabel == b.edgelabel
 
 target_problem(res::ReductionVertexCoveringToSetCovering) = res.setcovering
 
 function reduceto(::Type{<:SetCovering}, vc::VertexCovering)
-    sc, edgelabel = vc2sc(vc) #vertexcovering2setcovering
-    return ReductionVertexCoveringToSetCovering(sc,edgelabel)
+    sc, edgelabel = vertexcovering2setcovering(vc) #vertexcovering2setcovering
+    return ReductionVertexCoveringToSetCovering(sc, edgelabel)
 end
 
-# vertexcovering2setcovering
-function vc2sc(vc::VertexCovering)
-    edgelabel = edgetonumber(vc.graph)
-    sets = Vector{Int}[]  # Initialize sets as Vector{Vector{Int}} type
-    for j in 1:nv(vc.graph)
-        set = Int[]  # for each vertex, initialize set as Int[] type
-        for edge in keys(edgelabel)
-            if edge[1] == j || edge[2] == j
-                push!(set, edgelabel[edge])  # if the vertex is in the edge, add the edge number to the set
-            end
-        end
-        sort!(set)  
-        push!(sets, set)  # add the set to the sets
-    end
-    weights = vc.weights
-    return SetCovering(sets, weights), edgelabel
-end
-
-# number the edges
-function edgetonumber(g::SimpleGraph)
-    edgelabel = Dict{AbstractVector, Int}()
-    for (i, e) in enumerate(vedges(g))
-        edgelabel[e] = i
-    end
-    return edgelabel
+function vertexcovering2setcovering(vc::VertexCovering)
+    edgs = vedges(vc.graph)
+    return SetCovering(map(j->findall(e->j ∈ e, edgs), vertices(vc.graph)), vc.weights), Dict(zip(edgs, 1:ne(vc.graph)))
 end
 
 function extract_solution(res::ReductionVertexCoveringToSetCovering, sol)
