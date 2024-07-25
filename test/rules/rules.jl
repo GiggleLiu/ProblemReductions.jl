@@ -7,6 +7,9 @@ end
 @testset "spinglass_maxcut" begin
     include("spinglass_maxcut.jl")
 end
+@testset "vertexcovering_setcovering" begin
+    include("vertexcovering_setcovering.jl")
+end
 
 @testset "rules" begin
     circuit = CircuitSAT(@circuit begin
@@ -17,12 +20,14 @@ end
     graph = smallgraph(:petersen)
     maxcut = MaxCut(graph)
     spinglass = SpinGlass(graph, [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1])
+    vertexcovering = VertexCovering(graph, [1,2,1,2,1,2,1,2,1,2])
 
     for (source, target_type) in [
             # please add more tests here
             circuit => SpinGlass,
             maxcut => SpinGlass,
             spinglass => MaxCut,
+            vertexcovering => SetCovering
         ]
         # directly solve
         best_source = findbest(source, BruteForce())

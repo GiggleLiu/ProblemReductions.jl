@@ -27,7 +27,7 @@ export DominatingSet
 # rules
 export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, reduction_complexity
 export LogicGadget, truth_table
-export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut
+export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering
 export findbest, BruteForce
 export CNF
 
