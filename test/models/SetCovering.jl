@@ -3,7 +3,7 @@ using Test, ProblemReductions, Graphs
 @testset "setcovering" begin
     c = SetCovering([[1, 2], [2, 3], [2, 3, 4]], [1, 1, 2])
     # constructor function
-    @test variables(c)==[[1,2],[2,3],[2,3,4]]
+    @test variables(c)==[1, 2, 3]
     @test num_variables(c) == 3
     @test flavors(SetCovering) == [0, 1]
     

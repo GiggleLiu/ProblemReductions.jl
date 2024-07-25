@@ -23,6 +23,7 @@ export MaxCut
 export IndependentSet
 export VertexCovering, is_vertex_covering, vertex_covering_energy
 export SetPacking, is_set_packing
+export DominatingSet
 
 # rules
 export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, reduction_complexity
