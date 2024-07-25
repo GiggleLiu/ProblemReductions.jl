@@ -4,7 +4,7 @@ using Test, ProblemReductions, Graphs
     include("spinglass_sat.jl")
 end
 
-@testset "spinglass_sat" begin
+@testset "spinglass_maxcut" begin
     include("spinglass_maxcut.jl")
 end
 @testset "vertexcovering_setcovering" begin
