@@ -12,7 +12,7 @@ struct VertexCovering{WT<:AbstractVector} <: AbstractProblem
     graph::SimpleGraph{Int64}
     weights::WT
     function VertexCovering(graph::SimpleGraph{Int64}, weights::AbstractVector=UnitWeight(nv(graph)))
-        @assert length(weights) == nv(graph) "length of weights must be equal to the number of vertices $(ne(graph)), got: $(length(weights))"
+        @assert length(weights) == nv(graph) "length of weights must be equal to the number of vertices $(nv(graph)), got: $(length(weights))"
         new{typeof(weights)}(graph, weights)
     end
 end

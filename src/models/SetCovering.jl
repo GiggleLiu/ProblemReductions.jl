@@ -20,7 +20,8 @@ end
 Base.:(==)(a::SetCovering, b::SetCovering) = a.sets == b.sets && a.weights == b.weights
 
 #variables interface
-variables(gp::SetCovering) = gp.sets
+variables(gp::SetCovering) = collect(1:length(gp.sets))
+num_variables(gp::SetCovering) = length(gp.sets)
 flavors(::Type{<:SetCovering}) = [0, 1] # whether the set is selected (1) or not (0)
 
 # weights interface
