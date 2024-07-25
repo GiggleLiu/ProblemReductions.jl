@@ -20,13 +20,15 @@ using Test, ProblemReductions
     # a Positive examples
     cfg01 = [1, 0, 0, 1, 0]
     @test evaluate(SP_01, cfg01) == -2
+    is_set_packing(SP_01, cfg01) == true
 
     # a Negative example
     cfg02 = [1, 0, 1, 1, 0]
     @test evaluate(SP_01, cfg02) == Inf
+    is_set_packing(SP_01, cfg02) == false
 
     # test findbest function
     cfg03 = [0, 1, 1, 0, 0]
     cfg04 = [0, 0, 1, 1, 0]
-    @test findbest(SP_01, BruteForce()) == [cfg01, cfg03, cg04] # "1" is superior to "0"
+    @test findbest(SP_01, BruteForce()) == [cfg01, cfg03, cfg04] # "1" is superior to "0"
 end

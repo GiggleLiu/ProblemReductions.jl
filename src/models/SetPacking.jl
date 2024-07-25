@@ -34,7 +34,7 @@ flavors(::Type{<:SetPacking}) = [0, 1]
 function evaluate(c::SetPacking, config)
     @assert length(config) == num_variables(c)
     if is_set_packing(c.sets, config)
-        return - length(config)
+        return - count(x -> x == 1, config)
     else
         return Inf
     end
