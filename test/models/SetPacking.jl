@@ -30,5 +30,5 @@ using Test, ProblemReductions
     # test findbest function
     cfg03 = [0, 1, 1, 0, 0]
     cfg04 = [0, 0, 1, 1, 0]
-    @test findbest(SP_01, BruteForce()) == [cfg01, cfg03, cfg04] # "1" is superior to "0"
+    @test Set( findbest(SP_01, BruteForce()) ) == Set( [cfg01, cfg03, cfg04] ) # "1" is superior to "0"
 end
