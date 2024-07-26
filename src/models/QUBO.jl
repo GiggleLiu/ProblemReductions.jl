@@ -15,6 +15,19 @@ struct QUBO{QT<:AbstractMatrix} <: AbstractProblem
     end
 end
 Base.:(==)(a::QUBO, b::QUBO) = a.matrix == b.matrix
+function QUBO_from_SimpleGraph(graph::SimpleGraph, weights::Vector)
+    @assert length(weights) == ne(graph) "length of weights must be equal to the number of edges $(ne(graph)), got: $(length(weights))"
+    Q = zeros(Float64, nv(graph), nv(graph))
+    edge_idx = 0
+    for e in edges(graph)
+        edge_idx += 1
+        i = src(e)
+        j = dst(e)
+        Q[i, j] = weights[edge_idx]
+        Q[j, i] = weights[edge_idx]
+    end
+    return QUBO(Q)
+end
 
 # variables interface
 variables(c::QUBO) = collect(1:size(c.matrix, 1))
