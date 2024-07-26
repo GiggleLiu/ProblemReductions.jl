@@ -39,3 +39,7 @@ end
 @testset "DominatingSet" begin
     include("DominatingSet.jl")
 end
+
+@testset "QUBO" begin
+    include("QUBO.jl")
+end
