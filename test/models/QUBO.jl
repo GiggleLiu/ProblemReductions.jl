@@ -11,7 +11,7 @@ using ProblemReductions, Test, LinearAlgebra
 
     # variables
     @test variables(QUBO01) == [1, 2, 3]
-    @test num_variables(QUBO01) == 4
+    @test num_variables(QUBO01) == 3
     @test flavors(QUBO01) == [0, 1]
     @test num_flavors(QUBO01) == 2
 
