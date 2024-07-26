@@ -14,7 +14,7 @@ struct QUBO{QT<:AbstractMatrix} <: AbstractProblem
         return new{typeof(matrix)}(matrix)
     end
 end
-Base.:(==)(a::QUBO, b::QUBO) = a.matrix == b.Q
+Base.:(==)(a::QUBO, b::QUBO) = a.matrix == b.matrix
 
 # variables interface
 variables(c::QUBO) = collect(1:size(c.matrix, 1))
@@ -28,5 +28,5 @@ Compute the quadratic form b^T*Q*b.
 function evaluate(c::QUBO, config)
     @assert length(config) == num_variables(c)
     @assert all(x -> x in (0, 1), config)
-    return transpose(config) * c.Q * config
+    return transpose(config) * c.matrix * config
 end
