@@ -12,7 +12,9 @@ using ProblemReductions: maxcut2spinglass
 
     mc = MaxCut(g, [1, 3, 1, 4])
     Base.:(==)(a::ReductionMaxCutToSpinGlass, b::ReductionMaxCutToSpinGlass) = a.spinglass == b.spinglass
-    @test reduceto(SpinGlass, mc) == ReductionMaxCutToSpinGlass(maxcut2spinglass(mc))
+    res = ReductionMaxCutToSpinGlass(maxcut2spinglass(mc))
+    @test target_problem(res) == res.spinglass
+    @test reduceto(SpinGlass, mc) == res
     @test maxcut2spinglass(mc) == SpinGlass(g, [1, 3, 1, 4])
     @test findbest(mc, BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
     @test findbest(maxcut2spinglass(mc), BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order

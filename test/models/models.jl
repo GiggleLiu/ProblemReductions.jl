@@ -32,6 +32,14 @@ end
     include("VertexCovering.jl")
 end
 
+@testset "SetPacking" begin
+    include("SetPacking.jl")
+end
+
 @testset "DominatingSet" begin
     include("DominatingSet.jl")
+end
+
+@testset "QUBO" begin
+    include("QUBO.jl")
 end
