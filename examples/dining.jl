@@ -1,17 +1,17 @@
-# #
+# # Dining with Friends
 # ## Invite your friends to a dinner party
 
 # Suppose you are hosting a dinner party and you have invited your friends.
-
 # The relation between your friends is represented by a graph.
 # To create a graph, we use the `smallgraph` function from the `Graphs` package.
-using ProblemReductions, Graphs
+using ProblemReductions, Graphs, LuxorGraphPlot
 graph = smallgraph(:petersen)
 
 # We could make it into a maxcut problem, where each vertex stands for a person and the weight of edges 
 # stand for the unfriendly level between them.
 mc = MaxCut(graph,[3,2,4,2,1,-1,2,3,1,1,4,3,2,2,1])
-# Then we use LuxorGraphPlot to visualize the graph
+# Then we use LuxorGraphPlot to visualize the graph.
+show_graph(graph:svg)
 # OK, since we wants to find the best partition for our friends, we should find the maximum cut of the graph.
 # Then, we could reduce it into a spinglass problem,where we want to find the spins configuration with the lowest energy.
 
