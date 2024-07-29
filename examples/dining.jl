@@ -1,35 +1,31 @@
 # #
 # ## Invite your friends to a dinner party
 
-using ProblemReductions
-
 # Suppose you are hosting a dinner party and you have invited your friends.
 
 # The relation between your friends is represented by a graph.
 # To create a graph, we use the `smallgraph` function from the `Graphs` package.
-using Graphs
+using ProblemReductions, Graphs
 graph = smallgraph(:petersen)
 
-# This problem can be modeled as a maximum cut problem.
-maxcut = MaxCut(graph)
-
-# ## From maximum cut to spin glass
-
-# ## From spin glass to circuit satisfiability
-
-# ## From circuit satisfiability to cryptographic problems
+# We could make it into a maxcut problem, where each vertex stands for a person and the weight of edges 
+# stand for the unfriendly level between them.
+mc = MaxCut(graph,[3,2,4,2,1,-1,2,3,1,1,4,3,2,2,1])
+# Then we use LuxorGraphPlot to visualize the graph
+# OK, since we wants to find the best partition for our friends, we should find the maximum cut of the graph.
+# Then, we could reduce it into a spinglass problem,where we want to find the spins configuration with the lowest energy.
 
 # ## Inviting friends to a dinner is harder than cracking the encryption system
 # Intro to RSA encryption system
 # Intro to factoring problem
 # Example: how to solve $x \times y = 6$, by reducing to spin-glass
-arr = ProblemReductions.compose_multiplier(2, 2)
-ProblemReductions.set_output!(arr, [0, 1, 1, 0])  # ? x ? == 6
+# arr = ProblemReductions.compose_multiplier(2, 2)
+# ProblemReductions.set_output!(arr, [0, 1, 1, 0])  # ? x ? == 6
 
-# Spin-Glass to MaxCut (inviting friends to a dinner)
 
 # NOTE: the first/second argument is the bit-width of the first/second input.
 # TODO: visualize the spin-galss
 # https://queracomputing.github.io/UnitDiskMapping.jl/notebooks/tutorial.html
 # https://github.com/GiggleLiu/LuxorGraphPlot.jl
 # https://arxiv.org/abs/2209.03965
+
