@@ -12,7 +12,6 @@ struct ReductionSatToColoring{K,T, WT<:AbstractVector}
     coloring::Coloring{K, WT}
     varlabel::Dict{T, Int}
 end
-Base.:(==)(a::ReductionSatToColoring, b::ReductionSatToColoring) = a.coloring == b.coloring
 
 target_problem(res::ReductionSatToColoring) = res.coloring
 
@@ -36,35 +35,7 @@ function extract_solution(res::ReductionSatToColoring, sol)
     return out
 end
 
-
-"""
-Todo:Get the variables from the SAT problem and create 2 vertexs for themselves and their negations
-
-then create a table gadget to simulate AND gate, add edges on all those variables and their negations also the auxiliary vertex in table gadget
-
-after that checkout all the CNFClause in the e.clauses where e::CNF, put them into add_clause!(CNFClause). In this function, we would connect the variables with the 
-output of the or gate in front of them and when reached the last OR gate, let the outcome be the True one in the table gadget
-
-finally, return a graph and also collect the preset color for the table gadget, where we need to ensure the colors of -False, True and Auxiliary. Let it be [0,1,2]
-
-So: tablegadget(g::SimpleGraph) to be the first function to call when creating a graph
-var_vertex(v::Vector{T}},g::SimpleGraph) to be the second function to call when collecting the variables, where we need to add edges to var and table
-For all the CNFClauses in the CNF, use a for loop to call, we only need to ensure every Cluases is true by connect the last OR gate to the table gadget
-OR_gate(c::CNFCluases,g::SimpleGraph) to be the third function 
-"""
-
-"""
-CNF2Graph(c::CNF)
-This function return a graph that simulates the CNF problem
-"""
-function CNF2Graph(vars::AbstractVector{T}, c::CNF) where T <: BoolVar
-    sc = SATColoringConstructor(vars)
-    for e in c.clauses
-        add_clause!(sc, e)
-    end
-    return g
-end
-
+# Construct the graph for the SAT problem and needed information
 struct SATColoringConstructor{T}
     g::SimpleGraph{Int}    # the graph
     varlabel::Dict{T,Int}  # a map from variable name to vertex index
