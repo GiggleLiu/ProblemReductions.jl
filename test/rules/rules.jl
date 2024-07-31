@@ -10,6 +10,9 @@ end
 @testset "vertexcovering_setcovering" begin
     include("vertexcovering_setcovering.jl")
 end
+@testset "sat_coloring.jl" begin
+    include("sat_coloring.jl")
+end
 
 @testset "rules" begin
     circuit = CircuitSAT(@circuit begin
@@ -21,13 +24,15 @@ end
     maxcut = MaxCut(graph)
     spinglass = SpinGlass(graph, [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1])
     vertexcovering = VertexCovering(graph, [1,2,1,2,1,2,1,2,1,2])
+    sat = Satisfiability(CNF([CNFClause([BoolVar(:a), BoolVar(:b)])]))
 
     for (source, target_type) in [
             # please add more tests here
             circuit => SpinGlass,
             maxcut => SpinGlass,
             spinglass => MaxCut,
-            vertexcovering => SetCovering
+            vertexcovering => SetCovering,
+            sat => Coloring{3}
         ]
         # directly solve
         best_source = findbest(source, BruteForce())
@@ -41,6 +46,6 @@ end
         best_source_extracted = extract_solution.(Ref(result), best_target)
 
         # check if the solutions are the same
-        @test sort(best_source) == sort(best_source_extracted)
+        @test unique!(sort(best_source)) == unique!(sort(best_source_extracted))
     end
 end
