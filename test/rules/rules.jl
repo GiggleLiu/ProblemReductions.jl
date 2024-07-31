@@ -46,6 +46,6 @@ end
         best_source_extracted = extract_solution.(Ref(result), best_target)
 
         # check if the solutions are the same
-        @test sort(best_source) == sort(best_source_extracted)
+        @test unique!(sort(best_source)) == unique!(sort(best_source_extracted))
     end
 end

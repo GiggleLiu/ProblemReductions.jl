@@ -18,7 +18,5 @@ function findbest(problem::AbstractProblem, ::BruteForce)
             push!(best_configs, collect(config))
         end
     end
-    filter!(x->isempty(x), best_configs)
-    unique!(best_configs) # remove empty and duplicates
     return best_configs
 end

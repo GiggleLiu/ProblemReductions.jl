@@ -27,12 +27,11 @@ end
 
 function extract_solution(res::ReductionSatToColoring, sol)
     out = zeros(eltype(sol),Int(length(res.varlabel)/2))
-    if sol[1] ==1 && sol[2] == 0 && sol[3] == 2
-       for i in 4:3+Int(length(res.varlabel)/2)
-              out[i-3] = sol[i]
-       end
-    else 
-        return Int[] # invalid coloring output
+    t, f, a = sol[1:3]
+    @assert t != f && t != a "Invalid solution!"
+    for i in 4:3+Int(length(res.varlabel)/2)
+        @assert sol[i] != a "Invalid solution, got auxiliary color: $a"
+        out[i-3] = sol[i] == t
     end
     return out
 end
