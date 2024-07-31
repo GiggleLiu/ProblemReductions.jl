@@ -8,7 +8,7 @@ The reduction result of a Sat problem to a Coloring problem.
 
 Note: The coloring problem is a 3 coloring problem, in which a auxiliary color is used Auxiliary color => 2.
 """
-struct ReductionSatToColoring{K, T, WT<:AbstractVector}
+struct ReductionSatToColoring{K,T, WT<:AbstractVector}
     coloring::Coloring{K, WT}
     varlabel::Dict{T, Int}
 end
@@ -16,18 +16,13 @@ Base.:(==)(a::ReductionSatToColoring, b::ReductionSatToColoring) = a.coloring ==
 
 target_problem(res::ReductionSatToColoring) = res.coloring
 
-function reduceto(::Type{<:Coloring{K}}, sat::Satisfiability) where {K} #ensure the Sat problem is a Sat problem
-    c, vl = sat2coloring(sat)
-    return ReductionSatToColoring(c,vl)
-end
-
-function sat2coloring(sat::Satisfiability{T}) where T
-    vl = Dict{T,Int}() #variable label
-    for (k,v) in enumerate(variables(sat))
-         vl[v] = k
+function reduceto(::Type{Coloring{3}},sat::Satisfiability{T}) where T #ensure the Sat problem is a Sat problem
+    sc = SATColoringConstructor(BoolVar.(variables(sat)))
+    for e in sat.cnf.clauses
+        add_clause!(sc, e)
     end
-    g = CNF2Graph(variables(sat), sat.cnf)
-    return Coloring{3}(g, UnitWeight(length(variables(sat)))), vl
+    prob = Coloring{3}(sc.g, UnitWeight(ne(sc.g)))
+    return ReductionSatToColoring(prob, sc.varlabel)
 end
 
 function extract_solution(res::ReductionSatToColoring, sol)
@@ -44,7 +39,7 @@ Todo:Get the variables from the SAT problem and create 2 vertexs for themselves 
 
 then create a table gadget to simulate AND gate, add edges on all those variables and their negations also the auxiliary vertex in table gadget
 
-after that checkout all the CNFClause in the e.clauses where e::CNF, put them into OR_gate(CNFClause). In this function, we would connect the variables with the 
+after that checkout all the CNFClause in the e.clauses where e::CNF, put them into add_clause!(CNFClause). In this function, we would connect the variables with the 
 output of the or gate in front of them and when reached the last OR gate, let the outcome be the True one in the table gadget
 
 finally, return a graph and also collect the preset color for the table gadget, where we need to ensure the colors of -False, True and Auxiliary. Let it be [0,1,2]
@@ -59,82 +54,70 @@ OR_gate(c::CNFCluases,g::SimpleGraph) to be the third function
 CNF2Graph(c::CNF)
 This function return a graph that simulates the CNF problem
 """
-function CNF2Graph(vars::AbstractVector, c::CNF)
-    len = length(vars)*2 + 3 # literals and their negations + 3 for the table gadget 
-    g = SimpleGraph{Int64}(len)
-    tablegadget(g)
-    var_vertex(vars, g)
+function CNF2Graph(vars::AbstractVector{T}, c::CNF) where T <: BoolVar
+    sc = SATColoringConstructor(vars)
     for e in c.clauses
-        OR_gate(e,g)
+        add_clause!(sc, e)
     end
     return g
 end
 
-function tablegadget(g::SimpleGraph)
-    add_edge!(g,1,3)
-    add_edge!(g,2,3)
-    add_edge!(g,1,2)
+struct SATColoringConstructor{T}
+    g::SimpleGraph{Int}    # the graph
+    varlabel::Dict{T,Int}  # a map from variable name to vertex index
+end
+function SATColoringConstructor(variables::Vector{T}) where T<:BoolVar
+    nv = length(variables)
+    g = SimpleGraph(2*nv+3)
+    for (i, j) in [(1, 2), (1, 3), (2, 3)]
+        add_edge!(g, i, j)
+    end
+    for i in 1:nv
+        a, nota = 3 + i, 3 + i + nv
+        add_edge!(g, a, 3)   # attach_to_ancilla
+        add_edge!(g, nota, 3)   # attach_to_ancilla
+        add_edge!(g, a, nota)  # connect the variable and its negation
+    end
+    varlabel = merge!(Dict(zip(variables, 4:3+nv)), Dict(zip((¬).(variables), 4+nv:2*nv+3)))
+    return SATColoringConstructor(g, varlabel)
 end
 
-function var_vertex(v::Vector{T},g::SimpleGraph) where T
-    for i in 1:length(v)
-        add_edge!(g,i,3) # 3 is the auxiliary vertex
-        add_edge!(g,i+length(v),3) 
-        add_edge!(g,i,i+length(v))# connect the variable and its negation
-    end
+true_vertex(sc::SATColoringConstructor) = 1
+false_vertex(sc::SATColoringConstructor) = 2
+ancilla_vertex(sc::SATColoringConstructor) = 3
+function set_true!(sc::SATColoringConstructor, idx::Int) where T
+    attach_to_ancilla!(sc, idx)
+    attach_to_false!(sc, idx)
+end
+attach_to_ancilla!(sc::SATColoringConstructor, idx::Int) = _attach_to_idx!(sc, idx, ancilla_vertex(sc))
+attach_to_false!(sc::SATColoringConstructor, idx::Int) = _attach_to_idx!(sc, idx, false_vertex(sc))
+attach_to_true!(sc::SATColoringConstructor, idx::Int) = _attach_to_idx!(sc, idx, true_vertex(sc))
+function _attach_to_idx!(sc::SATColoringConstructor{T}, idx::Int, kth::Int) where T
+    add_edge!(sc.g, idx, kth)
 end
 
-function OR_gate(c::CNFClause,g::SimpleGraph)
-    new_nodes = Int[]
-    for i in c.vars
-        if i!=c.vars[end] 
-            OR_gate_gadget(new_nodes,g,false)
-        else
-            OR_gate_gadget(new_nodes,g,true) 
-        end
-        if i!=c.vars[end]
-            add_edge!(g,new_nodes[end]-5,new_nodes[end]-1)
-            add_edge!(g,i,new_nodes[end+1]-2)
-            add_edge!(g,new_nodes[end]-1,new_nodes[end+1]-2)
-            add_edge!(g,varlabel[i+1],new_nodes[end]-2) #  add_edge!(g,input,gadget_interface)
-        else
-            add_edge!(g,new_nodes[end]-5,new_nodes[end]-1)# add_edge!(g,input,gadget_interface)
-            add_edge!(g,i,new_nodes[end]-2)# add_edge!(g,input,gadget_interface)
-        end
+function add_clause!(sc::SATColoringConstructor{T}, c::CNFClause) where T
+    @assert length(c.vars) > 0 "The clause must have at least 1 variables"
+    output_node = sc.varlabel[c.vars[1]] # get the first variable
+    for i in c.vars[2:end]
+       output_node = add_coloring_or_gadget!(sc, output_node, sc.varlabel[i])
     end
+    set_true!(sc, output_node)
 end
 
 # `g`: the graph to add the gadget
 # `input1`: the vertex index in `g` as the first input
 # `input2`: the vertex index in `g` as the second input
 # returns an output vertex number
-function add_coloring_or_gadget!(g::SimpleGraph, input1::Int, input2::Int)
-    # new_nodes::Vector{Int},
-    # ,endofclause::Bool
-    if endofclause # let the output be True(first vertex in the graph) to ensure the clause is true
-        for j in 1:4
-            push!(new_nodes,add_vertex!(g))
-        end
-        push!(new_nodes,1)
-        add_edge!(g,new_nodes[end]-4,1)
-        add_edge!(g,new_nodes[end],new_nodes[end]-1)
-        add_edge!(g,new_nodes[end],new_nodes[end]-2)
-        add_edge!(g,new_nodes[end]-1,new_nodes[end]-2)
-        add_edge!(g,new_nodes[end],new_nodes[end]-4)
-        add_edge!(g,new_nodes[end]-3,new_nodes[end]-4) 
-    else
-        for j in 1:5
-        push!(new_nodes,add_vertex!(g))
-        end
-        add_edge!(g,new_nodes[end],3) # connect the output vertex to the auxiliary vertex
-        add_edge!(g,new_nodes[end]-4,1)
-        add_edge!(g,new_nodes[end],new_nodes[end]-1)
-        add_edge!(g,new_nodes[end],new_nodes[end]-2)
-        add_edge!(g,new_nodes[end]-1,new_nodes[end]-2)
-        add_edge!(g,new_nodes[end],new_nodes[end]-4)
-        add_edge!(g,new_nodes[end]-3,new_nodes[end]-4)
+function add_coloring_or_gadget!(sc::SATColoringConstructor{T}, input1::Int, input2::Int) where T
+    add_vertices!(sc.g, 5) # add 5 nodes to the graph and track their index
+    a, b, c, d, output = nv(sc.g)-4:nv(sc.g)
+
+    # create the gadget
+    attach_to_ancilla!(sc, output) # connect the output vertex to the auxiliary vertex
+    attach_to_true!(sc, a)
+    for (i, j) in [(a, b), (b, c), (c, d), (d, c), (output, a), (b, a), (input1, d), (input2, c)]
+        add_edge!(sc.g, i, j)
     end
-    return new_nodes,g
+    return output
 end
-
-
