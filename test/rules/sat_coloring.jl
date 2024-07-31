@@ -1,19 +1,15 @@
 using Test, ProblemReductions, Graphs
-using ProblemReductions: sat2coloring, CNF2Graph, OR_gate, add_coloring_or_gadget!, tablegadget, var_vertex
+using ProblemReductions: reduceto, SATColoringConstructor, CNF2Graph, add_clause!, Coloring, Satisfiability, CNF, CNFClause, BoolVar
 
 @testset "sat_coloring" begin |
     bool1 = BoolVar(:X)
     bool2 = BoolVar(:Y)
-    bool3 = BoolVar(:Z)
-    clause1 = CNFClause([bool1, bool2, bool3])
+    clause1 = CNFClause([bool1, bool2])
     CNF1 = CNF([clause1])
     Sat1 = Satisfiability(CNF1)
-    
     @test Sat1 isa Satisfiability
-    
     result = reduceto(Coloring{3}, Sat1)
-    
-    expected_coloring = Coloring{3}(SimpleGraph{Int64}(16), UnitWeight(16))
-    expected_varlabel = Dict{String, Int64}("X" => 1, "Y" => 2, "Z" => 3)
-    expected_result = ReductionSatToColoring(expected_coloring, expected_varlabel)
+    expected_varlabel = Dict{BoolVar{Symbol}, Int64}(¬bool1 => 6, ¬bool2 => 7,bool2 => 5, bool1 => 4) 
+    @test result.varlabel == expected_varlabel
+    @test target_problem(result) isa Coloring
 end

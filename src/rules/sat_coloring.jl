@@ -26,9 +26,13 @@ function reduceto(::Type{Coloring{3}},sat::Satisfiability{T}) where T #ensure th
 end
 
 function extract_solution(res::ReductionSatToColoring, sol)
-    out = zeros(eltype(sol), num_variables(res.coloring))
-    for (k, v) in enumerate(variables(res.coloring))
-        out[v] = sol[k]
+    out = zeros(eltype(sol),Int(length(res.varlabel)/2))
+    if sol[1] ==1 && sol[2] == 0 && sol[3] == 2
+       for i in 4:3+Int(length(res.varlabel)/2)
+              out[i-3] = sol[i]
+       end
+    else 
+        return Int[] # invalid coloring output
     end
     return out
 end
@@ -111,12 +115,13 @@ end
 # returns an output vertex number
 function add_coloring_or_gadget!(sc::SATColoringConstructor{T}, input1::Int, input2::Int) where T
     add_vertices!(sc.g, 5) # add 5 nodes to the graph and track their index
-    a, b, c, d, output = nv(sc.g)-4:nv(sc.g)
+    ancilla1, ancilla2, entrance1, entrance2, output = nv(sc.g)-4:nv(sc.g)
 
     # create the gadget
     attach_to_ancilla!(sc, output) # connect the output vertex to the auxiliary vertex
-    attach_to_true!(sc, a)
-    for (i, j) in [(a, b), (b, c), (c, d), (d, c), (output, a), (b, a), (input1, d), (input2, c)]
+    attach_to_true!(sc, ancilla1)   # connect the ancilla1 to the true vertex
+    for (i, j) in [(ancilla1, ancilla2), (ancilla2,input1), (ancilla2, input2), (entrance1,entrance2), 
+        (output, ancilla1),(input1, entrance2), (input2, entrance1), (entrance1, output), (entrance2, output)]
         add_edge!(sc.g, i, j)
     end
     return output
