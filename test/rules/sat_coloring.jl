@@ -1,5 +1,5 @@
 using Test, ProblemReductions, Graphs
-using ProblemReductions: reduceto, SATColoringConstructor, CNF2Graph, add_clause!, Coloring, Satisfiability, CNF, CNFClause, BoolVar
+using ProblemReductions: SATColoringConstructor, add_clause!, Satisfiability, CNF, CNFClause
 
 @testset "sat_coloring" begin |
     bool1 = BoolVar(:X)
