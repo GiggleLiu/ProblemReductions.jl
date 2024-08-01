@@ -1,30 +1,27 @@
 # # Dining with Friends(developing yet)
-# ## Invite your friends to a dinner party
+# ---
+# ## Inviting friends to dinner > cracking a bank encryption system
+# Using this package, we could showcase the problem how inviting friends to a dinner party is harder than cracking a bank encryption system.Let's introduce some background knowledge
+# ### Intor to RSA 
+# RSA is a public-key cryptosystem. It's widely used in 
 
-# Suppose you are hosting a dinner party and you have invited your friends.
-# The relation between your friends is represented by a graph.
-# To create a graph, we use the `smallgraph` function from the `Graphs` package.
-using ProblemReductions, Graphs
-graph = smallgraph(:petersen)
+# ### Intro to factoring problem
+# The factoring problem is to find the prime factors of a composite number. It's a pratically hard problem. 
+# ### Reduction path from _Factoring_ to _MaxCut_
+# explain how I could use the ProblemReductions.jl to reduce the factoring problem to the MaxCut problem
 
-# We could make it into a maxcut problem, where each vertex stands for a person and the weight of edges 
-# stand for the unfriendly level between them.
-mc = MaxCut(graph,[3,2,4,2,1,-1,2,3,1,1,4,3,2,2,1])
-# Then we use LuxorGraphPlot to visualize the graph.
-# OK, since we wants to find the best partition for our friends, we should find the maximum cut of the graph.
-# Then, we could reduce it into a spinglass problem,where we want to find the spins configuration with the lowest energy.
+# ---
+# ## Factoring -> MaxCut
+using ProblemReductions, Graphs, LuxorGraphPlot
 
-# ## Inviting friends to a dinner is harder than cracking the encryption system
-# Intro to RSA encryption system
-# Intro to factoring problem
+# ### Create a factoring problem
 # Example: how to solve $x \times y = 6$, by reducing to spin-glass
 # arr = ProblemReductions.compose_multiplier(2, 2)
-# ProblemReductions.set_output!(arr, [0, 1, 1, 0])  # ? x ? == 6
+# ProblemReductions.set_output!(arr, [0, 1, 1, 0]) ->? x ? == 6
 
-
-# NOTE: the first/second argument is the bit-width of the first/second input.
-# TODO: visualize the spin-galss
-# https://queracomputing.github.io/UnitDiskMapping.jl/notebooks/tutorial.html
-# https://github.com/GiggleLiu/LuxorGraphPlot.jl
-# https://arxiv.org/abs/2209.03965
-
+# ### reduce the factoring to the circuit Sat problem
+# could I visualize this circuit Sat?
+# ### reduce the circuit Sat problem to the SpinGlass problem
+# Visualize this SpinGlass problem
+# ### reduce the SpinGlass problem to the MaxCut problem
+# Visualize this MaxCut problem and explain how the maxcut problem represents inviting friends to a dinner party
