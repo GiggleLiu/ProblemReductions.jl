@@ -59,7 +59,7 @@ end
 true_vertex(sc::SATColoringConstructor) = 1
 false_vertex(sc::SATColoringConstructor) = 2
 ancilla_vertex(sc::SATColoringConstructor) = 3
-function set_true!(sc::SATColoringConstructor, idx::Int) where T
+function set_true!(sc::SATColoringConstructor, idx::Int) 
     attach_to_ancilla!(sc, idx)
     attach_to_false!(sc, idx)
 end
