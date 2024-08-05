@@ -1,30 +1,34 @@
 # # Dining with Friends(developing yet)
-# ## Invite your friends to a dinner party
+# ---
+# ## Inviting friends to dinner > cracking a bank encryption system
+# Using this package, we could showcase the problem how inviting friends to a dinner party is harder than cracking a bank encryption system.Let's introduce some background knowledge.
 
-# Suppose you are hosting a dinner party and you have invited your friends.
-# The relation between your friends is represented by a graph.
-# To create a graph, we use the `smallgraph` function from the `Graphs` package.
-using ProblemReductions, Graphs
-graph = smallgraph(:petersen)
+# ### Intor to RSA 
+# RSA is a public-key cryptosystem. It's widely used in encryption algorithm that helps secure bank transactions and communications. 
+# Here's the Introduction->[RSA encryption](https://en.wikipedia.org/wiki/RSA_(cryptosystem)). Easily explained, there are public key $(n,e)$ and private key$(n,d)$. 
+# The attacker needs to factorize the $n$, a product of two large prime numbers. So the security of RSA comes from factoring problem.
+# ### Factoring problem
+# The factoring problem is to find the prime factors of a composite number. It's a pratically hard problem. Generally, the input size in RSA is 2048 bits.
+# Consider two algorithms to solve it: General number field sieve(GNFS, a good algorithm in factoring) and  Brute force. 
 
-# We could make it into a maxcut problem, where each vertex stands for a person and the weight of edges 
-# stand for the unfriendly level between them.
-mc = MaxCut(graph,[3,2,4,2,1,-1,2,3,1,1,4,3,2,2,1])
-# Then we use LuxorGraphPlot to visualize the graph.
-# OK, since we wants to find the best partition for our friends, we should find the maximum cut of the graph.
-# Then, we could reduce it into a spinglass problem,where we want to find the spins configuration with the lowest energy.
+# | Algorithm | Time complexity | Operations | Time ($10^{12}$ ops/s)  |
+# | :--- | :--- | :--- | :--- | 
+# | GNFS | $O(e^{(\log n)^{1/3}(\log \log n)^{2/3}})$ | $2^{112}$ | $≈ 7 \times 10^{20}$ years |
+# | Brute force | $O(\sqrt{n})$ | $2^{1024}$|$≈5.7 \times 10^{228}$ years |
+# Both are way longer than the age of our universe.
 
-# ## Inviting friends to a dinner is harder than cracking the encryption system
-# Intro to RSA encryption system
-# Intro to factoring problem
-# Example: how to solve $x \times y = 6$, by reducing to spin-glass
-# arr = ProblemReductions.compose_multiplier(2, 2)
-# ProblemReductions.set_output!(arr, [0, 1, 1, 0])  # ? x ? == 6
+# So basically, RSA relies on factoring and if we could reduce factoring to maxcut problem, we could show that inviting friends to a dinner party is harder than cracking a bank encryption system.  
+# Next part, I'll reduce factoring to the maxcut by: Factoring -> Circuit Sat -> SpinGlass -> MaxCut.
 
+# ---
+# ## Factoring -> MaxCut
+using ProblemReductions, Graphs, LuxorGraphPlot
+# For a given number $n$, we could create a factoring problem.
+# ### Create a factoring problem
+# ### reduce the factoring to the circuit Sat problem
 
-# NOTE: the first/second argument is the bit-width of the first/second input.
-# TODO: visualize the spin-galss
-# https://queracomputing.github.io/UnitDiskMapping.jl/notebooks/tutorial.html
-# https://github.com/GiggleLiu/LuxorGraphPlot.jl
-# https://arxiv.org/abs/2209.03965
-
+# could I visualize this circuit Sat?
+# ### reduce the circuit Sat problem to the SpinGlass problem
+# Visualize this SpinGlass problem
+# ### reduce the SpinGlass problem to the MaxCut problem
+# Visualize this MaxCut problem and explain how the maxcut problem represents inviting friends to a dinner party

@@ -14,7 +14,7 @@ struct MaxCut{WT<:AbstractVector} <: AbstractProblem
     graph::SimpleGraph{Int}
     weights::WT
     function MaxCut(g::SimpleGraph,weights::AbstractVector=UnitWeight(ne(g))) 
-        @assert length(weights) == ne(g)
+        @assert length(weights) == ne(g) "got $(length(weights)) weights, but $(ne(g)) are required"
         new{typeof(weights)}(g, weights)
     end
 end
