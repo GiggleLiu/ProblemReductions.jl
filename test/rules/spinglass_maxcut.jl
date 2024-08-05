@@ -25,28 +25,28 @@ end
         add_edge!(g1, i, j)
     end
     sg = SpinGlass(g1, [1, 3, 1, 4])
-    mc = spinglass2maxcut(sg)
-    res = ReductionSpinGlassToMaxCut(mc,g1)
+    mc,anc= spinglass2maxcut(sg)
+    res = ReductionSpinGlassToMaxCut(mc, anc)
     @test mc == MaxCut(g1, [1, 3, 1, 4])
-    @test target_problem(res) == mc
-    @test reduceto(MaxCut, sg) == ReductionSpinGlassToMaxCut(mc,g1)
-    @test spinglass2maxcut(sg) == MaxCut(g1, [1, 3, 1, 4])
+    @test target_problem(res) == res.maxcut
+    @test reduceto(MaxCut, sg) == res
+    @test spinglass2maxcut(sg) == (MaxCut(g1, [1, 3, 1, 4]),0)
     @test findbest(sg, BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
-    @test findbest(spinglass2maxcut(sg), BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
+    @test findbest(res.maxcut, BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
 
     # hyper graph
-    g2 = HyperGraph(4, [[1, 2], [1], [2,3], [2]])
+    g2 = HyperGraph(3, [[1, 2], [1], [2,3], [2]])
     sg = SpinGlass(g2, [1, 2, 1, -1])
-    mc = spinglass2maxcut(sg)
-    expected_g = SimpleGraph(5)
-    for (i, j) in [(1, 2), (1, 4), (2, 3), (2, 5)]
+    mc,ancilla= spinglass2maxcut(sg) 
+    expected_g = SimpleGraph(4)
+    for (i, j) in [(1, 2), (1, 4), (2, 3), (2, 4)]
         add_edge!(expected_g, i, j)
     end
-    res = ReductionSpinGlassToMaxCut(mc,g2)
-    @test mc == MaxCut(expected_g, [1, -2, 1, -1])
+    res = ReductionSpinGlassToMaxCut(mc,ancilla)
+    @test mc == MaxCut(expected_g, [1, 2, 1, -1])
     @test reduceto(MaxCut, sg) == res
     @test target_problem(res) == mc
-    @test spinglass2maxcut(sg) == mc
-    @test findbest(sg, BruteForce()) == [[1, 0, 1, 0], [1, 0, 1, 1]] 
-    @test findbest(spinglass2maxcut(sg), BruteForce()) == [[1, 0, 1, 1, 0], [0, 1, 0, 0, 1]]
+    @test spinglass2maxcut(sg) == (mc,4)
+    @test findbest(sg, BruteForce()) == [[1,0,1]]
+    @test findbest(res.maxcut, BruteForce()) == [[1, 0, 1, 0], [0, 1, 0, 1]]
 end

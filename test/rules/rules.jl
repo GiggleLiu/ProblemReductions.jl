@@ -25,7 +25,7 @@ end
     spinglass = SpinGlass(graph, [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1])
     vertexcovering = VertexCovering(graph, [1,2,1,2,1,2,1,2,1,2])
     sat = Satisfiability(CNF([CNFClause([BoolVar(:a), BoolVar(:b)])]))
-    graph2 = HyperGraph(4, [[1, 2], [1], [2,3], [2]])
+    graph2 = HyperGraph(3, [[1, 2], [1], [2,3], [2]])
     spinglass2 = SpinGlass(graph2, [1, 2, 1, -1])
     for (source, target_type) in [
             # please add more tests here
