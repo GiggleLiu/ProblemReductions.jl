@@ -1,5 +1,5 @@
 using Test, ProblemReductions, Graphs
-using ProblemReductions: maxcut2spinglass, spinglass2maxcut, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut,vedges
+using ProblemReductions: maxcut2spinglass, spinglass2maxcut
 
 @testset "maxut -> spinglass" begin
     # construct a graph
