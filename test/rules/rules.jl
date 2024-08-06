@@ -14,6 +14,10 @@ end
     include("sat_coloring.jl")
 end
 
+@testset "factoring_sat.jl" begin
+    include("factoring_sat.jl")
+end
+
 @testset "rules" begin
     circuit = CircuitSAT(@circuit begin
         x = a ∨ ¬b
