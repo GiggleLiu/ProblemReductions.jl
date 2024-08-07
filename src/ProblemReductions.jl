@@ -32,6 +32,7 @@ export LogicGadget, truth_table
 export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering, ReductionSatToColoring
 export findbest, BruteForce
 export CNF
+export Reduction3SATToIndependentSet
 
 include("truth_table.jl")
 include("topology.jl")
