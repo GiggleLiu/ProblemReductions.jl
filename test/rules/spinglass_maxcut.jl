@@ -16,7 +16,7 @@ using ProblemReductions: maxcut2spinglass, spinglass2maxcut
     @test reduceto(SpinGlass, mc) == res
     @test maxcut2spinglass(mc) == SpinGlass(g, [1, 3, 1, 4])
     @test findbest(mc, BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
-    @test findbest(maxcut2spinglass(mc), BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
+    @test sort(findbest(maxcut2spinglass(mc), BruteForce())) == sort([[1, 1, -1, 1], [1, -1, -1, 1], [-1, 1, 1, -1], [-1, -1, 1, -1]]) # in lexicographic order
 end
 
 @testset "spinglass -> maxcut" begin
@@ -31,7 +31,7 @@ end
     @test target_problem(res) == res.maxcut
     @test reduceto(MaxCut, sg) == res
     @test spinglass2maxcut(sg) == (MaxCut(g1, [1, 3, 1, 4]),0)
-    @test findbest(sg, BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
+    @test findbest(sg, BruteForce()) == [[1, 1, -1, 1], [1, -1, -1, 1], [-1, 1, 1, -1], [-1, -1, 1, -1]] # in lexicographic order
     @test findbest(res.maxcut, BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
 
     # hyper graph
@@ -47,6 +47,6 @@ end
     @test reduceto(MaxCut, sg) == res
     @test target_problem(res) == mc
     @test spinglass2maxcut(sg) == (mc,4)
-    @test findbest(sg, BruteForce()) == [[1,0,1]]
+    @test findbest(sg, BruteForce()) == [[-1, 1, -1]]
     @test findbest(res.maxcut, BruteForce()) == [[1, 0, 1, 0], [0, 1, 0, 1]]
 end
