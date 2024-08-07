@@ -10,6 +10,9 @@ end
 @testset "vertexcovering_setcovering" begin
     include("vertexcovering_setcovering.jl")
 end
+@testset "sat_coloring.jl" begin
+    include("sat_coloring.jl")
+end
 
 @testset "sat_3sat" begin
     include("sat_3sat.jl")
@@ -25,13 +28,17 @@ end
     maxcut = MaxCut(graph)
     spinglass = SpinGlass(graph, [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1])
     vertexcovering = VertexCovering(graph, [1,2,1,2,1,2,1,2,1,2])
-
+    sat = Satisfiability(CNF([CNFClause([BoolVar(:a), BoolVar(:b)])]))
+    graph2 = HyperGraph(3, [[1, 2], [1], [2,3], [2]])
+    spinglass2 = SpinGlass(graph2, [1, 2, 1, -1])
     for (source, target_type) in [
             # please add more tests here
             circuit => SpinGlass,
             maxcut => SpinGlass,
             spinglass => MaxCut,
-            vertexcovering => SetCovering
+            vertexcovering => SetCovering,
+            sat => Coloring{3},
+            spinglass2 => MaxCut
         ]
         # directly solve
         best_source = findbest(source, BruteForce())
@@ -45,6 +52,6 @@ end
         best_source_extracted = extract_solution.(Ref(result), best_target)
 
         # check if the solutions are the same
-        @test sort(best_source) == sort(best_source_extracted)
+        @test unique!(sort(best_source)) == unique!(sort(best_source_extracted))
     end
 end

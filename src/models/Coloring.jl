@@ -7,12 +7,12 @@ The [Vertex Coloring](https://queracomputing.github.io/GenericTensorNetworks.jl/
 Positional arguments
 -------------------------------
 * `graph` is the problem graph.
-* `weights` are associated with the edges of the `graph`, default to `UnitWeight(nv(graph))`.
+* `weights` are associated with the edges of the `graph`, default to `UnitWeight(ne(graph))`.
 """
 struct Coloring{K, WT<:AbstractVector} <:AbstractProblem
     graph::SimpleGraph{Int64}
     weights::WT
-    function Coloring{K}(graph::SimpleGraph{Int64}, weights::AbstractVector=UnitWeight(nv(graph))) where {K}
+    function Coloring{K}(graph::SimpleGraph{Int64}, weights::AbstractVector=UnitWeight(ne(graph))) where {K}
         @assert length(weights) == ne(graph) "length of weights must be equal to the number of edges $(ne(graph)), got: $(length(weights))"
         new{K, typeof(weights)}(graph, weights)
     end

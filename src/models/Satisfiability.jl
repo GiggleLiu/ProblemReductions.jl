@@ -140,6 +140,10 @@ end
 num_variables(c::Satisfiability) = length(variables(c))
 flavors(::Type{<:Satisfiability}) = [0, 1]  # false, true
 
+"""
+    evaluate(c::Satisfiability, config)
+return the number of unsatisfied clauses in the CNF.
+"""
 function evaluate(c::Satisfiability, config)
     @assert length(config) == num_variables(c)
     dict = Dict(zip(variables(c), config))

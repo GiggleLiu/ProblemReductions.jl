@@ -35,6 +35,7 @@ makedocs(;
         ],
         "Examples" => [
             "generated/material_compute.md",
+            "generated/dining.md",
         ],
         "Reference" => "ref.md",
     ],
