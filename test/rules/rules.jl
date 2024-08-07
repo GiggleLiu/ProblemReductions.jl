@@ -36,6 +36,7 @@ end
             sat => Coloring{3},
             spinglass2 => MaxCut
         ]
+        @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve
         best_source = findbest(source, BruteForce())
 

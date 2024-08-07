@@ -27,7 +27,7 @@ end
 function extract_solution(res::ReductionMaxCutToSpinGlass, sol)
     out = zeros(eltype(sol), num_variables(res.spinglass))
     for (k, v) in enumerate(variables(res.spinglass))
-        out[v] = sol[k]
+        out[v] = sol[k] == -1
     end
     return out
 end
@@ -84,7 +84,7 @@ function spinglass2maxcut(sg::SpinGlass{<:HyperGraph})
 end
 
 function extract_solution(res::ReductionSpinGlassToMaxCut, sol)
-    res.ancilla == 0 && return sol # no ancilla
-    sol = sol[res.ancilla] == 0 ? sol : 1 .- sol  # the last index is the ancilla
+    res.ancilla == 0 && return 1 .- 2 .* sol # no ancilla
+    sol = sol[res.ancilla] == 0 ? 1 .- 2 .* sol : 2 .* sol .- 1  # the last index is the ancilla
     return deleteat!(copy(sol), res.ancilla)
 end
