@@ -15,7 +15,7 @@ using Test, ProblemReductions
     sat01 = Satisfiability(cnf01)
 
     @test variables( rename_variables(sat01)[1] ) == [Symbol("x_1"), Symbol("x_2"), Symbol("x_3"), Symbol("x_4")]
-    @test generate_dummy_var(5) == BoolVar(Symbol("z_$(6)"), false)
+    @test generate_dummy_var(5)[1] == BoolVar(Symbol("z_$(6)"), false)
     @test CNF( transform_to_3_literal_clause(clause2.vars, 0)[1] ) == ( bv2 ∨ bv3 ∨ BoolVar(Symbol("z_$(1)"), false) ) ∧ ( bv2 ∨ bv3 ∨ BoolVar(Symbol("z_$(1)"), true) )
 
     expected_transformed_cnf = CNF([
