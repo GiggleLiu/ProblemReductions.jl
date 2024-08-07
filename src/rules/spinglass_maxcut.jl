@@ -27,7 +27,7 @@ end
 function extract_solution(res::ReductionMaxCutToSpinGlass, sol)
     out = zeros(eltype(sol), num_variables(res.spinglass))
     for (k, v) in enumerate(variables(res.spinglass))
-        out[v] = sol[k]
+        out[v] = sol[k] == -1
     end
     return out
 end
@@ -61,7 +61,7 @@ end
 function extract_solution(res::ReductionSpinGlassToMaxCut, sol)
     out = zeros(eltype(sol), num_variables(res.maxcut))
     for (k, v) in enumerate(variables(res.maxcut))
-        out[v] = sol[k]
+        out[v] = 1 - 2*sol[k]
     end
     return out
 end

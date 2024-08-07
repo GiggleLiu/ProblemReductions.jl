@@ -32,7 +32,7 @@ end
 
 # variables interface
 variables(gp::SpinGlass) = collect(1:nv(gp.graph))
-flavors(::Type{<:SpinGlass}) = [0, 1]
+flavors(::Type{<:SpinGlass}) = [1, -1]
 
 # weights interface
 parameters(gp::SpinGlass) = gp.weights
@@ -63,24 +63,21 @@ where ``C`` is the set of cliques, and ``w_c`` is the weight of the clique ``c``
 """
 function spinglass_energy(cliques::AbstractVector{Vector{Int}}, config; weights)::Real
     size = zero(eltype(weights))
-    @assert all(x->x == 0 || x == 1, config)
-    s = 1 .- 2 .* Int.(config)  # 0 -> spin 1, 1 -> spin -1
+    @assert all(x->x == -1 || x == 1, config)
     for (i, spins) in enumerate(cliques)
-        size += prod(s[spins]) * weights[i]
+        size += prod(config[spins]) * weights[i]
     end
     return size
 end
 function spinglass_energy(g::SimpleGraph, config; J, h)
     eng = zero(promote_type(eltype(J), eltype(h)))
-    # NOTE: cast to Int to avoid using unsigned Int
-    s = 1 .- 2 .* Int.(config)  # 0 -> spin 1, 1 -> spin -1
     # coupling terms
     for (i, e) in enumerate(edges(g))
-        eng += (s[e.src] * s[e.dst]) * J[i]
+        eng += (config[e.src] * config[e.dst]) * J[i]
     end
     # onsite terms
     for (i, v) in enumerate(vertices(g))
-        eng += s[v] * h[i]
+        eng += config[v] * h[i]
     end
     return eng
 end

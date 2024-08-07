@@ -29,6 +29,7 @@ end
             spinglass => MaxCut,
             vertexcovering => SetCovering
         ]
+        @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve
         best_source = findbest(source, BruteForce())
 

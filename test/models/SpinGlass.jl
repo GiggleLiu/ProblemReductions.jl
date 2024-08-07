@@ -11,14 +11,14 @@ using ProblemReductions, Test, Graphs
     # variables
     @test variables(sg) == [1, 2, 3]
     @test num_variables(sg) == 3
-    @test flavors(sg) == [0, 1]
+    @test flavors(sg) == [1, -1]
     @test num_flavors(sg) == 2
 
     # parameters
     @test parameters(sg) == [1, -2, -2, 1, 1, -2]
     @test set_parameters(sg, [1, 2, 2, -1, -1, -2]) == SpinGlass(g, [1, 2, 2], [-1, -1, -2])
 
-    @test evaluate(sg, [0, 0, 0]) == -3
+    @test evaluate(sg, [1, 1, 1]) == -3
     configs = findbest(sg, BruteForce())
     for cfg in configs
         @test cfg[3] == cfg[1] & cfg[2]
