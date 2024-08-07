@@ -5,12 +5,17 @@ struct BooleanExpr
     function BooleanExpr(i::Symbol)
         new(:var, BooleanExpr[], i)
     end
+    function BooleanExpr(b::Bool)
+        new(:var, BooleanExpr[], b ? Symbol("true") : Symbol("false"))
+    end
     function BooleanExpr(head::Symbol, args::Vector{BooleanExpr})
+        @assert head != :var
         new(head, args)
     end
 end
 function extract_symbols!(ex::BooleanExpr, vars::Vector{Symbol})
     if ex.head == :var
+        (ex.var == Symbol("true") || ex.var == Symbol("false")) && return
         push!(vars, ex.var)
     else
         map(v->extract_symbols!(v, vars), ex.args)
@@ -45,7 +50,13 @@ function evaluate(ex::BooleanExpr, dict::Dict{BooleanExpr, Bool})
 end
 function evaluate(ex::BooleanExpr, dict::Dict{Symbol, Bool})
     if ex.head == :var
-        return dict[ex.var]
+        if ex.var == Symbol("true")
+            return true
+        elseif ex.var == Symbol("false")
+            return false
+        else
+            return dict[ex.var]
+        end
     else
         _eval(Val(ex.head), dict, evaluate.(ex.args, Ref(dict))...)
     end
@@ -148,7 +159,7 @@ function analyse_expr(bex)
     end
 end
 
-function ssa_form(c::Circuit)
+function simple_form(c::Circuit)
     new_exprs = Assignment[]
     for ex in c.exprs
         handle_assign!(new_exprs, ex)
@@ -157,6 +168,7 @@ function ssa_form(c::Circuit)
 end
 
 function handle_assign!(new_exprs, ex::Assignment)
+    ex.expr.head == :var && return push!(new_exprs, ex)
     newargs = map(ex.expr.args) do arg
         if arg.head == :var
             arg.var
@@ -184,7 +196,7 @@ struct CircuitSAT <: AbstractProblem
     symbols::Vector{Symbol}
 end
 function CircuitSAT(circuit::Circuit)
-    ssa = ssa_form(circuit)
+    ssa = simple_form(circuit)
     vars = symbols(ssa)
     CircuitSAT(ssa, vars)
 end
