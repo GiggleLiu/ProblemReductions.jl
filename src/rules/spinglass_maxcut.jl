@@ -39,29 +39,52 @@ The reduction result of a spin glass to a maxcut problem.
 
 ### Fields
 - `maxcut::MaxCut{WT}`: the MaxCut problem.
-
-We only consider a simple reduction from SpinGlass to MaxCut(the graph must be `SimpleGraph`).
+- `ancilla::Int`: the ancilla vertex.
 """
 struct ReductionSpinGlassToMaxCut{WT}
     maxcut::MaxCut{WT}
+    ancilla::Int
 end
+Base.:(==)(a::ReductionSpinGlassToMaxCut, b::ReductionSpinGlassToMaxCut) = a.maxcut == b.maxcut &&  a.ancilla == b.ancilla
 
 target_problem(res::ReductionSpinGlassToMaxCut) = res.maxcut
 
 function reduceto(::Type{<:MaxCut}, sg::SpinGlass)
-    mc = spinglass2maxcut(sg)
-    return ReductionSpinGlassToMaxCut(mc)
+    mc, ancilla = spinglass2maxcut(sg)
+    return ReductionSpinGlassToMaxCut(mc,ancilla)
 end
 
-function spinglass2maxcut(sg::SpinGlass)
-    @assert sg.graph isa SimpleGraph "the graph must be `SimpleGraph`"
-    return MaxCut(sg.graph, sg.weights)
+"""
+    spinglass2maxcut(sg::SpinGlass)
+
+If the graph is `SimpleGraph`, we could easily convert the SpinGlass to MaxCut.
+If it's a HyperGraph, we need to convert it to a SimpleGraph first.
+"""
+function spinglass2maxcut(sg::SpinGlass{<:SimpleGraph})
+    return MaxCut(sg.graph, sg.weights), 0
+end
+
+# modification
+function spinglass2maxcut(sg::SpinGlass{<:HyperGraph})
+    @assert all(c->length(c) <= 2, edges(sg.graph)) "Invalid HyperGraph" 
+    n = length(unique!(vcat(vedges(sg.graph)...)))
+    g = SimpleGraph(n+1) # the last two vertices are the source and sink,designed for onsite terms
+    anc = n+1
+    wt = eltype(sg.weights)[]
+    for (w, c) in zip(sg.weights, vedges(sg.graph))
+        if length(c) == 2  # simple edge
+            add_edge!(g, c[1], c[2])
+            push!(wt, w)
+        else # onsite term
+            add_edge!(g, c[1], anc)
+            push!(wt, w)  # assume ancilla having spin up
+        end
+    end
+    return MaxCut(g, wt), anc
 end
 
 function extract_solution(res::ReductionSpinGlassToMaxCut, sol)
-    out = zeros(eltype(sol), num_variables(res.maxcut))
-    for (k, v) in enumerate(variables(res.maxcut))
-        out[v] = 1 - 2*sol[k]
-    end
-    return out
+    res.ancilla == 0 && return 1 .- 2 .* sol # no ancilla
+    sol = sol[res.ancilla] == 0 ? 1 .- 2 .* sol : 2 .* sol .- 1  # the last index is the ancilla
+    return deleteat!(copy(sol), res.ancilla)
 end

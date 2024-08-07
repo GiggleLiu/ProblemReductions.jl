@@ -29,7 +29,7 @@ export QUBO
 # rules
 export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, reduction_complexity
 export LogicGadget, truth_table
-export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering
+export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering, ReductionSatToColoring
 export findbest, BruteForce
 export CNF
 

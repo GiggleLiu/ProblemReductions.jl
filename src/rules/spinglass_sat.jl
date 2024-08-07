@@ -4,6 +4,7 @@ $TYPEDEF
 The reduction result of a circuit to a spin glass problem.
 
 ### Fields
+- `num_source_vars::Int`: the number of variables in the source circuit.
 - `spinglass::SpinGlass{GT, T}`: the spin glass problem.
 - `variables::Vector{Int}`: the variables in the spin glass problem.
 """
