@@ -117,6 +117,7 @@ struct Satisfiability{T} <:AbstractProblem
         new{T}(cnf)
     end
 end
+Base.:(==)(x::Satisfiability, y::Satisfiability) = x.cnf == y.cnf
 
 struct KSatisfiability{K, T} <:AbstractProblem
     cnf::CNF{T}

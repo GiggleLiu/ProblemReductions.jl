@@ -11,6 +11,10 @@ end
     include("vertexcovering_setcovering.jl")
 end
 
+@testset "sat_3sat" begin
+    include("sat_3sat.jl")
+end
+
 @testset "rules" begin
     circuit = CircuitSAT(@circuit begin
         x = a ∨ ¬b
