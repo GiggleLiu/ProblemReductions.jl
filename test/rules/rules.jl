@@ -7,6 +7,11 @@ end
 @testset "spinglass_maxcut" begin
     include("spinglass_maxcut.jl")
 end
+
+@testset "spinglass_qubo" begin
+    include("spinglass_qubo.jl")
+end
+
 @testset "vertexcovering_setcovering" begin
     include("vertexcovering_setcovering.jl")
 end
