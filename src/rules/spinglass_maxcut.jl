@@ -20,7 +20,7 @@ function reduceto(::Type{<:SpinGlass}, maxcut::MaxCut)
     return ReductionMaxCutToSpinGlass(sg)
 end 
 
-extract_solution(::ReductionMaxCutToSpinGlass, sol) = sol[k] .== -1
+extract_solution(::ReductionMaxCutToSpinGlass, sol) = sol .== -1
 
 """
 $TYPEDEF

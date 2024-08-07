@@ -32,6 +32,7 @@ end
     sat = Satisfiability(CNF([CNFClause([BoolVar(:a), BoolVar(:b)])]))
     graph2 = HyperGraph(3, [[1, 2], [1], [2,3], [2]])
     spinglass2 = SpinGlass(graph2, [1, 2, 1, -1])
+    qubo = QUBO([0 1 -2; 1 0 -2; -2 -2 6])
     for (source, target_type) in [
             # please add more tests here
             circuit => SpinGlass,
@@ -39,7 +40,9 @@ end
             spinglass => MaxCut,
             vertexcovering => SetCovering,
             sat => Coloring{3},
-            spinglass2 => MaxCut
+            spinglass2 => MaxCut,
+            qubo => SpinGlass,
+            spinglass2 => QUBO
         ]
         @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve
