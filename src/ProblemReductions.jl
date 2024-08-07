@@ -31,7 +31,7 @@ export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extra
 export LogicGadget, truth_table
 
 export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering, ReductionSatToColoring
-export ReductionSATTo3SAT, rename_variables, transform_to_3_literal_clause, transform_to_3_literal_cnf
+export ReductionSATTo3SAT, rename_variables, transform_to_3_literal_clause, transform_to_3_literal_cnf, generate_dummy_var
 export findbest, BruteForce
 export CNF
 
