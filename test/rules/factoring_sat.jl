@@ -17,11 +17,30 @@ end
     fact = Factoring(1, 1, 1)
     res = reduceto(CircuitSAT, fact)
     best_configs = findbest(target_problem(res), BruteForce())
-    @show best_configs
     @test length(best_configs) == 1
     best_config = best_configs[1]
     assignment = Dict(zip(res.circuit.symbols, best_config))
-    @show assignment
-    @show assignment[:p1], assignment[:q1]
     @test assignment[:p1] * assignment[:q1] ==1
+
+    fact2 = Factoring(2, 1, 2)
+    res2 = reduceto(CircuitSAT, fact2)
+    best_configs2 = findbest(target_problem(res2), BruteForce())
+    @test length(best_configs2) == 1
+    best_config2 = best_configs2[1]
+    assignment2 = Dict(zip(res2.circuit.symbols, best_config2))
+    @test (2* assignment2[:p2]+ assignment2[:p1]) * assignment2[:q1] == 2
+
+    fact3 = Factoring(2, 1, 3)
+    res3 = reduceto(CircuitSAT, fact3)
+    best_configs3 = findbest(target_problem(res3), BruteForce())
+    @test length(best_configs3) == 1
+    best_config3 = best_configs3[1]
+    assignment3 = Dict(zip(res3.circuit.symbols, best_config3))
+    @test (2* assignment3[:p2]+ assignment3[:p1]) * assignment3[:q1] == 3
+
+    # fact4 = Factoring(2, 2, 6)
+    # res4 = reduceto(CircuitSAT, fact4)
+    # best_configs4 = findbest(target_problem(res4), BruteForce()) <- this step is slow and we can't get the result ,stucked. maybe improve it
+    # @test length(best_configs4) == 2
+    
 end
