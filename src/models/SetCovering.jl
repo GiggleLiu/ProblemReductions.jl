@@ -5,21 +5,29 @@ The [set covering problem](https://queracomputing.github.io/GenericTensorNetwork
 
 Positional arguments
 -------------------------------
+* `elements` is a vector of elements in the universe.
 * `sets` is a vector of vectors, a collection of subsets of universe , each set is associated with a weight specified in `weights`.
 * `weights` are associated with sets.
 """
 
 struct SetCovering{ET, WT<:AbstractVector} <: AbstractProblem
+    elements::Vector{ET}
     sets::Vector{Vector{ET}}
     weights::WT
     function SetCovering(sets::Vector{Vector{ET}}, weights::AbstractVector=UnitWeight(length(sets))) where {ET}
         @assert length(weights) == length(sets)
-        new{ET, typeof(weights)}(sets, weights)
+        elements = unique!(vcat(sets...))
+        new{ET, typeof(weights)}(elements, sets, weights)
     end
 end
-Base.:(==)(a::SetCovering, b::SetCovering) = a.sets == b.sets && a.weights == b.weights
+Base.:(==)(a::SetCovering, b::SetCovering) = a.sets == b.sets && a.weights == b.weights && a.elements == b.elements
 
-#variables interface
+"""
+Defined as the number of sets.
+"""
+problem_size(c::SetCovering) = length(c.sets)
+
+# variables interface
 variables(gp::SetCovering) = [1:length(gp.sets)...]
 flavors(::Type{<:SetCovering}) = [0, 1] # whether the set is selected (1) or not (0)
 
@@ -52,5 +60,5 @@ Return true if `config` (a vector of boolean numbers as the mask of sets) is a s
 """
 function is_set_covering(c::SetCovering, config)
     @assert length(config) == num_variables(c)
-    return Set(vcat(c.sets...)) == Set(vcat([c.sets[i] for i in 1:length(config) if config[i]==1]...))
+    return length(c.elements) == length(unique!(vcat([c.sets[i] for i in 1:length(config) if config[i]==1]...)))
 end

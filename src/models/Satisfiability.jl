@@ -96,29 +96,45 @@ macro bools(syms::Symbol...)
     esc(Expr(:block, [:($s = $BoolVar($(QuoteNode(s)))) for s in syms]..., nothing))
 end
 
+abstract type AbstractSatisfiabilityProblem <: AbstractProblem end
 
 """
-The formal definition of SAT problem
+$TYPEDEF
 
 The [satisfiability](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/Satisfiability/) problem.
 
-Positional arguments
--------------------------------
+### Fields
 * `cnf` is a conjunctive normal form ([`CNF`](@ref)) for specifying the satisfiability problems.
 * `weights` are associated with clauses.
-
-Examples
--------------------------------
-Under Development
 """
-struct Satisfiability{T} <:AbstractProblem
+struct Satisfiability{T} <:AbstractSatisfiabilityProblem
+    variables::Vector{T}
     cnf::CNF{T}
     function Satisfiability(cnf::CNF{T}) where {T}
-        new{T}(cnf)
+        # get all variables
+        var_names = T[]
+        for clause in cnf.clauses
+            for var in clause.vars
+                push!(var_names, var.name)
+            end
+        end
+        new{T}(unique!(var_names), cnf)
     end
 end
+clauses(c::Satisfiability) = c.cnf.clauses
+variables(c::Satisfiability) = c.variables
 
-struct KSatisfiability{K, T} <:AbstractProblem
+"""
+$TYPEDEF
+
+The satisfiability problem for k-SAT, where the goal is to find an assignment that satisfies the CNF.
+
+### Fields
+- `variables::Vector{T}`: The variables in the CNF.
+- `cnf::CNF{T}`: The CNF expression.
+"""
+struct KSatisfiability{K, T} <:AbstractSatisfiabilityProblem
+    variables::Vector{T}
     cnf::CNF{T}
     function KSatisfiability{K}(cnf::CNF{T}) where {K, T}
         @assert is_kSAT(cnf, K) "The CNF is not a $K-SAT problem"
@@ -126,27 +142,19 @@ struct KSatisfiability{K, T} <:AbstractProblem
     end
 end
 is_kSAT(cnf::CNF, k::Int) = all(c -> k == length(c.vars), cnf.clauses)
-
-function variables(c::Satisfiability{T}) where T
-    var_names = T[]
-    for clause in c.cnf.clauses
-        for var in clause.vars
-            push!(var_names, var.name)
-        end
-    end
-    return unique(var_names)
-end
-num_variables(c::Satisfiability) = length(variables(c))
-flavors(::Type{<:Satisfiability}) = [0, 1]  # false, true
+clauses(c::KSatisfiability) = c.cnf.clauses
+variables(c::KSatisfiability) = c.variables
 
 """
-    evaluate(c::Satisfiability, config)
-return the number of unsatisfied clauses in the CNF.
+problem size of the satisfiability problem is the number of clauses in the CNF.
 """
-function evaluate(c::Satisfiability, config)
+problem_size(c::AbstractSatisfiabilityProblem) = length(clauses(c))
+flavors(::Type{<:AbstractSatisfiabilityProblem}) = [0, 1]  # false, true
+
+function evaluate(c::AbstractSatisfiabilityProblem, config)
     @assert length(config) == num_variables(c)
     dict = Dict(zip(variables(c), config))
-    count(x->!satisfiable(x, dict), c.cnf.clauses)
+    count(x->!satisfiable(x, dict), clauses(c))
 end
 
 """

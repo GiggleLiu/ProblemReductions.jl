@@ -28,6 +28,10 @@ function reduceto end
     reduction_complexity(::Type{TA}, x::AbstractProblem) -> Int
 
 The complexity of the reduction from the original problem to the target problem.
+Returns the polynomial order of the reduction.
+
+!!! note
+    The problem size measure is problem dependent. Please check [`problem_size`](@ref) for the problem size measure.
 
 ### Arguments
 - `TA`: The target problem type.
