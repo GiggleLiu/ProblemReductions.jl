@@ -1,7 +1,7 @@
-# # Dining with Friends(developing yet)
+# # Use Ising machines to crack RSA encryption system
 # ---
-# ## Inviting friends to dinner > cracking a bank encryption system
-# Using this package, we could showcase the problem how inviting friends to a dinner party is harder than cracking a bank encryption system.Let's introduce some background knowledge.
+# ## 
+# Using this package, we could reduce the factoring problem to the spin glass problem and thereby use Ising machines to help crack RSA encryption systems.
 
 # ### Intro to RSA 
 # RSA is a public-key cryptosystem. It's widely used in encryption algorithm that helps secure bank transactions and communications. 
@@ -17,25 +17,26 @@
 # | Brute force | $O(\sqrt{n})$ | $2^{1024}$|$≈5.7 \times 10^{228}$ years |
 # Both are way longer than the age of our universe.
 
-# So basically, RSA relies on factoring and if we could reduce factoring to maxcut problem, we could show that inviting friends to a dinner party is harder than cracking a bank encryption system.  
-# Next part, I'll reduce factoring to the maxcut by: Factoring -> Circuit Sat -> SpinGlass -> MaxCut.
+# So basically, RSA relies on factoring and if we could reduce factoring to spin glass problem, we could then use Ising machines to help crack RSA encryption systems.
+# Next part, I'll reduce factoring to the spin glass by: Factoring -> Circuit Sat -> Spin Glass. 
 
 # ---
-# ## Factoring -> MaxCut
+# ## Factoring -> Spin Glass
 # To start with, we import the necessary packages.
-using ProblemReductions, Graphs, LuxorGraphPlot
-# ### Create a factoring problem
-n = 15
-mul = compose_multiplier(4,4)
-# ### reduce the factoring to the circuit Sat problem
+using ProblemReductions, Graphs
+# ### reduce the factoring to the circuit Sat problem 
+# ```
+# n, m, input = 3, 2, 15
+# f = Factoring(n, m, input)
+# cs = reduceto(CircuitSAT, f) # not yet implemented since Factoring has not been merged yet
+# ```
+
+# (Explain multiplier here,included half adder and full adder and how to use multiplier to reduce factoring to circuit Sat)
+
 # Circuit Sat, easily explained, is a circuit with some inputs and outputs and the circuit contains some logical constraints like $\land$ and $\lor$. The goal is to find the inputs that make the output true.
 # So here we wants to verify that the product of 2 prime numbers is 15. Then we could set the constraints to the outcome to ensure it's 15.
-# 这里用乘法器的话直接就有一个spinglass了，不用再转化了。
-# ### reduce the circuit Sat problem to the SpinGlass problem
-sg = mul.problem
-# Visualize this SpinGlass problem
-# ### reduce the SpinGlass problem to the MaxCut problem
-mc = reduceto(MaxCut, sg)
-MC = mc.maxcut
-LuxorGraphPlot.show_graph(MC.graph, edge_labels=MC.weights)
-# Visualize this MaxCut problem and explain how the maxcut problem represents inviting friends to a dinner party
+
+# ### reduce the circuit Sat problem to the Spin Glass problem
+# Visualize this Spin Glass problem.
+# Introduce Ising and how to use Ising to solve the Spin Glass problem.
+
