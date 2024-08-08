@@ -21,7 +21,7 @@ function reduceto(::Type{<:SpinGlass}, sat::CircuitSAT)
 end
 
 function circuit2spinglass(c::Circuit)
-    ssa = ssa_form(c)
+    ssa = simple_form(c)
     all_variables = Symbol[]
     modules = []
     for assignment in ssa.exprs
@@ -103,6 +103,20 @@ function spinglass_gadget(::Val{:∨})
     add_edge!(g, 1, 3)
     add_edge!(g, 2, 3)
     sg = SpinGlass(g, [1, -2, -2], [-1, -1, 2])
+    LogicGadget(sg, [1, 2], [3])
+end
+
+function spinglass_gadget(::Val{:⊻})
+    g = SimpleGraph(4)
+    add_edge!(g, 1, 2)
+    add_edge!(g, 1, 3)
+    add_edge!(g, 2, 3)
+    add_edge!(g, 1, 4)
+    add_edge!(g, 2, 4)
+    add_edge!(g, 3, 4)
+    h = [1, 1, 1, 4]
+    J = [2,-2,-4,-2,-4,4]
+    sg = SpinGlass(g, J, h)
     LogicGadget(sg, [1, 2], [3])
 end
 

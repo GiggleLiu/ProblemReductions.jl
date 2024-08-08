@@ -45,7 +45,7 @@ end
     end
     println(circuit)
     @test ProblemReductions.evaluate(circuit, Dict(:x => true, :y => false, :z => false)) == Dict(:x => true, :y => false, :z => false, :c => false, :d => true)
-    ssa = ProblemReductions.ssa_form(circuit)
+    ssa = ProblemReductions.simple_form(circuit)
     res = ProblemReductions.evaluate(ssa, Dict(:x => true, :y => false, :z => false))
     @test res[:x] && !res[:y] && !res[:z] && !res[:c] && res[:d]
 end
