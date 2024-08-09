@@ -16,7 +16,7 @@ function reduceto(::Type{<:IndependentSet}, sat_source::Satisfiability)
 end
 
 function extract_solution(res::Reduction3SATToIndependentSet, sol)
-    if length( sol[1] ) >= res.k
+    if count(x == 1 for x in sol[1]) >= res.k
         return transform_is_to_3sat_solution(res.sat_source, sol, res.literal_to_nodes )
     else
         return Vector{Int}()
@@ -109,9 +109,33 @@ function transform_is_to_3sat_solution(sat_source::Satisfiability, sol::Vector{V
                 original_solution[var_i] = assignments[var]
             end
             push!(all_original_solutions, original_solution)
+
+        else
+            literals_missed = []
+            for literal in variables(sat_source)
+                if !haskey(assignments, literal)
+                    push!(literals_missed, literal)
+                end
+            end
+            
+            for each_case in 0:( 2^( length(literals_missed) ) - 1 )
+                complete_assignments = copy( assignments )
+                case_number = each_case
+                for literal in literals_missed
+                    complete_assignments[literal] = rem(case_number, 2)
+                    case_number = div(case_number, 2)
+                end
+
+                original_solution = fill(-1, num_source_vars) 
+                for (var_i, var) in enumerate( variables( sat_source ) )
+                    original_solution[var_i] = complete_assignments[var]
+                end
+                
+                push!(all_original_solutions, original_solution)
+            end
         end
         
     end
-
+    
     return unique(all_original_solutions)
 end
