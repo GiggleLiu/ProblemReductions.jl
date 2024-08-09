@@ -1,16 +1,10 @@
-function reduction_paths(::Type{T}, source::AbstractProblem) where T <: AbstractProblem
+function reduction_paths(::Type{S}, ::Type{T}) where {T <: AbstractProblem, S<:AbstractProblem}
     rg = reduction_graph()
-    rules = methods(reduceto)
-    paths = []
-    source_nodes = [i for i in 1:nv(rg.graph) if source isa nodes[i]]
-    target_nodes = [i for i in 1:nv(rg.graph) if T <: nodes[i]]
-    for source_node in source_nodes
-        for target_node in target_nodes
-            path = dijkstra_shortest_paths(rg.graph, source_node)[target_node]
-            if path !== nothing
-                push!(paths, path)
-            end
-        end
+    source_nodes = [i for i in 1:nv(rg.graph) if S <: rg.nodes[i]]
+    target_nodes = [i for i in 1:nv(rg.graph) if T <: rg.nodes[i]]
+    paths = Vector{Int}[]
+    for source_node in source_nodes, target_node in target_nodes
+        append!(paths, all_simple_paths(rg.graph, source_node, target_node))
     end
     return paths
 end
@@ -18,21 +12,60 @@ end
 struct ReductionGraph
     graph::SimpleDiGraph{Int}
     nodes::Vector{Any}
+    method_table::Dict{Pair{Int, Int}, Method}
+end
+get_method(rg::ReductionGraph, key::Pair{Int, Int}) = rg.method_table[key]
+
+"""
+$TYPEDEF
+
+A sequence of reductions.
+
+### Fields
+- `sequence::Vector{Any}`: The sequence of reductions.
+"""
+struct ConcatenatedReduction
+    sequence::Vector{Any}
+end
+target_problem(cr::ConcatenatedReduction) = target_problem(cr.sequence[end])
+function extract_solution(cr::ConcatenatedReduction, sol)
+    for res in cr.sequence[end:-1:1]
+        sol = extract_solution(res, sol)
+    end
+    return sol
+end
+
+function implement_reduction_path(rg::ReductionGraph, path::Vector{Int}, problem::AbstractProblem)
+    @show rg.nodes[path[1]]
+    @assert problem isa rg.nodes[path[1]] "The problem type must be the same as the first node: $(rg.nodes[path[1]]), got: $problem"
+    result = ConcatenatedReduction([])
+    for i=1:length(path)-1
+        res = reduceto(rg.nodes[path[i+1]], problem)
+        push!(result.sequence, res)
+        problem = target_problem(res)
+    end
+    return result
 end
 
 function reduction_graph()
-    rules = extract_types.(getfield.(methods(reduceto), :sig))
+    ms = methods(reduceto)
+    rules = extract_types.(getfield.(ms, :sig))
     nodes = unique!(vcat(first.(rules), last.(rules)))
     graph = SimpleDiGraph(length(nodes))
-    for rule in rules
-        add_edge!(graph, findfirst(==(first(rule)), nodes), findfirst(==(last(rule)), nodes))
+    method_table = Dict{Pair{Int, Int}, Method}()
+    for (rule, m) in zip(rules, ms)
+        i, j = findfirst(==(first(rule)), nodes), findfirst(==(last(rule)), nodes)
+        add_edge!(graph, i, j)
+        method_table[i=>j] = m
     end
-    return ReductionGraph(graph, nodes)
+    return ReductionGraph(graph, nodes, method_table)
 end
 
 function extract_types(::Type{Tuple{typeof(reduceto), TA, TB}}) where {TA, TB}
-    return TB => TA.body.parameters[1].ub
+    return TB => extract_type_type(TA)
 end
+extract_type_type(t::UnionAll) = t.body.parameters[1].ub
+extract_type_type(t::DataType) = t
 function extract_types(u::UnionAll)
     return extract_types(u.body, u.var)
 end

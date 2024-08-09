@@ -44,8 +44,8 @@ function reduceto(::Type{<:MaxCut}, sg::SpinGlass{<:SimpleGraph})
 end
 
 # modification
-function reduceto(::Type{<:MaxCut}, sg::SpinGlass{<:HyperGraph})
-    @assert all(c->length(c) <= 2, edges(sg.graph)) "Invalid HyperGraph" 
+function reduceto(::Type{<:MaxCut}, sg::SpinGlass)
+    @assert all(c->length(c) <= 2, vedges(sg.graph)) "Invalid HyperGraph" 
     n = length(unique!(vcat(vedges(sg.graph)...)))
     g = SimpleGraph(n+1) # the last two vertices are the source and sink,designed for onsite terms
     anc = n+1

@@ -36,7 +36,7 @@ export CNF
 export Reduction3SATToIndependentSet
 
 # reduction path
-export ReductionGraph, reduction_graph
+export ReductionGraph, reduction_graph, reduction_paths, implement_reduction_path
 
 include("truth_table.jl")
 include("topology.jl")

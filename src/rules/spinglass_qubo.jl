@@ -34,7 +34,7 @@ end
 target_problem(res::ReductionSpinGlassToQUBO) = res.qubo
 
 function reduceto(::Type{<:QUBO}, sg::SpinGlass)
-    @assert all(e->length(e) <= 2, edges(sg.graph)) "Invalid graph with hyperedges: $(sg.graph)"
+    @assert all(e->length(e) <= 2, vedges(sg.graph)) "Invalid graph with hyperedges: $(sg.graph)"
     matrix = zeros(eltype(sg.weights), nv(sg.graph), nv(sg.graph))
     for (w, c) in zip(sg.weights, vedges(sg.graph))
         if length(c) == 2  # simple edge
