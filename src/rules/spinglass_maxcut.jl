@@ -15,22 +15,12 @@ end
 target_problem(res::ReductionMaxCutToSpinGlass) = res.spinglass
 
 function reduceto(::Type{<:SpinGlass}, maxcut::MaxCut)
-    sg = maxcut2spinglass(maxcut)
+    @assert maxcut.graph isa SimpleGraph "the graph must be `SimpleGraph`"
+    sg = SpinGlass(maxcut.graph, maxcut.weights)
     return ReductionMaxCutToSpinGlass(sg)
 end 
 
-function maxcut2spinglass(maxcut::MaxCut)
-    @assert maxcut.graph isa SimpleGraph "the graph must be `SimpleGraph`"
-    return SpinGlass(maxcut.graph, maxcut.weights)
-end
-
-function extract_solution(res::ReductionMaxCutToSpinGlass, sol)
-    out = zeros(eltype(sol), num_variables(res.spinglass))
-    for (k, v) in enumerate(variables(res.spinglass))
-        out[v] = sol[k] == -1
-    end
-    return out
-end
+extract_solution(::ReductionMaxCutToSpinGlass, sol) = sol .== -1
 
 """
 $TYPEDEF
@@ -49,23 +39,12 @@ Base.:(==)(a::ReductionSpinGlassToMaxCut, b::ReductionSpinGlassToMaxCut) = a.max
 
 target_problem(res::ReductionSpinGlassToMaxCut) = res.maxcut
 
-function reduceto(::Type{<:MaxCut}, sg::SpinGlass)
-    mc, ancilla = spinglass2maxcut(sg)
-    return ReductionSpinGlassToMaxCut(mc,ancilla)
-end
-
-"""
-    spinglass2maxcut(sg::SpinGlass)
-
-If the graph is `SimpleGraph`, we could easily convert the SpinGlass to MaxCut.
-If it's a HyperGraph, we need to convert it to a SimpleGraph first.
-"""
-function spinglass2maxcut(sg::SpinGlass{<:SimpleGraph})
-    return MaxCut(sg.graph, sg.weights), 0
+function reduceto(::Type{<:MaxCut}, sg::SpinGlass{<:SimpleGraph})
+    return ReductionSpinGlassToMaxCut(MaxCut(sg.graph, sg.weights), 0)
 end
 
 # modification
-function spinglass2maxcut(sg::SpinGlass{<:HyperGraph})
+function reduceto(::Type{<:MaxCut}, sg::SpinGlass{<:HyperGraph})
     @assert all(c->length(c) <= 2, edges(sg.graph)) "Invalid HyperGraph" 
     n = length(unique!(vcat(vedges(sg.graph)...)))
     g = SimpleGraph(n+1) # the last two vertices are the source and sink,designed for onsite terms
@@ -80,7 +59,7 @@ function spinglass2maxcut(sg::SpinGlass{<:HyperGraph})
             push!(wt, w)  # assume ancilla having spin up
         end
     end
-    return MaxCut(g, wt), anc
+    return ReductionSpinGlassToMaxCut(MaxCut(g, wt), anc)
 end
 
 function extract_solution(res::ReductionSpinGlassToMaxCut, sol)
