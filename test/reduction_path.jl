@@ -5,9 +5,13 @@ using ProblemReductions, Test, Graphs
     @test g isa ReductionGraph
     paths = reduction_paths(MaxCut, SpinGlass)
     @test length(paths) >= 1
-    @test target_problem(implement_reduction_path(g, paths[1], MaxCut(smallgraph(:petersen)))) isa SpinGlass
+    res = implement_reduction_path(g, paths[1], MaxCut(smallgraph(:petersen)))
+    @test target_problem(res) isa SpinGlass
+    @test reduction_complexity(res) == 1
 
     paths = reduction_paths(MaxCut, QUBO)
     @test length(paths) >= 1
-    @test target_problem(implement_reduction_path(g, paths[1], MaxCut(smallgraph(:petersen)))) isa QUBO
+    res = implement_reduction_path(g, paths[1], MaxCut(smallgraph(:petersen)))
+    @test target_problem(res) isa QUBO
+    @test reduction_complexity(res) == 1
 end

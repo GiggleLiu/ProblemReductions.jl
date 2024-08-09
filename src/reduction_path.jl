@@ -23,9 +23,11 @@ A sequence of reductions.
 
 ### Fields
 - `sequence::Vector{Any}`: The sequence of reductions.
+- `complexity::Int`: The complexity of the reduction.
 """
 struct ConcatenatedReduction
     sequence::Vector{Any}
+    complexity::Vector{Int}
 end
 target_problem(cr::ConcatenatedReduction) = target_problem(cr.sequence[end])
 function extract_solution(cr::ConcatenatedReduction, sol)
@@ -34,17 +36,20 @@ function extract_solution(cr::ConcatenatedReduction, sol)
     end
     return sol
 end
+reduction_complexity(cr::ConcatenatedReduction) = prod(cr.complexity)
 
 function implement_reduction_path(rg::ReductionGraph, path::Vector{Int}, problem::AbstractProblem)
-    @show rg.nodes[path[1]]
     @assert problem isa rg.nodes[path[1]] "The problem type must be the same as the first node: $(rg.nodes[path[1]]), got: $problem"
-    result = ConcatenatedReduction([])
+    sequence = []
+    complexity = []
     for i=1:length(path)-1
-        res = reduceto(rg.nodes[path[i+1]], problem)
-        push!(result.sequence, res)
+        targetT = rg.nodes[path[i+1]]
+        res = reduceto(targetT, problem)
+        push!(complexity, reduction_complexity(targetT, problem))
+        push!(sequence, res)
         problem = target_problem(res)
     end
-    return result
+    return ConcatenatedReduction(sequence, complexity)
 end
 
 function reduction_graph()

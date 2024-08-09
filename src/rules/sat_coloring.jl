@@ -15,7 +15,7 @@ end
 
 target_problem(res::ReductionSatToColoring) = res.coloring
 
-function reduceto(::Type{<:Coloring{3}}, sat::Satisfiability) #ensure the Sat problem is a Sat problem
+@with_complexity 1 function reduceto(::Type{<:Coloring{3}}, sat::Satisfiability) #ensure the Sat problem is a Sat problem
     sc = SATColoringConstructor(BoolVar.(variables(sat)))
     for e in sat.cnf.clauses
         add_clause!(sc, e)
@@ -23,7 +23,6 @@ function reduceto(::Type{<:Coloring{3}}, sat::Satisfiability) #ensure the Sat pr
     prob = Coloring{3}(sc.g, UnitWeight(ne(sc.g)))
     return ReductionSatToColoring(prob, sc.varlabel)
 end
-reduction_complexity(::Type{Coloring{3}}, sat::Satisfiability) = 1
 
 function extract_solution(res::ReductionSatToColoring, sol)
     out = zeros(eltype(sol),Int(length(res.varlabel)/2))
