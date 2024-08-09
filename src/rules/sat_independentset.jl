@@ -9,7 +9,7 @@ struct Reduction3SATToIndependentSet{T, GT}
 end
 target_problem(res::Reduction3SATToIndependentSet) = res.is_target
 
-function reduceto(::Type{<:IndependentSet}, sat_source::Satisfiability)
+@with_complexity 1 function reduceto(::Type{<:IndependentSet}, sat_source::Satisfiability)
     @assert is_kSAT( sat_source.cnf, 3)
     is_target, k, literal_to_nodes = reduce_3sat_to_independent_set(sat_source)
     return Reduction3SATToIndependentSet(sat_source, is_target, k, literal_to_nodes )

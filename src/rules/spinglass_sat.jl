@@ -15,7 +15,7 @@ struct ReductionCircuitToSpinGlass{GT, T}
 end
 target_problem(res::ReductionCircuitToSpinGlass) = res.spinglass
 
-function reduceto(::Type{<:SpinGlass}, sat::CircuitSAT)
+@with_complexity 1 function reduceto(::Type{<:SpinGlass}, sat::CircuitSAT)
     sg, all_variables = circuit2spinglass(sat.circuit)
     return ReductionCircuitToSpinGlass(num_variables(sat), sg, [findfirst(==(v), sat.symbols) for v in all_variables])
 end

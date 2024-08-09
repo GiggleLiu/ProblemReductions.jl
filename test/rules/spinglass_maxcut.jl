@@ -46,6 +46,7 @@ end
     @test reduceto(MaxCut, sg) == res
     @test target_problem(res) == mcr.maxcut
     @test reduceto(MaxCut, sg) == mcr
+    @test reduction_complexity(MaxCut, sg) == 1
     @test findbest(sg, BruteForce()) == [[-1, 1, -1]]
     @test findbest(res.maxcut, BruteForce()) == [[1, 0, 1, 0], [0, 1, 0, 1]]
 end

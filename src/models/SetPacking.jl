@@ -5,21 +5,25 @@ The [set packing problem](https://queracomputing.github.io/GenericTensorNetworks
 
 Positional arguments
 -------------------------------
+* `elements` is a vector of elements in the universe.
 * `sets` is a vector of vectors, each set is associated with a weight specified in `weights`.
 
 Currently this type problem doesn't support weights.
-
-Examples
--------------------------------
-Under Development
 """
 struct SetPacking{ET} <: AbstractProblem
+    elements::Vector{ET}
     sets::Vector{Vector{ET}}
     function SetPacking(sets::Vector{Vector{ET}} ) where {ET}
-        new{ET}(sets)
+        elements = unique!(vcat(sets...))
+        new{ET}(elements, sets)
     end
 end
 Base.:(==)(a::SetPacking, b::SetPacking) = ( a.sets == b.sets )
+
+"""
+Defined as the number of elements times the number of sets.
+"""
+problem_size(c::SetPacking) = length(c.elements) * length(c.sets)
 
 # Variables Interface
 variables(c::SetPacking) = [1:length(c.sets)...]
