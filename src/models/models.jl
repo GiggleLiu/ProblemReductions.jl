@@ -49,6 +49,24 @@ Returns a vector of integers as the flavors (domain) of a degree of freedom.
 """
 flavors(::GT) where GT<:AbstractProblem = flavors(GT)
 
+
+"""
+    flavor_to_logical(::Type{T}, flavor) -> T
+
+Convert the flavor to a logical value.
+"""
+function flavor_to_logical(::Type{T}, flavor) where T
+    flvs = flavors(T)
+    @assert length(flvs) == 2 "The number of flavors must be 2, got: $(length(flvs))"
+    if flavor == flvs[1]
+        return false
+    elseif flavor == flvs[2]
+        return true
+    else
+        error("The flavor must be one of the flavors $(flvs), got: $(flavor)")
+    end
+end
+
 """
     num_flavors(::Type{<:AbstractProblem}) -> Int
 

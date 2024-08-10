@@ -1,22 +1,28 @@
-using ProblemReductions, Test, LinearAlgebra
+using ProblemReductions, Test, LinearAlgebra, Graphs
 
 @testset "qubo" begin
     # construct several QUBO problems
-    matrix01 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-    Q01 = hcat(matrix01...)
-    QUBO01 = QUBO(Q01)
-    QUBO02 = QUBO(I(3))
-    @test QUBO01 == QUBO02
-    
+    Q01 = [1. 0 0; 0 1 0; 0 0 1]
+    q01 = QUBO(Q01)
+    @test q01 isa QUBO
 
+    # QUBO from Graph
+    graph = SimpleGraph(3)
+    q03 = QUBO(graph, Float64[], [1., 1., 1.])
+    @test q01 == q03
+    
     # variables
-    @test variables(QUBO01) == [1, 2, 3]
-    @test num_variables(QUBO01) == 3
-    @test flavors(QUBO01) == [0, 1]
-    @test num_flavors(QUBO01) == 2
+    @test variables(q01) == [1, 2, 3]
+    @test num_variables(q01) == 3
+    @test flavors(q01) == [0, 1]
+    @test num_flavors(q01) == 2
 
     # evaluate
-    @test evaluate(QUBO01, [0, 0, 0]) == 0
-    @test evaluate(QUBO01, [1, 1, 0]) == 2
-    @test findbest(QUBO01, BruteForce()) == [ [0, 0, 0] ]
+    @test evaluate(q01, [0, 0, 0]) == 0
+    @test evaluate(q01, [1, 1, 0]) == 2
+    @test findbest(q01, BruteForce()) == [[0, 0, 0]]
+
+    # the OR gadget
+    q04 = QUBO([2 1 -2; 1 2 -2; -2 -2 2])
+    @test sort(findbest(q04, BruteForce())) == [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]
 end
