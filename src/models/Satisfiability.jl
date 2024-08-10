@@ -138,7 +138,7 @@ struct KSatisfiability{K, T} <:AbstractSatisfiabilityProblem
     cnf::CNF{T}
     function KSatisfiability{K}(cnf::CNF{T}) where {K, T}
         @assert is_kSAT(cnf, K) "The CNF is not a $K-SAT problem"
-        new{K, T}(cnf)
+        new{K, T}(unique!(vcat([var.name for clause in cnf.clauses for var in clause.vars]...)), cnf)
     end
 end
 is_kSAT(cnf::CNF, k::Int) = all(c -> k == length(c.vars), cnf.clauses)

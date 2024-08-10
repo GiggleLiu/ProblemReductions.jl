@@ -3,9 +3,11 @@ using Test, ProblemReductions, Graphs
 @testset "setcovering" begin
     c = SetCovering([[1, 2], [2, 3], [2, 3, 4]], [1, 1, 2])
     # constructor function
+    @test c.elements == [1, 2, 3, 4]
     @test variables(c)==[1, 2, 3]
     @test num_variables(c) == 3
     @test flavors(SetCovering) == [0, 1]
+    @test problem_size(c) == 3
     
     # weights interface
     @test parameters(c) == [1, 1, 2]

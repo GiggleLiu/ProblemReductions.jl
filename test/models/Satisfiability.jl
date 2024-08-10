@@ -1,5 +1,5 @@
 using ProblemReductions, Test, Graphs
-
+using ProblemReductions: KSatisfiability,clauses
 @testset "satisfiability" begin
     bv1 = BoolVar("x")
     bv2 = BoolVar("y")
@@ -11,12 +11,16 @@ using ProblemReductions, Test, Graphs
     cnf_test = CNF([clause1, clause2])
 
     sat_test = Satisfiability(cnf_test)
+    ksat_test = KSatisfiability{3}(cnf_test)
 
     @test sat_test isa Satisfiability
+    @test clauses(sat_test) == cnf_test.clauses
+    @test clauses(ksat_test) == cnf_test.clauses
     @test is_kSAT(sat_test.cnf, 3)
     vars = ["x", "y", "z", "w"]
     @test variables(sat_test) == vars
     @test num_variables(sat_test) == 4
+    @test problem_size(sat_test) == 2
 
     cfg = [1, 1, 1, 1]
     assignment = Dict(zip(vars, cfg))
