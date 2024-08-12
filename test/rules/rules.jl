@@ -38,6 +38,7 @@ end
     spinglass = SpinGlass(graph, [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1])
     vertexcovering = VertexCovering(graph, [1,2,1,2,1,2,1,2,1,2])
     sat = Satisfiability(CNF([CNFClause([BoolVar(:a), BoolVar(:b)])]))
+    ksat = KSatisfiability{3}( CNF([CNFClause([BoolVar(:a), BoolVar(:b), BoolVar(:c)])]) )
     graph2 = HyperGraph(3, [[1, 2], [1], [2,3], [2]])
     spinglass2 = SpinGlass(graph2, [1, 2, 1, -1])
     qubo = QUBO([0 1 -2; 1 0 -2; -2 -2 6])
@@ -50,7 +51,9 @@ end
             sat => Coloring{3},
             spinglass2 => MaxCut,
             qubo => SpinGlass,
-            spinglass2 => QUBO
+            spinglass2 => QUBO,
+            sat => KSatisfiability,
+            ksat => Satisfiability
         ]
         @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve

@@ -6,13 +6,13 @@ The reduction result of a general SAT problem to a 3-SAT problem.
 """
 struct ReductionSATTo3SAT{T}
     sat_source::Satisfiability{T}
-    sat_target::Satisfiability{T}
+    sat_target::KSatisfiability{3, T}
     new_var_map::Dict{Symbol, Symbol}
     inverse_new_var_map::Dict{Symbol, Symbol}
 end
 target_problem(res::ReductionSATTo3SAT) = res.sat_target
 
-function reduceto(::Type{<:Satisfiability}, sat_source::Satisfiability)
+function reduceto(::Type{<:KSatisfiability}, sat_source::Satisfiability)
     sat_source_renamed, new_var_map, inverse_new_var_map = rename_variables(sat_source)
     sat_target = transform_to_3_literal_cnf(sat_source_renamed)
     return ReductionSATTo3SAT(sat_source, sat_target, new_var_map, inverse_new_var_map )
@@ -127,5 +127,20 @@ function transform_to_3_literal_cnf(sat::Satisfiability)
         transformed_clauses = vcat(transformed_clauses, transformed)
     end
     
-    return Satisfiability(CNF(transformed_clauses))
+    return KSatisfiability{3}(CNF(transformed_clauses))
+end
+
+# ----KSatisfiability to General Satisfiability----
+struct ReductionkSATToSAT{K, T}
+    sat_source::KSatisfiability{K, T}
+    sat_target::Satisfiability{T}
+end
+target_problem(res::ReductionkSATToSAT) = res.sat_target
+
+function reduceto(::Type{<:Satisfiability}, sat_source::KSatisfiability)
+    return ReductionkSATToSAT(sat_source, Satisfiability(sat_source.cnf) )
+end
+
+function extract_solution(res::ReductionkSATToSAT, sol)
+    return sol
 end
