@@ -15,7 +15,7 @@ end
 
 target_problem(res::ReductionSatToColoring) = res.coloring
 
-function reduceto(::Type{Coloring{3}},sat::Satisfiability{T}) where T #ensure the Sat problem is a Sat problem
+@with_complexity 1 function reduceto(::Type{<:Coloring{3}}, sat::Satisfiability) #ensure the Sat problem is a Sat problem
     sc = SATColoringConstructor(BoolVar.(variables(sat)))
     for e in sat.cnf.clauses
         add_clause!(sc, e)
