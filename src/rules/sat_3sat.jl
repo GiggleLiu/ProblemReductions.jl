@@ -22,7 +22,7 @@ function extract_solution(res::ReductionSATTo3SAT, sol)
      
     num_source_vars = num_variables(res.sat_source)
     target_vars = variables( res.sat_target )
-    @assert length(sol[1]) == length(target_vars)
+    @assert all(length(s) == length(target_vars) for s in sol)
 
     all_original_solutions = Vector{Vector{Int64}}()
 
