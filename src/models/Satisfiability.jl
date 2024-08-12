@@ -96,6 +96,18 @@ macro bools(syms::Symbol...)
     esc(Expr(:block, [:($s = $BoolVar($(QuoteNode(s)))) for s in syms]..., nothing))
 end
 
+function literals(cnf::CNF{T}) where T
+    # get all variables
+    var_names = T[]
+    for clause in cnf.clauses
+        for var in clause.vars
+            push!(var_names, var.name)
+        end
+    end
+    return unique!(var_names)
+end
+
+
 abstract type AbstractSatisfiabilityProblem <: AbstractProblem end
 
 """
@@ -110,19 +122,13 @@ The [satisfiability](https://queracomputing.github.io/GenericTensorNetworks.jl/d
 struct Satisfiability{T} <:AbstractSatisfiabilityProblem
     variables::Vector{T}
     cnf::CNF{T}
-    function Satisfiability(cnf::CNF{T}) where {T}
-        # get all variables
-        var_names = T[]
-        for clause in cnf.clauses
-            for var in clause.vars
-                push!(var_names, var.name)
-            end
-        end
-        new{T}(unique!(var_names), cnf)
-    end
+end
+function Satisfiability(cnf::CNF{T}) where {T}
+    Satisfiability(literals(cnf), cnf)
 end
 clauses(c::Satisfiability) = c.cnf.clauses
 variables(c::Satisfiability) = c.variables
+Base.:(==)(x::Satisfiability, y::Satisfiability) = x.cnf == y.cnf
 
 """
 $TYPEDEF
@@ -136,11 +142,15 @@ The satisfiability problem for k-SAT, where the goal is to find an assignment th
 struct KSatisfiability{K, T} <:AbstractSatisfiabilityProblem
     variables::Vector{T}
     cnf::CNF{T}
-    function KSatisfiability{K}(cnf::CNF{T}) where {K, T}
+    function KSatisfiability{K}(variables::Vector{T}, cnf::CNF{T}) where {K, T}
         @assert is_kSAT(cnf, K) "The CNF is not a $K-SAT problem"
-        new{K, T}(cnf)
+        new{K, T}(variables, cnf)
     end
 end
+function KSatisfiability{K}(cnf::CNF{T}) where {K, T}
+    KSatisfiability{K}(literals(cnf), cnf)
+end
+Base.:(==)(x::KSatisfiability, y::KSatisfiability) = x.cnf == y.cnf
 is_kSAT(cnf::CNF, k::Int) = all(c -> k == length(c.vars), cnf.clauses)
 clauses(c::KSatisfiability) = c.cnf.clauses
 variables(c::KSatisfiability) = c.variables
