@@ -1,4 +1,5 @@
 using Test, ProblemReductions
+using ProblemReductions: generate_dummy_var, rename_variables, transform_to_3_literal_clause, transform_to_3_literal_cnf
 
 @testset "sat_3sat" begin
     # Benchmark CNF
@@ -6,6 +7,7 @@ using Test, ProblemReductions
     bv2 = BoolVar(:y, true)
     bv3 = BoolVar(:z, false)
     bv4 = BoolVar(:w, false)
+    bv5 = BoolVar(:v, false)
     
     clause1 = CNFClause([bv1])
     clause2 = CNFClause([bv2, bv3])

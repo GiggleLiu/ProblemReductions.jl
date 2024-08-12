@@ -20,13 +20,9 @@ end
 
 function extract_solution(res::ReductionSATTo3SAT, sol)
      
-    # inverse_map = res.inverse_new_var_map
-
-    # source_vars = res.sat_source
     num_source_vars = num_variables(res.sat_source)
     target_vars = variables( res.sat_target )
     @assert length(sol[1]) == length(target_vars)
-    # num_target_vars = num_variables(res.sat_target)
 
     all_original_solutions = Vector{Vector{Int64}}()
 
@@ -38,7 +34,6 @@ function extract_solution(res::ReductionSATTo3SAT, sol)
 
             new_var_str = string(new_var)
             if startswith(new_var_str, "x_")
-                # original_var = inverse_map[new_var]
                 original_index = parse(Int, new_var_str[3:end])
                 original_solution[original_index] = sol_tmp[i]
             end
