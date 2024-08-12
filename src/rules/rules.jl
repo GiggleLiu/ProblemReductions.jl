@@ -48,6 +48,8 @@ function extract_solution end
 
 include("spinglass_sat.jl")
 include("spinglass_maxcut.jl")
-include("vertexcovering_setcovering.jl")
 include("sat_3sat.jl")
+include("spinglass_qubo.jl")
 include("sat_coloring.jl")
+include("vertexcovering_setcovering.jl")
+include("sat_independentset.jl")
