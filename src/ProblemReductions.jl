@@ -18,7 +18,7 @@ export BooleanExpr, Circuit, Assignment, ssa_form, CircuitSAT, @circuit, boolean
 export SpinGlass, spinglass_gadget
 export Coloring, coloring_energy, is_vertex_coloring
 export SetCovering, is_set_covering, set_covering_energy
-export BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, satisfiable
+export BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, satisfiable, KSatisfiability
 export MaxCut
 export IndependentSet
 export VertexCovering, is_vertex_covering, vertex_covering_energy
@@ -29,6 +29,7 @@ export QUBO
 # rules
 export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, reduction_complexity
 export LogicGadget, truth_table
+export ReductionSATTo3SAT
 export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering, ReductionSatToColoring,
     ReductionSpinGlassToQUBO, ReductionQUBOToSpinGlass
 export findbest, BruteForce

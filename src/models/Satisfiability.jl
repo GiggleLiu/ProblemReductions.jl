@@ -117,6 +117,7 @@ struct Satisfiability{T} <:AbstractProblem
         new{T}(cnf)
     end
 end
+Base.:(==)(x::Satisfiability, y::Satisfiability) = x.cnf == y.cnf
 
 struct KSatisfiability{K, T} <:AbstractProblem
     cnf::CNF{T}
@@ -125,6 +126,7 @@ struct KSatisfiability{K, T} <:AbstractProblem
         new{K, T}(cnf)
     end
 end
+Base.:(==)(x::KSatisfiability, y::KSatisfiability) = x.cnf == y.cnf
 is_kSAT(cnf::CNF, k::Int) = all(c -> k == length(c.vars), cnf.clauses)
 
 function variables(c::Satisfiability{T}) where T
@@ -139,11 +141,28 @@ end
 num_variables(c::Satisfiability) = length(variables(c))
 flavors(::Type{<:Satisfiability}) = [0, 1]  # false, true
 
+function variables(c::KSatisfiability{K, T}) where {K, T}
+    var_names = T[]
+    for clause in c.cnf.clauses
+        for var in clause.vars
+            push!(var_names, var.name)
+        end
+    end
+    return unique(var_names)
+end
+flavors(::Type{<:KSatisfiability}) = [0, 1]  # false, true
+
 """
     evaluate(c::Satisfiability, config)
 return the number of unsatisfied clauses in the CNF.
 """
 function evaluate(c::Satisfiability, config)
+    @assert length(config) == num_variables(c)
+    dict = Dict(zip(variables(c), config))
+    count(x->!satisfiable(x, dict), c.cnf.clauses)
+end
+
+function evaluate(c::KSatisfiability, config)
     @assert length(config) == num_variables(c)
     dict = Dict(zip(variables(c), config))
     count(x->!satisfiable(x, dict), c.cnf.clauses)
