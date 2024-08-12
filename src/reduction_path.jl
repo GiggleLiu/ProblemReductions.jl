@@ -14,7 +14,6 @@ struct ReductionGraph
     nodes::Vector{Any}
     method_table::Dict{Pair{Int, Int}, Method}
 end
-get_method(rg::ReductionGraph, key::Pair{Int, Int}) = rg.method_table[key]
 
 """
 $TYPEDEF
