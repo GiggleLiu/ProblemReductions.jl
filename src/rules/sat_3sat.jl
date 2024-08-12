@@ -23,25 +23,42 @@ function extract_solution(res::ReductionSATTo3SAT, sol)
     num_source_vars = num_variables(res.sat_source)
     target_vars = variables( res.sat_target )
 
-    all_original_solutions = Vector{Vector{Int64}}()
+    if sol isa Vector{Vector{Int64}}
+        @assert length(sol[1]) == length(target_vars)
+        all_original_solutions = Vector{Vector{Int64}}()
 
-    for sol_tmp in sol
+        for sol_tmp in sol
 
+            original_solution = fill(-1, num_source_vars) 
+
+            for (i, new_var) in enumerate(target_vars)
+
+                new_var_str = string(new_var)
+                if startswith(new_var_str, "x_")
+                    original_index = parse(Int, new_var_str[3:end])
+                    original_solution[original_index] = sol_tmp[i]
+                end
+            end
+
+            push!(all_original_solutions, original_solution)
+        end
+
+        return unique( all_original_solutions )
+
+    elseif sol isa Vector{Int64}
+        @assert length(sol) == length(target_vars)
         original_solution = fill(-1, num_source_vars) 
-
         for (i, new_var) in enumerate(target_vars)
 
             new_var_str = string(new_var)
             if startswith(new_var_str, "x_")
                 original_index = parse(Int, new_var_str[3:end])
-                original_solution[original_index] = sol_tmp[i]
+                original_solution[original_index] = sol[i]
             end
         end
 
-        push!(all_original_solutions, original_solution)
+        return original_solution
     end
-
-    return unique( all_original_solutions )
 end
 
 # ----Useful functions----
