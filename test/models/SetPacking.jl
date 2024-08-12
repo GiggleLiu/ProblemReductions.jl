@@ -10,6 +10,8 @@ using Test, ProblemReductions
     SP_02 = SetPacking(sets02)
     @test !(SP_01 == SP_02)
     @test SP_01 == SetPacking([[1, 2, 5], [1, 3], [2, 4], [3, 6], [2, 3, 6]])
+    @test problem_size(SP_01) == 30
+    @test problem_size(SP_02) == 30
 
     # variables
     @test variables(SP_01) == [1, 2, 3, 4, 5]

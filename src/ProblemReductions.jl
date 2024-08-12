@@ -10,7 +10,7 @@ export @bit_str
 export TruthTable
 export HyperGraph, UnitDiskGraph, GridGraph, PlanarGraph, SimpleGraph
 export @bv_str, StaticElementVector, StaticBitVector, statictrues, staticfalses, onehotv
-export num_variables, num_flavors, variables, flavors, parameters, set_parameters, evaluate, parameter_type
+export num_variables, num_flavors, variables, flavors, parameters, set_parameters, evaluate, parameter_type, problem_size
 export UnitWeight
 
 # models
@@ -36,11 +36,15 @@ export findbest, BruteForce
 export CNF
 export Reduction3SATToIndependentSet
 
+# reduction path
+export ReductionGraph, reduction_graph, reduction_paths, implement_reduction_path
+
 include("truth_table.jl")
 include("topology.jl")
 include("bitvector.jl")
 include("models/models.jl")
 include("rules/rules.jl")
 include("bruteforce.jl")
+include("reduction_path.jl")
 
 end
