@@ -97,14 +97,7 @@ macro bools(syms::Symbol...)
 end
 
 function literals(cnf::CNF{T}) where T
-    # get all variables
-    var_names = T[]
-    for clause in cnf.clauses
-        for var in clause.vars
-            push!(var_names, var.name)
-        end
-    end
-    return unique!(var_names)
+    unique([var.name for clause in cnf.clauses for var in clause.vars])
 end
 
 
