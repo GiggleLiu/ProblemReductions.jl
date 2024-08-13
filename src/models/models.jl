@@ -90,6 +90,15 @@ The lower the energy, the better the configuration.
 function evaluate end
 
 """
+$TYPEDSIGNATURES
+
+Return the log2 size of the configuration space of the problem.
+"""
+function configuration_space_size(problem::AbstractProblem)
+    return log2(num_flavors(problem)) * num_variables(problem)
+end
+
+"""
     findbest(problem::AbstractProblem, method) -> Vector
 
 Find the best configurations of the `problem` using the `method`.
@@ -114,3 +123,4 @@ include("VertexCovering.jl")
 include("SetPacking.jl")
 include("DominatingSet.jl")
 include("QUBO.jl")
+include("Factoring.jl")

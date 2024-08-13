@@ -43,3 +43,7 @@ end
 @testset "QUBO" begin
     include("QUBO.jl")
 end
+
+@testset "Factoring" begin
+    include("Factoring.jl")
+end
