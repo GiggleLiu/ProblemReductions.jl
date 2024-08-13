@@ -10,7 +10,7 @@ export @bit_str
 export TruthTable
 export HyperGraph, UnitDiskGraph, GridGraph, PlanarGraph, SimpleGraph
 export @bv_str, StaticElementVector, StaticBitVector, statictrues, staticfalses, onehotv
-export num_variables, num_flavors, variables, flavors, parameters, set_parameters, evaluate, parameter_type, problem_size
+export num_variables, num_flavors, variables, flavors, parameters, set_parameters, evaluate, parameter_type, problem_size, configuration_space_size
 export UnitWeight
 
 # models
