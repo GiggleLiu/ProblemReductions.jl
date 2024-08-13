@@ -10,16 +10,8 @@ end
 target_problem(res::ReductionSATToIndependentSet) = res.is_target
 
 @with_complexity 1 function reduceto(::Type{<:IndependentSet}, sat_source::Satisfiability)
-    is_target, k, literal_to_nodes = reduce_3sat_to_independent_set(sat_source)
+    is_target, k, literal_to_nodes = reduce_sat_to_independent_set(sat_source)
     return ReductionSATToIndependentSet(sat_source, is_target, k, literal_to_nodes )
-end
-
-function extract_solution(res::ReductionSATToIndependentSet, sol)
-    if count(x == 1 for x in sol[1]) >= res.k
-        return transform_is_to_sat_solution(res.sat_source, sol, res.literal_to_nodes )
-    else
-        return Vector{Int}()
-    end
 end
 
 function extract_solution(res::ReductionSATToIndependentSet, sol)
