@@ -70,7 +70,14 @@ end
         best_target = findbest(target, BruteForce())
 
         # extract the solution
-        best_source_extracted = extract_solution.(Ref(result), best_target)
+        best_source_extracted = Vector{Vector{Int}}()
+        for sol_tmp in extract_solution.(Ref(result), best_target)
+            if sol_tmp isa Vector{Vector{Int}}
+                best_source_extracted = vcat(best_source_extracted, sol_tmp)
+            elseif sol_tmp isa Vector{Int}
+                best_source_extracted = vcat(best_source_extracted, [sol_tmp])
+            end
+        end
 
         # check if the solutions are the same
         @test unique!(sort(best_source)) == unique!(sort(best_source_extracted))
