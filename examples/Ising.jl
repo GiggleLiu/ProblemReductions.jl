@@ -24,13 +24,18 @@
 # ## Factoring -> Spin Glass
 # To start with, we import the necessary packages.
 using ProblemReductions, Graphs
-# ### reduce the factoring to the circuit Sat problem 
+# ### reduce the factoring to the circuit Sat problem
+# First, let's initialize a factoring problem. For example, we want to verify that the product of 2 prime numbers is 15. 
 # ```
 # n, m, input = 3, 2, 15
 # f = Factoring(n, m, input)
+# ```
+# We now need to reduce the factoring problem to the Circuit Sat problem and the process of reduction worths noticing -- how could we transfer a factoring problem to a circuit sat problem?
+# Our goal is to verify that the product of 2 prime numbers is 15 so we need a gadget in circuit that simulate the product sign and 
+# Then we could reduce the factoring problem to the Circuit Sat problem using `reduceto` function.
+# ````
 # cs = reduceto(CircuitSAT, f) # not yet implemented since Factoring has not been merged yet
 # ```
-
 # (Explain multiplier here,included half adder and full adder and how to use multiplier to reduce factoring to circuit Sat)
 
 # Circuit Sat, easily explained, is a circuit with some inputs and outputs and the circuit contains some logical constraints like $\land$ and $\lor$. The goal is to find the inputs that make the output true.
