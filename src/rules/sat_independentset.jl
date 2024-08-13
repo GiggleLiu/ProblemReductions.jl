@@ -23,14 +23,35 @@ end
 # ----Useful Functions----
 function reduce_sat_to_independent_set(s::Satisfiability{T}) where T
 
-    k = length(s.cnf.clauses)
+    var_list = Vector{BoolVar}()
+    var_missing_list = Vector{BoolVar}()
+    for clause_tmp in s.cnf.clauses
+        for var in clause_tmp.vars
+            if var in var_list
+                push!(var_list, var)
+            end
+        end
+    end
+    for literal in variables(s)
+        if ( BoolVar(literal, false) in var_list ) == false
+            push!(var_missing_list,  BoolVar(literal, false) )
+        end
+        if ( BoolVar(literal, true) in var_list ) == false
+            push!(var_missing_list,  BoolVar(literal, true) )
+        end
+    end
 
-    num_nodes = 3 * k 
+    k = length(s.cnf.clauses)
+    num_nodes = length( var_missing_list ) + 3 * k 
     graph = SimpleGraph(num_nodes)
 
     literal_to_nodes = Dict{BoolVar{T}, Vector{Int}}()
     node_counter = 0
 
+    for var in var_missing_list
+        node_counter += 1
+        literal_to_nodes[var] = [node_counter]
+    end
     for clause_tmp in s.cnf.clauses
         
         clause_literals = clause_tmp.vars
@@ -70,7 +91,6 @@ function reduce_sat_to_independent_set(s::Satisfiability{T}) where T
 
     return IndependentSet(graph), k, literal_to_nodes
 end
-
 
 function transform_is_to_sat_solution(sat_source::Satisfiability, sol, literal_to_nodes::Dict{BoolVar{Symbol}, Vector{Int}})
     

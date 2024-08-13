@@ -52,7 +52,6 @@ using Test, ProblemReductions, Graphs
     @test reduction_complexity(IndependentSet, sat04) == 1
     IS04 = reduction_results_04.is_target
     sol_IS_04 = findbest( IS04, BruteForce() )
-    # @test extract_solution(reduction_results_04, sol_IS_04) == Vector{Int64}()
     @test Set( findbest( sat04, BruteForce() ) ) == Set( extract_solution(reduction_results_04, sol_IS_04) )
 
     # Example 005: unsatisfiable 1-SAT (equivalent with example 004)
