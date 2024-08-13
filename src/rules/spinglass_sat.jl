@@ -17,7 +17,7 @@ target_problem(res::ReductionCircuitToSpinGlass) = res.spinglass
 
 @with_complexity 1 function reduceto(::Type{<:SpinGlass}, sat::CircuitSAT)
     sg, all_variables = circuit2spinglass(sat.circuit)
-    return ReductionCircuitToSpinGlass(num_variables(sat), sg, [findfirst(==(v), sat.symbols) for v in all_variables])
+    return ReductionCircuitToSpinGlass(num_variables(sat), sg, Int[findfirst(==(@show v), all_variables) for v in sat.symbols])
 end
 
 function circuit2spinglass(c::Circuit)
@@ -90,6 +90,12 @@ function spinglass_gadget(::Val{:set0})
     LogicGadget(sg, Int[], [1])
 end
 
+function spinglass_gadget(::Val{:set1})
+    g = SimpleGraph(1)
+    sg = SpinGlass(g, Int[], [1])
+    LogicGadget(sg, Int[], [1])
+end
+
 function spinglass_gadget(::Val{:¬})
     g = SimpleGraph(2)
     add_edge!(g, 1, 2)
@@ -110,13 +116,11 @@ function spinglass_gadget(::Val{:⊻})
     g = SimpleGraph(4)
     add_edge!(g, 1, 2)
     add_edge!(g, 1, 3)
-    add_edge!(g, 2, 3)
     add_edge!(g, 1, 4)
+    add_edge!(g, 2, 3)
     add_edge!(g, 2, 4)
     add_edge!(g, 3, 4)
-    h = [1, 1, 1, 4]
-    J = [2,-2,-4,-2,-4,4]
-    sg = SpinGlass(g, J, h)
+    sg = SpinGlass(g, [1, -1, -2, -1, -2, 2], [1, 1, -1, -2])
     LogicGadget(sg, [1, 2], [3])
 end
 
@@ -138,7 +142,14 @@ function expr_to_spinglass_gadget(expr::BooleanExpr)
             append!(middle, variables[circ.outputs])
         end
     end
-    gadget_top = spinglass_gadget(expr.head)
+    # handle true and false constants
+    gadget_top = if expr.head == :var && expr.var == Symbol("true")
+        spinglass_gadget(:set1)
+    elseif expr.head == :var && expr.var == Symbol("false")
+        spinglass_gadget(:set0)
+    else
+        spinglass_gadget(expr.head)
+    end
     # map inputs
     vmap = Vector{Symbol}(undef, num_variables(gadget_top.problem))
     vmap[gadget_top.inputs] .= middle
@@ -155,7 +166,7 @@ function expr_to_spinglass_gadget(expr::BooleanExpr)
         push!(all_variables, vmap[v])
     end
     sg = SpinGlass(HyperGraph(length(all_variables), Vector{Int}[]), Int[])
-    indexof(v) = findfirst(==(v), all_variables)
+    indexof(v) = Int(findfirst(==(v), all_variables))
     for (m, variables) in modules
         add_sg!(sg, m, indexof.(variables))
     end

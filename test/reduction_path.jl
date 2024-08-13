@@ -20,3 +20,16 @@ using ProblemReductions, Test, Graphs
     best2 = findbest(target_problem(res), BruteForce())
     @test sort(extract_solution.(Ref(res), best2)) == sort(best1)
 end
+
+@testset "reduce factoring to ising" begin
+    g = reduction_graph()
+    paths = reduction_paths(Factoring, SpinGlass)
+
+    # implement the reduction path
+    factoring = Factoring(2, 1, 3)
+    res = implement_reduction_path(g, paths[1], factoring)
+    @test target_problem(res) isa SpinGlass
+    @show configuration_space_size(target_problem(res))
+    sol = findbest(target_problem(res), BruteForce())
+    @test evaluate(factoring, extract_solution(Ref(res), sol)) == 0
+end

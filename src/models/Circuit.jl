@@ -37,7 +37,7 @@ function Base.show(io::IO, x::BooleanExpr)
 end
 Base.show(io::IO, ::MIME"text/plain", x::BooleanExpr) = show(io, x)
 
-is_var(x::BooleanExpr) = x.head == :var
+is_var(x::BooleanExpr) = x.head == :var && !(x.var == Symbol("true") || x.var == Symbol("false"))
 is_literal(x::BooleanExpr) = x.head == :var || (x.head == :¬ && x.args[1].head == :var)
 is_cnf(x::BooleanExpr) = x.head == :∧ && all(a->(a.head == :∨ && all(is_literal, a.args)), x.args)
 is_dnf(x::BooleanExpr) = x.head == :∨ && all(a->(a.head == :∧ && all(is_literal, a.args)), x.args)
