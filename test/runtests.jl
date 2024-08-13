@@ -22,5 +22,9 @@ end
     include("truth_table.jl")
 end
 
+@testset "reduction path" begin
+    include("reduction_path.jl")
+end
+
 DocMeta.setdocmeta!(ProblemReductions, :DocTestSetup, :(using ProblemReductions); recursive=true)
 Documenter.doctest(ProblemReductions; manual=false)

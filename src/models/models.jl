@@ -21,6 +21,13 @@ Change the parameters for the `problem` and return a new problem instance.
 function set_parameters end
 
 """
+    problem_size(problem::AbstractProblem) -> Int
+
+The size of the computational problem. The measure of which depends on the problem.
+"""
+function problem_size end
+
+"""
     variables(problem::AbstractProblem) -> Vector
 
 The degrees of freedoms in the computational problem. e.g. for the maximum independent set problems, they are the indices of vertices: 1, 2, 3...,
