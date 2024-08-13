@@ -10,10 +10,10 @@ using ProblemReductions: KSatisfiability,clauses
 
     cnf_test = CNF([clause1, clause2])
     sat_test = Satisfiability(cnf_test)
-    ksat_test = KSatisfiability{3}(cnf_test)
+    
     @test sat_test isa Satisfiability
     @test clauses(sat_test) == cnf_test.clauses
-    @test clauses(ksat_test) == cnf_test.clauses
+    
     @test is_kSAT(sat_test.cnf, 3)
     vars = ["x", "y", "z", "w"]
     @test variables(sat_test) == vars
@@ -33,14 +33,15 @@ using ProblemReductions: KSatisfiability,clauses
     res = findbest(sat_test, BruteForce())
     @test length(res) == 14
 
-    # KSatisfiability version (a copy of above tests)
-    sat_test_ksat = KSatisfiability{3}(cnf_test)
-    @test sat_test_ksat isa KSatisfiability
-    @test variables(sat_test_ksat) == vars
-    @test num_variables(sat_test_ksat) == 4
+    # Tests for KSatisfiability
+    ksat_test = KSatisfiability{3}(cnf_test)
+    @test clauses(ksat_test) == cnf_test.clauses
+    @test ksat_test isa KSatisfiability
+    @test variables(ksat_test) == vars
+    @test num_variables(ksat_test) == 4
 
     cfg = [0, 1, 0, 1]
     assignment = Dict(zip(vars, cfg))
-    @test satisfiable(sat_test_ksat.cnf, assignment) == true
-    @test evaluate(sat_test_ksat, cfg) == 0
+    @test satisfiable(ksat_test.cnf, assignment) == true
+    @test evaluate(ksat_test, cfg) == 0
 end
