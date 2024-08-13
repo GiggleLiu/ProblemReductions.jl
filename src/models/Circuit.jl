@@ -58,13 +58,20 @@ function evaluate(ex::BooleanExpr, dict::Dict{Symbol, Bool})
             return dict[ex.var]
         end
     else
-        _eval(Val(ex.head), dict, evaluate.(ex.args, Ref(dict))...)
+        fmap = arg->evaluate(arg, dict)
+        if ex.head == :¬
+            return !evaluate(ex.args[1], dict)
+        elseif ex.head == :∨
+            return any(fmap, ex.args)
+        elseif ex.head == :∧
+            return all(fmap, ex.args)
+        elseif ex.head == :⊻
+            return mapreduce(fmap, xor, ex.args)
+        else
+            _eval(Val(ex.head), dict, evaluate.(ex.args, Ref(dict))...)
+        end
     end
 end
-_eval(::Val{:¬}, dict, x) = !x
-_eval(::Val{:∨}, dict, xs...) = any(xs)
-_eval(::Val{:∧}, dict, xs...) = all(xs)
-_eval(::Val{:⊻}, dict, xs...) = reduce(xor, xs)
 
 # --------- Assignment --------------
 struct Assignment
