@@ -15,10 +15,14 @@ end
 @testset "vertexcovering_setcovering" begin
     include("vertexcovering_setcovering.jl")
 end
+
 @testset "sat_coloring.jl" begin
     include("sat_coloring.jl")
 end
 
+@testset "factoring_sat.jl" begin
+    include("factoring_sat.jl")
+end
 @testset "sat_3sat" begin
     include("sat_3sat.jl")
 end

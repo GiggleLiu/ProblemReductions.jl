@@ -1,5 +1,5 @@
 """
-    BruteForce
+$TYPEDEF
 
 A brute force method to find the best configuration of a problem.
 """
