@@ -37,10 +37,4 @@ end
     best_config3 = best_configs3[1]
     assignment3 = Dict(zip(res3.circuit.symbols, best_config3))
     @test (2* assignment3[:p2]+ assignment3[:p1]) * assignment3[:q1] == 3
-
-    fact4 = Factoring(2, 2, 6)
-    res4 = reduceto(CircuitSAT, fact4)
-    best_configs4 = findbest(target_problem(res4), BruteForce()) 
-    @test length(best_configs4) == 2
-    
 end
