@@ -17,7 +17,7 @@ target_problem(res::ReductionCircuitToSpinGlass) = res.spinglass
 
 @with_complexity 1 function reduceto(::Type{<:SpinGlass}, sat::CircuitSAT)
     sg, all_variables = circuit2spinglass(sat.circuit)
-    return ReductionCircuitToSpinGlass(num_variables(sat), sg, Int[findfirst(==(@show v), all_variables) for v in sat.symbols])
+    return ReductionCircuitToSpinGlass(num_variables(sat), sg, Int[findfirst(==(v), all_variables) for v in sat.symbols])
 end
 
 function circuit2spinglass(c::Circuit)
@@ -42,7 +42,7 @@ end
 function extract_solution(res::ReductionCircuitToSpinGlass, sol)
     out = zeros(eltype(sol), res.num_source_vars)
     for (k, v) in enumerate(res.variables)
-        out[v] = sol[k] == -1
+        out[k] = sol[v] == -1
     end
     return out
 end

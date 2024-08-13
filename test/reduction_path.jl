@@ -29,7 +29,7 @@ end
     factoring = Factoring(2, 1, 3)
     res = implement_reduction_path(g, paths[1], factoring)
     @test target_problem(res) isa SpinGlass
-    @show configuration_space_size(target_problem(res))
+    @test configuration_space_size(target_problem(res)) ≈ 25
     sol = findbest(target_problem(res), BruteForce())
-    @test evaluate(factoring, extract_solution(Ref(res), sol)) == 0
+    @test all(evaluate.(Ref(factoring), extract_solution.(Ref(res), sol)) .== 0)
 end

@@ -63,10 +63,10 @@ where ``C`` is the set of cliques, and ``w_c`` is the weight of the clique ``c``
 """
 function spinglass_energy(cliques::AbstractVector{Vector{Int}}, config; weights)::Real
     size = zero(eltype(weights))
-    @assert length(config) == length(cliques) == length(weights) "length of config, cliques and weights must be equal"
+    @assert length(cliques) == length(weights) "length of cliques and weights must be equal, got: $(length(cliques)), $(length(weights))"
     @assert all(x->x == -1 || x == 1, config)
-    for (spins, ci, wi) in zip(config, cliques, weights)
-        size += prod(i->ci, spins) * wi
+    for (spins, wi) in zip(cliques, weights)
+        size += prod(i->config[i], spins) * wi
     end
     return size
 end
