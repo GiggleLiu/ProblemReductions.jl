@@ -11,8 +11,8 @@ flavors(::Type{Factoring}) = [0, 1]
 # utilities
 function evaluate(f::Factoring, config)
     @assert length(config) == num_variables(f)
-    input1 = bit_literal(config[1:f.m]...).buf
-    input2 = bit_literal(config[f.m+1:f.m+f.n]...).buf
+    input1 = BitStr(config[1:f.m]).buf
+    input2 = BitStr(config[f.m+1:f.m+f.n]).buf
     return input1 * input2 == f.input ? 0 : 1
 end
 

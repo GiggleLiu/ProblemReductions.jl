@@ -15,6 +15,7 @@ end
 @testset "vertexcovering_setcovering" begin
     include("vertexcovering_setcovering.jl")
 end
+
 @testset "sat_coloring.jl" begin
     include("sat_coloring.jl")
 end
