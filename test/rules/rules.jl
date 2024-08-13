@@ -53,7 +53,8 @@ end
             qubo => SpinGlass,
             spinglass2 => QUBO,
             sat => KSatisfiability,
-            ksat => Satisfiability
+            ksat => Satisfiability,
+            sat => IndependentSet
         ]
         @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve
