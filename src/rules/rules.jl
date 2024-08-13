@@ -28,6 +28,10 @@ function reduceto end
     reduction_complexity(::Type{TA}, x::AbstractProblem) -> Int
 
 The complexity of the reduction from the original problem to the target problem.
+Returns the polynomial order of the reduction.
+
+!!! note
+    The problem size measure is problem dependent. Please check [`problem_size`](@ref) for the problem size measure.
 
 ### Arguments
 - `TA`: The target problem type.
@@ -46,8 +50,23 @@ Extract the solution `solution` of the target problem to the original problem.
 """
 function extract_solution end
 
+macro with_complexity(i::Int, ex::Expr)
+    @assert ex.head == :function
+    if ex.args[1].head == :call
+        @assert ex.args[1].args[1] == :reduceto && length(ex.args[1].args) == 3
+        esc(:($(Expr(:(=), Expr(:call, :reduction_complexity, ex.args[1].args[2], ex.args[1].args[3]), i)); $ex))
+    elseif ex.args[1].head == :where
+        @assert ex.args[1].args[1].head == :call
+        @assert ex.args[1].args[1].args[1] == :reduceto && length(ex.args[1].args[1].args) == 3
+        esc(:($(Expr(:(=), Expr(:where, Expr(:call, :reduction_complexity, ex.args[1].args[1].args[2], ex.args[1].args[1].args[3]), ex.args[1].args[2:end]...), Expr(:block, i))); $ex))
+    else
+        error("Invalid macro usage")
+    end
+end
+
 include("spinglass_sat.jl")
 include("spinglass_maxcut.jl")
+include("sat_3sat.jl")
 include("spinglass_qubo.jl")
 include("sat_coloring.jl")
 include("vertexcovering_setcovering.jl")

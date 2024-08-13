@@ -1,5 +1,5 @@
 using ProblemReductions, Test, Graphs
-
+using ProblemReductions: KSatisfiability,clauses
 @testset "satisfiability" begin
     bv1 = BoolVar("x")
     bv2 = BoolVar("y")
@@ -9,14 +9,16 @@ using ProblemReductions, Test, Graphs
     clause2 = CNFClause([BoolVar("w"), bv1, BoolVar("x", true)])
 
     cnf_test = CNF([clause1, clause2])
-
     sat_test = Satisfiability(cnf_test)
-
+    ksat_test = KSatisfiability{3}(cnf_test)
     @test sat_test isa Satisfiability
+    @test clauses(sat_test) == cnf_test.clauses
+    @test clauses(ksat_test) == cnf_test.clauses
     @test is_kSAT(sat_test.cnf, 3)
     vars = ["x", "y", "z", "w"]
     @test variables(sat_test) == vars
     @test num_variables(sat_test) == 4
+    @test problem_size(sat_test) == 2
 
     cfg = [1, 1, 1, 1]
     assignment = Dict(zip(vars, cfg))
@@ -30,4 +32,15 @@ using ProblemReductions, Test, Graphs
 
     res = findbest(sat_test, BruteForce())
     @test length(res) == 14
+
+    # KSatisfiability version (a copy of above tests)
+    sat_test_ksat = KSatisfiability{3}(cnf_test)
+    @test sat_test_ksat isa KSatisfiability
+    @test variables(sat_test_ksat) == vars
+    @test num_variables(sat_test_ksat) == 4
+
+    cfg = [0, 1, 0, 1]
+    assignment = Dict(zip(vars, cfg))
+    @test satisfiable(sat_test_ksat.cnf, assignment) == true
+    @test evaluate(sat_test_ksat, cfg) == 0
 end

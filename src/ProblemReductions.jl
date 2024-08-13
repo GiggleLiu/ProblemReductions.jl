@@ -10,7 +10,7 @@ export @bit_str
 export TruthTable
 export HyperGraph, UnitDiskGraph, GridGraph, PlanarGraph, SimpleGraph
 export @bv_str, StaticElementVector, StaticBitVector, statictrues, staticfalses, onehotv
-export num_variables, num_flavors, variables, flavors, parameters, set_parameters, evaluate, parameter_type
+export num_variables, num_flavors, variables, flavors, parameters, set_parameters, evaluate, parameter_type, problem_size
 export UnitWeight
 
 # models
@@ -18,7 +18,7 @@ export BooleanExpr, Circuit, Assignment, ssa_form, CircuitSAT, @circuit, boolean
 export SpinGlass, spinglass_gadget
 export Coloring, coloring_energy, is_vertex_coloring
 export SetCovering, is_set_covering, set_covering_energy
-export BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, satisfiable
+export BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, satisfiable, KSatisfiability
 export MaxCut
 export IndependentSet
 export VertexCovering, is_vertex_covering, vertex_covering_energy
@@ -29,11 +29,15 @@ export QUBO
 # rules
 export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, reduction_complexity
 export LogicGadget, truth_table
+export ReductionSATTo3SAT
 export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering, ReductionSatToColoring,
     ReductionSpinGlassToQUBO, ReductionQUBOToSpinGlass
 export findbest, BruteForce
 export CNF
 export Reduction3SATToIndependentSet
+
+# reduction path
+export ReductionGraph, reduction_graph, reduction_paths, implement_reduction_path
 
 include("truth_table.jl")
 include("topology.jl")
@@ -41,5 +45,6 @@ include("bitvector.jl")
 include("models/models.jl")
 include("rules/rules.jl")
 include("bruteforce.jl")
+include("reduction_path.jl")
 
 end
