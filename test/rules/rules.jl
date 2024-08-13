@@ -57,7 +57,8 @@ end
             qubo => SpinGlass,
             spinglass2 => QUBO,
             sat => KSatisfiability,
-            ksat => Satisfiability
+            ksat => Satisfiability,
+            sat => IndependentSet
         ]
         @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve
@@ -74,4 +75,5 @@ end
         # check if the solutions are the same
         @test unique!(sort(best_source)) == unique!(sort(best_source_extracted))
     end
+
 end

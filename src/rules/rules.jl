@@ -37,7 +37,10 @@ Returns the polynomial order of the reduction.
 - `TA`: The target problem type.
 - `x`: The original problem.
 """
-function reduction_complexity end
+function reduction_complexity(::Type{TA}, x::AbstractProblem) where TA <: AbstractProblem
+    @warn "The complexity of the reduction is not defined for the target problem type: $TA and source problem type: $(typeof(x)), default to 1."
+    return 1
+end
 
 """
     extract_solution(reduction::AbstractReductionResult, solution)
