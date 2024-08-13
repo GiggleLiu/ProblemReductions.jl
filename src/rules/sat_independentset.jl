@@ -1,31 +1,35 @@
 """
-The reduction result of a 3-SAT problem to an Independent Set problem.
+The reduction result of a general SAT problem to an Independent Set problem.
 """
-struct Reduction3SATToIndependentSet{T, GT}
+struct ReductionSATToIndependentSet{T, GT}
     sat_source::Satisfiability{T}
     is_target::IndependentSet{GT}
     k::Int
     literal_to_nodes::Dict{BoolVar{T}, Vector{Int}}
 end
-target_problem(res::Reduction3SATToIndependentSet) = res.is_target
+target_problem(res::ReductionSATToIndependentSet) = res.is_target
 
 @with_complexity 1 function reduceto(::Type{<:IndependentSet}, sat_source::Satisfiability)
-    @assert is_kSAT( sat_source.cnf, 3)
     is_target, k, literal_to_nodes = reduce_3sat_to_independent_set(sat_source)
-    return Reduction3SATToIndependentSet(sat_source, is_target, k, literal_to_nodes )
+    return ReductionSATToIndependentSet(sat_source, is_target, k, literal_to_nodes )
 end
 
-function extract_solution(res::Reduction3SATToIndependentSet, sol)
+function extract_solution(res::ReductionSATToIndependentSet, sol)
     if count(x == 1 for x in sol[1]) >= res.k
-        return transform_is_to_3sat_solution(res.sat_source, sol, res.literal_to_nodes )
+        return transform_is_to_sat_solution(res.sat_source, sol, res.literal_to_nodes )
     else
         return Vector{Int}()
     end
 end
 
+function extract_solution(res::ReductionSATToIndependentSet, sol)
+    
+    return transform_is_to_sat_solution(res.sat_source, sol, res.literal_to_nodes )
+    
+end
+
 # ----Useful Functions----
-function reduce_3sat_to_independent_set(s::Satisfiability{T}) where T
-    @assert is_kSAT(s.cnf, 3)
+function reduce_sat_to_independent_set(s::Satisfiability{T}) where T
 
     k = length(s.cnf.clauses)
 
@@ -55,8 +59,8 @@ function reduce_3sat_to_independent_set(s::Satisfiability{T}) where T
 
         end
 
-        for i in 1:3
-            for j in i+1:3
+        for i in 1:length(clause_tmp)
+            for j in i+1:length(clause_tmp)
                 add_edge!(graph, clause_nodes[i], clause_nodes[j])
             end
         end
@@ -76,66 +80,125 @@ function reduce_3sat_to_independent_set(s::Satisfiability{T}) where T
 end
 
 
-function transform_is_to_3sat_solution(sat_source::Satisfiability, sol::Vector{Vector{Int}}, literal_to_nodes::Dict{BoolVar{Symbol}, Vector{Int}})
+function transform_is_to_sat_solution(sat_source::Satisfiability, sol, literal_to_nodes::Dict{BoolVar{Symbol}, Vector{Int}})
     
     num_source_vars = num_variables(sat_source)
-    all_original_solutions = Vector{Vector{Int64}}()
-    
-    for sol_tmp in sol
-        assignments = Dict{Symbol, Int64}()
 
-        for (vertex, vertex_true) in enumerate( sol_tmp )
-    
-            if vertex_true == 1
-                for (literal, nodes) in literal_to_nodes
-                    if vertex in nodes
-                        
-                        if literal.neg
-                            assignments[literal.name] = 0
-                        else
-                            assignments[literal.name] = 1
+    if sol isa Vector{ Vector{Int64} }
+        all_original_solutions = Vector{Vector{Int64}}()
+        for sol_tmp in sol
+            assignments = Dict{Symbol, Int64}()
+
+            for (vertex, vertex_true) in enumerate( sol_tmp )
+        
+                if vertex_true == 1
+                    for (literal, nodes) in literal_to_nodes
+                        if vertex in nodes
+                            
+                            if literal.neg
+                                assignments[literal.name] = 0
+                            else
+                                assignments[literal.name] = 1
+                            end
+                            
+                            break
                         end
-                        
-                        break
                     end
                 end
             end
-        end
 
-        if length(assignments) == num_source_vars
-            
-            original_solution = fill(-1, num_source_vars) 
-            for (var_i, var) in enumerate( variables( sat_source ) )
-                original_solution[var_i] = assignments[var]
-            end
-            push!(all_original_solutions, original_solution)
-
-        else
-            literals_missed = []
-            for literal in variables(sat_source)
-                if !haskey(assignments, literal)
-                    push!(literals_missed, literal)
-                end
-            end
-            
-            for each_case in 0:( 2^( length(literals_missed) ) - 1 )
-                complete_assignments = copy( assignments )
-                case_number = each_case
-                for literal in literals_missed
-                    complete_assignments[literal] = rem(case_number, 2)
-                    case_number = div(case_number, 2)
-                end
-
+            if length(assignments) == num_source_vars
+                
                 original_solution = fill(-1, num_source_vars) 
                 for (var_i, var) in enumerate( variables( sat_source ) )
-                    original_solution[var_i] = complete_assignments[var]
+                    original_solution[var_i] = assignments[var]
+                end
+                push!(all_original_solutions, original_solution)
+
+            else
+                literals_missed = []
+                for literal in variables(sat_source)
+                    if !haskey(assignments, literal)
+                        push!(literals_missed, literal)
+                    end
                 end
                 
-                push!(all_original_solutions, original_solution)
+                for each_case in 0:( 2^( length(literals_missed) ) - 1 )
+                    complete_assignments = copy( assignments )
+                    case_number = each_case
+                    for literal in literals_missed
+                        complete_assignments[literal] = rem(case_number, 2)
+                        case_number = div(case_number, 2)
+                    end
+
+                    original_solution = fill(-1, num_source_vars) 
+                    for (var_i, var) in enumerate( variables( sat_source ) )
+                        original_solution[var_i] = complete_assignments[var]
+                    end
+                    
+                    push!(all_original_solutions, original_solution)
+                end
             end
+            
         end
         
+        return unique(all_original_solutions)
+
+    elseif sol isa Vector{Int64}
+
+        assignments = Dict{Symbol, Int64}()
+            for (vertex, vertex_true) in enumerate( sol )
+        
+                if vertex_true == 1
+                    for (literal, nodes) in literal_to_nodes
+                        if vertex in nodes
+                            
+                            if literal.neg
+                                assignments[literal.name] = 0
+                            else
+                                assignments[literal.name] = 1
+                            end
+                            
+                            break
+                        end
+                    end
+                end
+            end
+
+            if length(assignments) == num_source_vars
+                
+                original_solution = fill(-1, num_source_vars) 
+                for (var_i, var) in enumerate( variables( sat_source ) )
+                    original_solution[var_i] = assignments[var]
+                end
+                return original_solution
+
+            else
+                all_original_solutions = Vector{Vector{Int64}}()
+                literals_missed = []
+                for literal in variables(sat_source)
+                    if !haskey(assignments, literal)
+                        push!(literals_missed, literal)
+                    end
+                end
+                
+                for each_case in 0:( 2^( length(literals_missed) ) - 1 )
+                    complete_assignments = copy( assignments )
+                    case_number = each_case
+                    for literal in literals_missed
+                        complete_assignments[literal] = rem(case_number, 2)
+                        case_number = div(case_number, 2)
+                    end
+
+                    original_solution = fill(-1, num_source_vars) 
+                    for (var_i, var) in enumerate( variables( sat_source ) )
+                        original_solution[var_i] = complete_assignments[var]
+                    end
+                    
+                    push!(all_original_solutions, original_solution)
+                end
+
+                return unique(all_original_solutions)
+            end
     end
-    
-    return unique(all_original_solutions)
 end
