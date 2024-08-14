@@ -70,12 +70,12 @@ end
         best_target = findbest(target, BruteForce())
 
         # extract the solution
-        best_source_extracted = Vector{ eltype(best_target) }()
+        best_source_extracted = Vector{ Vector{} }()
         for sol_tmp in extract_solution.(Ref(result), best_target)
-            if sol_tmp isa Vector{ eltype(best_target) }
+            if sol_tmp isa Vector{ Vector{} }
                 best_source_extracted = vcat(best_source_extracted, sol_tmp)
-            elseif sol_tmp isa eltype(best_target)
-                best_source_extracted = vcat(best_source_extracted, [sol_tmp])
+            else
+                best_source_extracted = push!(best_source_extracted, sol_tmp)
             end
         end
 
