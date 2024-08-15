@@ -26,6 +26,7 @@ export SetPacking, is_set_packing
 export DominatingSet
 export QUBO
 export Factoring
+export Matching
 
 # rules
 export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, reduction_complexity
