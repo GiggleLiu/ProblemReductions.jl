@@ -101,7 +101,7 @@ function literals(cnf::CNF{T}) where T
 end
 
 
-abstract type AbstractSatisfiabilityProblem <: AbstractProblem end
+abstract type AbstractSatisfiabilityProblem{T} <: AbstractProblem end
 
 """
 $TYPEDEF
@@ -112,7 +112,7 @@ The [satisfiability](https://queracomputing.github.io/GenericTensorNetworks.jl/d
 * `cnf` is a conjunctive normal form ([`CNF`](@ref)) for specifying the satisfiability problems.
 * `weights` are associated with clauses.
 """
-struct Satisfiability{T} <:AbstractSatisfiabilityProblem
+struct Satisfiability{T} <:AbstractSatisfiabilityProblem{T}
     variables::Vector{T}
     cnf::CNF{T}
 end
@@ -132,7 +132,7 @@ The satisfiability problem for k-SAT, where the goal is to find an assignment th
 - `variables::Vector{T}`: The variables in the CNF.
 - `cnf::CNF{T}`: The CNF expression.
 """
-struct KSatisfiability{K, T} <:AbstractSatisfiabilityProblem
+struct KSatisfiability{K, T} <:AbstractSatisfiabilityProblem{T}
     variables::Vector{T}
     cnf::CNF{T}
     function KSatisfiability{K}(variables::Vector{T}, cnf::CNF{T}) where {K, T}

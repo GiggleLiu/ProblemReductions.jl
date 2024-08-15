@@ -1,6 +1,15 @@
 using Test, ProblemReductions, Graphs
 
 @testset "sat_independentset" begin
+    function verify(sat)
+        reduction_results = reduceto(IndependentSet, sat)
+        IS_tmp = reduction_results |> target_problem
+        sol_IS = findbest(IS_tmp, BruteForce())
+        s1 = Set(findbest(sat, BruteForce()))
+        s2 = Set(extract_solution.(Ref(reduction_results), sol_IS))
+        s3 = Set(extract_multiple_solutions(reduction_results, sol_IS))
+        return (s2 ⊆ s1) && (s3 == s1)
+    end
 
     # Example 001: satisfiable 3-SAT
     x1 = BoolVar(:x1, false)
@@ -10,133 +19,45 @@ using Test, ProblemReductions, Graphs
     x3 = BoolVar(:x3, false)
     nx3 = BoolVar(:x3, true)
 
-    clause1 = CNFClause( [x1, nx2, x3] )
-    clause2 = CNFClause( [nx1, x2, nx3] )
-    clause3 = CNFClause( [x1, nx2, nx3] )
-    clause4 = CNFClause( [nx1, x2, x3] )
+    clause1 = CNFClause([x1, nx2, x3])
+    clause2 = CNFClause([nx1, x2, nx3])
+    clause3 = CNFClause([x1, nx2, nx3])
+    clause4 = CNFClause([nx1, x2, x3])
 
     clause_lst = [clause1, clause2, clause3, clause4]
     sat01 = Satisfiability(CNF(clause_lst))
 
-    reduction_results = reduceto(IndependentSet, sat01 )
-    IS01 = reduction_results.is_target
-    sol_IS = findbest( IS01, BruteForce() )
-    @test Set( findbest(sat01, BruteForce()) ) == Set( extract_solution(reduction_results, sol_IS) )
-    sol_single_input_01 = Vector{Vector{Int}}()
-    for sol_tmp in extract_solution.(Ref(reduction_results), sol_IS)
-        if sol_tmp isa Vector{Vector{Int}}
-            sol_single_input_01 = vcat(sol_single_input_01, sol_tmp)
-        elseif sol_tmp isa Vector{Int}
-            sol_single_input_01 = vcat(sol_single_input_01, [sol_tmp])
-        end
-    end
-    @test Set( findbest(sat01, BruteForce()) ) == Set( unique(sol_single_input_01) )
-    @test target_problem( reduction_results ) == IS01
+    @test reduction_complexity(IndependentSet, sat01) == 1
+    @test verify(sat01)
 
     # Example 002: satisfiable 3-SAT
-    clause5 = CNFClause( [nx1, x2, x3] )
-    clause6 = CNFClause( [x1, nx2, x3] )
-    clause7 = CNFClause( [x1, x2, nx3] )
-    sat02 = Satisfiability( CNF([clause5, clause6, clause7]) )
-    reduction_results_02 = reduceto(IndependentSet, sat02)
-    IS02 = reduction_results_02.is_target
-    sol_IS_02 = findbest( IS02, BruteForce() )
-    @test Set( findbest( sat02, BruteForce() ) ) == Set( extract_solution(reduction_results_02, sol_IS_02) )
-    sol_single_input_02 = Vector{Vector{Int}}()
-    for sol_tmp in extract_solution.(Ref(reduction_results_02), sol_IS_02)
-        if sol_tmp isa Vector{Vector{Int}}
-            sol_single_input_02 = vcat(sol_single_input_02, sol_tmp)
-        elseif sol_tmp isa Vector{Int}
-            sol_single_input_02 = vcat(sol_single_input_02, [sol_tmp])
-        end
-    end
-    @test Set( findbest(sat02, BruteForce()) ) == Set( unique(sol_single_input_02) )
+    clause5 = CNFClause([nx1, x2, x3])
+    clause6 = CNFClause([x1, nx2, x3])
+    clause7 = CNFClause([x1, x2, nx3])
+    sat02 = Satisfiability(CNF([clause5, clause6, clause7]))
+    @test verify(sat02)
 
     # Example 003: satisfiable 3-SAT
-    clause8 = CNFClause( [x1, x2, x3] )
-    clause9 = CNFClause( [nx1, nx2, nx3] )
-    sat03 = Satisfiability( CNF([clause8, clause9]) )
-    reduction_results_03 = reduceto(IndependentSet, sat03)
-    IS03 = reduction_results_03.is_target
-    sol_IS_03 = findbest( IS03, BruteForce() )
-    @test Set( findbest( sat03, BruteForce() ) ) == Set( extract_solution(reduction_results_03, sol_IS_03) )
-    sol_single_input_03 = Vector{Vector{Int}}()
-    for sol_tmp in extract_solution.(Ref(reduction_results_03), sol_IS_03)
-        if sol_tmp isa Vector{Vector{Int}}
-            sol_single_input_03 = vcat(sol_single_input_03, sol_tmp)
-        elseif sol_tmp isa Vector{Int}
-            sol_single_input_03 = vcat(sol_single_input_03, [sol_tmp])
-        end
-    end
-    @test Set( findbest(sat03, BruteForce()) ) == Set( unique(sol_single_input_03) )
+    clause8 = CNFClause([x1, x2, x3])
+    clause9 = CNFClause([nx1, nx2, nx3])
+    sat03 = Satisfiability(CNF([clause8, clause9]))
+    @test verify(sat03)
 
     # Example 004: unsatisfiable 3-SAT (trivial example)
-    clause10 = CNFClause( [x1, x1, x1] )
-    clause11 = CNFClause( [nx1, nx1, nx1])
-    sat04 = Satisfiability( CNF([clause10, clause11]) )
-    reduction_results_04 = reduceto(IndependentSet, sat04)
-    @test reduction_complexity(IndependentSet, sat04) == 1
-    IS04 = reduction_results_04.is_target
-    sol_IS_04 = findbest( IS04, BruteForce() )
-    @test Set( findbest( sat04, BruteForce() ) ) == Set( extract_solution(reduction_results_04, sol_IS_04) )
-    sol_single_input_04 = Vector{Vector{Int}}()
-    for sol_tmp in extract_solution.(Ref(reduction_results_04), sol_IS_04)
-        if sol_tmp isa Vector{Vector{Int}}
-            sol_single_input_04 = vcat(sol_single_input_04, sol_tmp)
-        elseif sol_tmp isa Vector{Int}
-            sol_single_input_04 = vcat(sol_single_input_04, [sol_tmp])
-        end
-    end
-    @test Set( findbest(sat04, BruteForce()) ) == Set( unique(sol_single_input_04) )
-    
+    clause10 = CNFClause([x1, x1, x1])
+    clause11 = CNFClause([nx1, nx1, nx1])
+    sat04 = Satisfiability(CNF([clause10, clause11]))
+    @test verify(sat04)
+
     # Example 005: unsatisfiable 1-SAT (equivalent with example 004)
-    sat05 = Satisfiability( CNF( [ CNFClause([x1]), CNFClause([nx1]) ] ) )
-    reduction_results_05 = reduceto(IndependentSet, sat05)
-    @test reduction_complexity(IndependentSet, sat05) == 1
-    IS05 = reduction_results_05.is_target
-    sol_IS_05 = findbest( IS05, BruteForce() )
-    @test Set( findbest( sat05, BruteForce() ) ) == Set( extract_solution(reduction_results_05, sol_IS_05) )
-    sol_single_input_05 = Vector{Vector{Int}}()
-    for sol_tmp in extract_solution.(Ref(reduction_results_05), sol_IS_05)
-        if sol_tmp isa Vector{Vector{Int}}
-            sol_single_input_05 = vcat(sol_single_input_05, sol_tmp)
-        elseif sol_tmp isa Vector{Int}
-            sol_single_input_05 = vcat(sol_single_input_05, [sol_tmp])
-        end
-    end
-    @test Set( findbest(sat05, BruteForce()) ) == Set( unique(sol_single_input_05) )
+    sat05 = Satisfiability(CNF([CNFClause([x1]), CNFClause([nx1])]))
+    @test verify(sat05)
 
     # Example 006: unsatisfiable 2-SAT
-    sat06 = Satisfiability( CNF( [ CNFClause([x1, x2]), CNFClause([x1, nx2]), CNFClause([nx1, x2]), CNFClause([nx1, nx2]) ] ) )
-    reduction_results_06 = reduceto(IndependentSet, sat06)
-    @test reduction_complexity(IndependentSet, sat06) == 1
-    IS06 = reduction_results_06.is_target
-    sol_IS_06 = findbest( IS06, BruteForce() )
-    @test Set( findbest( sat06, BruteForce() ) ) == Set( extract_solution(reduction_results_06, sol_IS_06) )
-    sol_single_input_06 = Vector{Vector{Int}}()
-    for sol_tmp in extract_solution.(Ref(reduction_results_06), sol_IS_06)
-        if sol_tmp isa Vector{Vector{Int}}
-            sol_single_input_06 = vcat(sol_single_input_06, sol_tmp)
-        elseif sol_tmp isa Vector{Int}
-            sol_single_input_06 = vcat(sol_single_input_06, [sol_tmp])
-        end
-    end
-    @test Set( findbest(sat06, BruteForce()) ) == Set( unique(sol_single_input_06) )
+    sat06 = Satisfiability(CNF([CNFClause([x1, x2]), CNFClause([x1, nx2]), CNFClause([nx1, x2]), CNFClause([nx1, nx2])]))
+    @test verify(sat06)
 
     # Example 007: satisfiable 2-SAT
-    sat07 = Satisfiability( CNF( [ CNFClause([x1, x2]), CNFClause([x1, nx2]), CNFClause([nx1, x2]) ] ) )
-    reduction_results_07 = reduceto(IndependentSet, sat07)
-    @test reduction_complexity(IndependentSet, sat07) == 1
-    IS07 = reduction_results_07.is_target
-    sol_IS_07 = findbest( IS07, BruteForce() )
-    @test Set( findbest( sat07, BruteForce() ) ) == Set( extract_solution(reduction_results_07, sol_IS_07) )
-    sol_single_input_07 = Vector{Vector{Int}}()
-    for sol_tmp in extract_solution.(Ref(reduction_results_07), sol_IS_07)
-        if sol_tmp isa Vector{Vector{Int}}
-            sol_single_input_07 = vcat(sol_single_input_07, sol_tmp)
-        elseif sol_tmp isa Vector{Int}
-            sol_single_input_07 = vcat(sol_single_input_07, [sol_tmp])
-        end
-    end
-    @test Set( findbest(sat07, BruteForce()) ) == Set( unique(sol_single_input_07) )
+    sat07 = Satisfiability(CNF([CNFClause([x1, x2]), CNFClause([x1, nx2]), CNFClause([nx1, x2])]))
+    @test verify(sat07)
 end
