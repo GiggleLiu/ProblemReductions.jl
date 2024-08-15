@@ -12,7 +12,7 @@ struct ReductionSATTo3SAT{T}
 end
 target_problem(res::ReductionSATTo3SAT) = res.sat_target
 
-function reduceto(::Type{<:KSatisfiability}, sat_source::Satisfiability)
+@with_complexity 1 function reduceto(::Type{<:KSatisfiability}, sat_source::Satisfiability)
     sat_source_renamed, new_var_map, inverse_new_var_map = rename_variables(sat_source)
     sat_target = transform_to_3_literal_cnf(sat_source_renamed)
     return ReductionSATTo3SAT(sat_source, sat_target, new_var_map, inverse_new_var_map )
@@ -152,9 +152,9 @@ function reduceto(::Type{<:Satisfiability}, sat_source::KSatisfiability)
     return ReductionkSATToSAT(sat_source, Satisfiability(sat_source.cnf) )
 end
 
-function extract_solution(res::ReductionkSATToSAT, sol)
+function extract_solution(::ReductionkSATToSAT, sol)
     return sol
 end
-function extract_multiple_solutions(res::ReductionkSATToSAT, sol_set)
+function extract_multiple_solutions(::ReductionkSATToSAT, sol_set)
     return sol_set
 end

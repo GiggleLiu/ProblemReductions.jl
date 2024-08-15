@@ -35,6 +35,10 @@ function extract_solution(res::ReductionSatToColoring, sol)
     return out
 end
 
+function extract_multiple_solutions(res::ReductionSatToColoring, sol_set)
+    return unique( extract_solution.(Ref(res), sol_set) )
+end
+
 # Construct the graph for the SAT problem and needed information
 struct SATColoringConstructor{T}
     g::SimpleGraph{Int}    # the graph

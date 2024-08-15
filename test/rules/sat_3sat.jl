@@ -43,6 +43,7 @@ using ProblemReductions: generate_dummy_var, rename_variables, transform_to_3_li
     new_sol = findbest(reduction_result.sat_target, BruteForce() )
     @test original_sol == extract_multiple_solutions(reduction_result, new_sol)
     @test issubset(original_sol, extract_solution.(Ref(reduction_result), new_sol) )
+    @test reduction_complexity(KSatisfiability, sat01) == 1
 
     # Example 002 (KSatisfiability => General Satisfiability)
     ksat01 = reduction_result.sat_target
