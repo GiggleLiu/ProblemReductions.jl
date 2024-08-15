@@ -22,7 +22,15 @@ using Test, ProblemReductions, Graphs
     IS01 = reduction_results.is_target
     sol_IS = findbest( IS01, BruteForce() )
     @test Set( findbest(sat01, BruteForce()) ) == Set( extract_solution(reduction_results, sol_IS) )
-
+    sol_single_input_01 = Vector{Vector{Int}}()
+    for sol_tmp in extract_solution.(Ref(reduction_results), sol_IS)
+        if sol_tmp isa Vector{Vector{Int}}
+            sol_single_input_01 = vcat(sol_single_input_01, sol_tmp)
+        elseif sol_tmp isa Vector{Int}
+            sol_single_input_01 = vcat(sol_single_input_01, [sol_tmp])
+        end
+    end
+    @test Set( findbest(sat01, BruteForce()) ) == Set( unique(sol_single_input_01) )
     @test target_problem( reduction_results ) == IS01
 
     # Example 002: satisfiable 3-SAT
@@ -34,6 +42,15 @@ using Test, ProblemReductions, Graphs
     IS02 = reduction_results_02.is_target
     sol_IS_02 = findbest( IS02, BruteForce() )
     @test Set( findbest( sat02, BruteForce() ) ) == Set( extract_solution(reduction_results_02, sol_IS_02) )
+    sol_single_input_02 = Vector{Vector{Int}}()
+    for sol_tmp in extract_solution.(Ref(reduction_results_02), sol_IS_02)
+        if sol_tmp isa Vector{Vector{Int}}
+            sol_single_input_02 = vcat(sol_single_input_02, sol_tmp)
+        elseif sol_tmp isa Vector{Int}
+            sol_single_input_02 = vcat(sol_single_input_02, [sol_tmp])
+        end
+    end
+    @test Set( findbest(sat02, BruteForce()) ) == Set( unique(sol_single_input_02) )
 
     # Example 003: satisfiable 3-SAT
     clause8 = CNFClause( [x1, x2, x3] )
@@ -43,6 +60,15 @@ using Test, ProblemReductions, Graphs
     IS03 = reduction_results_03.is_target
     sol_IS_03 = findbest( IS03, BruteForce() )
     @test Set( findbest( sat03, BruteForce() ) ) == Set( extract_solution(reduction_results_03, sol_IS_03) )
+    sol_single_input_03 = Vector{Vector{Int}}()
+    for sol_tmp in extract_solution.(Ref(reduction_results_03), sol_IS_03)
+        if sol_tmp isa Vector{Vector{Int}}
+            sol_single_input_03 = vcat(sol_single_input_03, sol_tmp)
+        elseif sol_tmp isa Vector{Int}
+            sol_single_input_03 = vcat(sol_single_input_03, [sol_tmp])
+        end
+    end
+    @test Set( findbest(sat03, BruteForce()) ) == Set( unique(sol_single_input_03) )
 
     # Example 004: unsatisfiable 3-SAT (trivial example)
     clause10 = CNFClause( [x1, x1, x1] )
@@ -53,7 +79,16 @@ using Test, ProblemReductions, Graphs
     IS04 = reduction_results_04.is_target
     sol_IS_04 = findbest( IS04, BruteForce() )
     @test Set( findbest( sat04, BruteForce() ) ) == Set( extract_solution(reduction_results_04, sol_IS_04) )
-
+    sol_single_input_04 = Vector{Vector{Int}}()
+    for sol_tmp in extract_solution.(Ref(reduction_results_04), sol_IS_04)
+        if sol_tmp isa Vector{Vector{Int}}
+            sol_single_input_04 = vcat(sol_single_input_04, sol_tmp)
+        elseif sol_tmp isa Vector{Int}
+            sol_single_input_04 = vcat(sol_single_input_04, [sol_tmp])
+        end
+    end
+    @test Set( findbest(sat04, BruteForce()) ) == Set( unique(sol_single_input_04) )
+    
     # Example 005: unsatisfiable 1-SAT (equivalent with example 004)
     sat05 = Satisfiability( CNF( [ CNFClause([x1]), CNFClause([nx1]) ] ) )
     reduction_results_05 = reduceto(IndependentSet, sat05)
@@ -61,6 +96,15 @@ using Test, ProblemReductions, Graphs
     IS05 = reduction_results_05.is_target
     sol_IS_05 = findbest( IS05, BruteForce() )
     @test Set( findbest( sat05, BruteForce() ) ) == Set( extract_solution(reduction_results_05, sol_IS_05) )
+    sol_single_input_05 = Vector{Vector{Int}}()
+    for sol_tmp in extract_solution.(Ref(reduction_results_05), sol_IS_05)
+        if sol_tmp isa Vector{Vector{Int}}
+            sol_single_input_05 = vcat(sol_single_input_05, sol_tmp)
+        elseif sol_tmp isa Vector{Int}
+            sol_single_input_05 = vcat(sol_single_input_05, [sol_tmp])
+        end
+    end
+    @test Set( findbest(sat05, BruteForce()) ) == Set( unique(sol_single_input_05) )
 
     # Example 006: unsatisfiable 2-SAT
     sat06 = Satisfiability( CNF( [ CNFClause([x1, x2]), CNFClause([x1, nx2]), CNFClause([nx1, x2]), CNFClause([nx1, nx2]) ] ) )
@@ -69,6 +113,15 @@ using Test, ProblemReductions, Graphs
     IS06 = reduction_results_06.is_target
     sol_IS_06 = findbest( IS06, BruteForce() )
     @test Set( findbest( sat06, BruteForce() ) ) == Set( extract_solution(reduction_results_06, sol_IS_06) )
+    sol_single_input_06 = Vector{Vector{Int}}()
+    for sol_tmp in extract_solution.(Ref(reduction_results_06), sol_IS_06)
+        if sol_tmp isa Vector{Vector{Int}}
+            sol_single_input_06 = vcat(sol_single_input_06, sol_tmp)
+        elseif sol_tmp isa Vector{Int}
+            sol_single_input_06 = vcat(sol_single_input_06, [sol_tmp])
+        end
+    end
+    @test Set( findbest(sat06, BruteForce()) ) == Set( unique(sol_single_input_06) )
 
     # Example 007: satisfiable 2-SAT
     sat07 = Satisfiability( CNF( [ CNFClause([x1, x2]), CNFClause([x1, nx2]), CNFClause([nx1, x2]) ] ) )
@@ -77,4 +130,13 @@ using Test, ProblemReductions, Graphs
     IS07 = reduction_results_07.is_target
     sol_IS_07 = findbest( IS07, BruteForce() )
     @test Set( findbest( sat07, BruteForce() ) ) == Set( extract_solution(reduction_results_07, sol_IS_07) )
+    sol_single_input_07 = Vector{Vector{Int}}()
+    for sol_tmp in extract_solution.(Ref(reduction_results_07), sol_IS_07)
+        if sol_tmp isa Vector{Vector{Int}}
+            sol_single_input_07 = vcat(sol_single_input_07, sol_tmp)
+        elseif sol_tmp isa Vector{Int}
+            sol_single_input_07 = vcat(sol_single_input_07, [sol_tmp])
+        end
+    end
+    @test Set( findbest(sat07, BruteForce()) ) == Set( unique(sol_single_input_07) )
 end

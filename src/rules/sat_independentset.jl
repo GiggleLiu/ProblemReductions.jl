@@ -23,35 +23,13 @@ end
 # ----Useful Functions----
 function reduce_sat_to_independent_set(s::Satisfiability{T}) where T
 
-    var_list = Vector{BoolVar}()
-    var_missing_list = Vector{BoolVar}()
-    for clause_tmp in s.cnf.clauses
-        for var in clause_tmp.vars
-            if var in var_list
-                push!(var_list, var)
-            end
-        end
-    end
-    for literal in variables(s)
-        if ( BoolVar(literal, false) in var_list ) == false
-            push!(var_missing_list,  BoolVar(literal, false) )
-        end
-        if ( BoolVar(literal, true) in var_list ) == false
-            push!(var_missing_list,  BoolVar(literal, true) )
-        end
-    end
-
     k = length(s.cnf.clauses)
-    num_nodes = length( var_missing_list ) + 3 * k 
+    num_nodes = 3 * k 
     graph = SimpleGraph(num_nodes)
 
     literal_to_nodes = Dict{BoolVar{T}, Vector{Int}}()
     node_counter = 0
 
-    for var in var_missing_list
-        node_counter += 1
-        literal_to_nodes[var] = [node_counter]
-    end
     for clause_tmp in s.cnf.clauses
         
         clause_literals = clause_tmp.vars
@@ -94,6 +72,7 @@ end
 
 function transform_is_to_sat_solution(sat_source::Satisfiability, sol, literal_to_nodes::Dict{BoolVar{Symbol}, Vector{Int}})
     
+    k = length(sat_source.cnf.clauses)
     num_source_vars = num_variables(sat_source)
 
     if sol isa Vector{ Vector{Int64} }
@@ -120,14 +99,15 @@ function transform_is_to_sat_solution(sat_source::Satisfiability, sol, literal_t
             end
 
             if length(assignments) == num_source_vars
-                
+
                 original_solution = fill(-1, num_source_vars) 
                 for (var_i, var) in enumerate( variables( sat_source ) )
                     original_solution[var_i] = assignments[var]
                 end
                 push!(all_original_solutions, original_solution)
 
-            else
+            elseif ( length( assignments ) != num_source_vars )
+
                 literals_missed = []
                 for literal in variables(sat_source)
                     if !haskey(assignments, literal)
@@ -150,67 +130,71 @@ function transform_is_to_sat_solution(sat_source::Satisfiability, sol, literal_t
                     
                     push!(all_original_solutions, original_solution)
                 end
+
             end
-            
+
         end
         
         return unique(all_original_solutions)
-
+        
     elseif sol isa Vector{Int64}
 
         assignments = Dict{Symbol, Int64}()
-            for (vertex, vertex_true) in enumerate( sol )
-        
-                if vertex_true == 1
-                    for (literal, nodes) in literal_to_nodes
-                        if vertex in nodes
-                            
-                            if literal.neg
-                                assignments[literal.name] = 0
-                            else
-                                assignments[literal.name] = 1
-                            end
-                            
-                            break
+        for (vertex, vertex_true) in enumerate( sol )
+    
+            if vertex_true == 1
+                for (literal, nodes) in literal_to_nodes
+                    if vertex in nodes
+                        
+                        if literal.neg
+                            assignments[literal.name] = 0
+                        else
+                            assignments[literal.name] = 1
                         end
+                        
+                        break
                     end
                 end
             end
+        end
+            
+        if length(assignments) == num_source_vars
 
-            if length(assignments) == num_source_vars
-                
+            original_solution = fill(-1, num_source_vars) 
+            for (var_i, var) in enumerate( variables( sat_source ) )
+                original_solution[var_i] = assignments[var]
+            end
+            return original_solution
+
+        elseif ( length( assignments ) != num_source_vars )
+            
+            all_original_solutions = Vector{Vector{Int64}}()
+            literals_missed = []
+            for literal in variables(sat_source)
+                if !haskey(assignments, literal)
+                    push!(literals_missed, literal)
+                end
+            end
+            @warn "return $(2^( length(literals_missed) )) degenerate solutions for single input"
+            
+            for each_case in 0:( 2^( length(literals_missed) ) - 1 )
+                complete_assignments = copy( assignments )
+                case_number = each_case
+                for literal in literals_missed
+                    complete_assignments[literal] = rem(case_number, 2)
+                    case_number = div(case_number, 2)
+                end
+
                 original_solution = fill(-1, num_source_vars) 
                 for (var_i, var) in enumerate( variables( sat_source ) )
-                    original_solution[var_i] = assignments[var]
-                end
-                return original_solution
-
-            else
-                all_original_solutions = Vector{Vector{Int64}}()
-                literals_missed = []
-                for literal in variables(sat_source)
-                    if !haskey(assignments, literal)
-                        push!(literals_missed, literal)
-                    end
+                    original_solution[var_i] = complete_assignments[var]
                 end
                 
-                for each_case in 0:( 2^( length(literals_missed) ) - 1 )
-                    complete_assignments = copy( assignments )
-                    case_number = each_case
-                    for literal in literals_missed
-                        complete_assignments[literal] = rem(case_number, 2)
-                        case_number = div(case_number, 2)
-                    end
-
-                    original_solution = fill(-1, num_source_vars) 
-                    for (var_i, var) in enumerate( variables( sat_source ) )
-                        original_solution[var_i] = complete_assignments[var]
-                    end
-                    
-                    push!(all_original_solutions, original_solution)
-                end
-
-                return unique(all_original_solutions)
+                push!(all_original_solutions, original_solution)
             end
+            return unique(all_original_solutions)
+
+        end
+
     end
 end
