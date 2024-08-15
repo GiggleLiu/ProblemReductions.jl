@@ -35,7 +35,10 @@ set_parameters(c::MaximalIS, weights) = MaximalIS(c.graph, weights)
 """
 function evaluate(c::MaximalIS, config)
     @assert length(config) == nv(c.graph)
-    -independent_set_size(c.graph, config; weights=c.weights)
+    if !is_maximal_independent_set(c.graph, config)
+        return Inf
+    end
+    return sum(i -> config[i]*c.weights[i], 1:nv(c.graph))
 end
 
 """
