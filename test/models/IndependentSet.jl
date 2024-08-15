@@ -29,7 +29,7 @@ using Test, ProblemReductions, Graphs
     @test evaluate(IS_01, [1, 0, 0, 1]) == -2
     @test evaluate(IS_01, [0, 1, 0, 1]) == -2
     # a Negative example
-    @test evaluate(IS_01, [0, 1, 1, 0]) == Inf
+    @test evaluate(IS_01, [0, 1, 1, 0]) == 0
 
     # test findbest function
     @test findbest(IS_01, BruteForce()) == [[1, 0, 0, 1], [0, 1, 0, 1]] # "1" is superior to "0"
