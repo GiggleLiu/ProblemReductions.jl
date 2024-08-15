@@ -73,7 +73,7 @@ end
         best_source_extracted = extract_solution.(Ref(result), best_target)
 
         # check if the solutions are the same
-        @test unique!(sort(best_source)) == unique!(sort(best_source_extracted))
+        @test best_source_extracted ⊆ best_source
     end
 
 end

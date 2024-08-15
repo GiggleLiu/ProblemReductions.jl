@@ -6,17 +6,15 @@ The [independent set problem](https://queracomputing.github.io/GenericTensorNetw
 Positional arguments
 -------------------------------
 * `graph` is the problem graph.
+* `weights` are associated with the vertices of the `graph`.
 
 This type of problem currently doesn't have weights.
-
-Examples
--------------------------------
-Under Development
 """
-struct IndependentSet{ GT<:AbstractGraph} <: AbstractProblem
+struct IndependentSet{GT<:AbstractGraph, WT<:AbstractVector} <: AbstractProblem
     graph::GT
-    function IndependentSet( graph::AbstractGraph)
-        return new{typeof(graph)}(graph)
+    weights::WT
+    function IndependentSet(graph::AbstractGraph, weights::AbstractVector=UnitWeight(nv(graph)))
+        return new{typeof(graph), typeof(weights)}(graph, weights)
     end
 end
 Base.:(==)(a::IndependentSet, b::IndependentSet) = ( a.graph == b.graph )
