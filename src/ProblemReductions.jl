@@ -5,6 +5,7 @@ using DocStringExtensions
 using PrettyTables
 using BitBasis
 using MLStyle
+using Random
 
 export @bit_str
 export TruthTable

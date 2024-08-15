@@ -8,7 +8,7 @@ Positional arguments
 * `graph` is the problem graph.
 * `weights` are associated with the vertices of the `graph`.
 
-This type of problem currently doesn't have weights.
+
 """
 struct IndependentSet{GT<:AbstractGraph, WT<:AbstractVector} <: AbstractProblem
     graph::GT
@@ -38,6 +38,6 @@ function evaluate(c::IndependentSet, config)
     if num_ill_edges == 0
         return - count(x -> x == 1, config)
     else
-        return Inf
+        return 0
     end
 end

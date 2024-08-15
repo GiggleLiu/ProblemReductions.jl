@@ -2,12 +2,13 @@ using Test, ProblemReductions, Graphs
 
 @testset "sat_independentset" begin
     function verify(sat)
-        reduction_results_02 = reduceto(IndependentSet, sat)
-        IS02 = reduction_results_02 |> target_problem
-        sol_IS_02 = findbest(IS02, BruteForce())
+        reduction_results = reduceto(IndependentSet, sat)
+        IS_tmp = reduction_results |> target_problem
+        sol_IS = findbest(IS_tmp, BruteForce())
         s1 = Set(findbest(sat, BruteForce()))
-        s2 = Set(extract_solution.(Ref(reduction_results_02), sol_IS_02))
-        return s2 ⊆ s1
+        s2 = Set(extract_solution.(Ref(reduction_results), sol_IS))
+        s3 = Set(extract_multiple_solutions(reduction_results, sol_IS))
+        return (s2 ⊆ s1) && (s3 == s1)
     end
 
     # Example 001: satisfiable 3-SAT
@@ -27,9 +28,6 @@ using Test, ProblemReductions, Graphs
     sat01 = Satisfiability(CNF(clause_lst))
 
     @test reduction_complexity(IndependentSet, sat01) == 1
-    reduction_results = reduceto(IndependentSet, sat01)
-    IS01 = target_problem(reduction_results)
-    sol_IS = findbest(IS01, BruteForce())
     @test verify(sat01)
 
     # Example 002: satisfiable 3-SAT
