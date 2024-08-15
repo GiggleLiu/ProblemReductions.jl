@@ -80,3 +80,28 @@ function extract_types(t::Type{<:Tuple}, var::TypeVar)
 end
 render_type_params(::TypeVar, t::DataType) = t
 render_type_params(var::TypeVar, t::UnionAll) = UnionAll(var, t)
+
+function show_reduction_graph(rg::ReductionGraph)
+    ns = NodeStore()
+    node = [offset(circlenode(rotatepoint(Point(1000, i*75), i*π/7), 200), (100,100)) for i=1:length(rg.nodes)]
+    append!(ns, node)
+    Fadjlist = rg.graph.fadjlist
+    Badjlist = rg.graph.badjlist
+    with_nodes(ns) do
+        fontsize(50)
+        for i in ns.nodes
+            for j in Fadjlist
+                for k in j 
+                    stroke(i)
+                    stroke(ns.nodes[k])
+                    if(i != ns.nodes[k])
+                        stroke(Connection(i,ns.nodes[k];mode =:natural,isarrow=true))
+                    end
+                end
+            end
+        end
+        for (i,j) in zip(1:length(ns.nodes),rg.nodes)
+            text("$j",ns.nodes[i])
+        end
+    end
+end
