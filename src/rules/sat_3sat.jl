@@ -19,46 +19,41 @@ function reduceto(::Type{<:KSatisfiability}, sat_source::Satisfiability)
 end
 
 function extract_solution(res::ReductionSATTo3SAT, sol)
-     
     num_source_vars = num_variables(res.sat_source)
     target_vars = variables( res.sat_target )
 
-    if sol isa Vector{Vector{Int64}}
-        @assert length(sol[1]) == length(target_vars)
-        all_original_solutions = Vector{Vector{Int64}}()
-
-        for sol_tmp in sol
-
-            original_solution = fill(-1, num_source_vars) 
-
-            for (i, new_var) in enumerate(target_vars)
-
-                new_var_str = string(new_var)
-                if startswith(new_var_str, "x_")
-                    original_index = parse(Int, new_var_str[3:end])
-                    original_solution[original_index] = sol_tmp[i]
-                end
-            end
-
-            push!(all_original_solutions, original_solution)
+    @assert length(sol) == length(target_vars)
+    original_solution = fill(-1, num_source_vars) 
+    for (i, new_var) in enumerate(target_vars)
+        new_var_str = string(new_var)
+        if startswith(new_var_str, "x_")
+            original_index = parse(Int, new_var_str[3:end])
+            original_solution[original_index] = sol[i]
         end
+    end
 
-        return unique( all_original_solutions )
+    return original_solution
+end
 
-    elseif sol isa Vector{Int64}
-        @assert length(sol) == length(target_vars)
+function extract_multiple_solutions(res::ReductionSATTo3SAT, sol_set)
+    num_source_vars = num_variables(res.sat_source)
+    target_vars = variables( res.sat_target )
+
+    @assert length(sol_set[1]) == length(target_vars)
+    all_original_solutions = Vector{Vector{Int64}}()
+    for sol_tmp in sol_set
         original_solution = fill(-1, num_source_vars) 
         for (i, new_var) in enumerate(target_vars)
-
             new_var_str = string(new_var)
             if startswith(new_var_str, "x_")
                 original_index = parse(Int, new_var_str[3:end])
-                original_solution[original_index] = sol[i]
+                original_solution[original_index] = sol_tmp[i]
             end
         end
-
-        return original_solution
+        push!(all_original_solutions, original_solution)
     end
+
+    return unique( all_original_solutions )
 end
 
 # ----Useful functions----
@@ -159,4 +154,7 @@ end
 
 function extract_solution(res::ReductionkSATToSAT, sol)
     return sol
+end
+function extract_multiple_solutions(res::ReductionkSATToSAT, sol_set)
+    return sol_set
 end

@@ -2,6 +2,7 @@ using Test, ProblemReductions
 using ProblemReductions: generate_dummy_var, rename_variables, transform_to_3_literal_clause, transform_to_3_literal_cnf
 
 @testset "sat_3sat" begin
+
     # Example 001 (Satisfiability => 3-Satisfiability)
     bv1 = BoolVar(:x, false)
     bv2 = BoolVar(:y, true)
@@ -40,14 +41,16 @@ using ProblemReductions: generate_dummy_var, rename_variables, transform_to_3_li
 
     original_sol = findbest(sat01, BruteForce() )
     new_sol = findbest(reduction_result.sat_target, BruteForce() )
-    @test original_sol == extract_solution(reduction_result, new_sol)
+    @test original_sol == extract_multiple_solutions(reduction_result, new_sol)
+    @test issubset(original_sol, extract_solution.(Ref(reduction_result), new_sol) )
 
     # Example 002 (KSatisfiability => General Satisfiability)
     ksat01 = reduction_result.sat_target
     reduction_result_02 = reduceto(Satisfiability, ksat01)
     @test reduction_result_02.sat_target == Satisfiability( ksat01.cnf )
     @test target_problem( reduction_result_02 ) == Satisfiability( ksat01.cnf )
-    @test findbest(ksat01, BruteForce() ) == extract_solution( reduction_result_02, findbest(reduction_result_02.sat_target, BruteForce() ) )
+    @test findbest(ksat01, BruteForce() ) == extract_multiple_solutions( reduction_result_02, findbest(reduction_result_02.sat_target, BruteForce() ) )
+    @test issubset( findbest(ksat01, BruteForce() ), unique( extract_solution.( Ref(reduction_result_02), findbest(reduction_result_02.sat_target, BruteForce() ) ) ) )
 
     # Example 003 (Satisfiability => 3-Satisfiability) 
     bv5 = BoolVar(:v, false)
@@ -58,7 +61,8 @@ using ProblemReductions: generate_dummy_var, rename_variables, transform_to_3_li
     sat02 = Satisfiability(cnf02)
 
     reduction_result_03 = reduceto(KSatisfiability, sat02)
-    @test Set( findbest(sat02, BruteForce() ) ) == Set( extract_solution( reduction_result_03, findbest(reduction_result_03.sat_target, BruteForce() ) ) )
+    @test Set( findbest(sat02, BruteForce() ) ) == Set( extract_multiple_solutions( reduction_result_03, findbest(reduction_result_03.sat_target, BruteForce() ) ) )
+    @test issubset( Set( findbest(sat02, BruteForce() ) ), Set( unique( extract_solution.( Ref(reduction_result_03), findbest(reduction_result_03.sat_target, BruteForce() ) ) ) ) )
 end
     
 
