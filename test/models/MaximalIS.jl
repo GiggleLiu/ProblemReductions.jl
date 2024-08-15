@@ -1,0 +1,37 @@
+using ProblemReductions, Test, Graphs
+using ProblemReductions:  is_maximal_independent_set
+
+@testset "Maximal_IS" begin
+    # test1 
+    g = smallgraph(:petersen)
+    mis1 = MaximalIS(g)
+    @test mis1 isa MaximalIS
+    @test variables(mis1) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    @test num_variables(mis1) == 10
+    @test flavors(MaximalIS) == [0, 1]
+    @test parameters(mis1) == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    @test set_parameters(mis1, [1, 5, 1, 4, 1, 3, 1, 2, 1, 2]) == MaximalIS(g,[1, 5, 1, 4, 1, 3, 1, 2, 1, 2])
+
+    #test2
+    g = SimpleGraph(4)
+    add_edge!(g, 1, 2)
+    add_edge!(g, 1, 3)
+    add_edge!(g, 3, 4)
+    add_edge!(g, 2, 3)
+    mis2 = MaximalIS(g)
+    @test mis2 isa MaximalIS
+    @test variables(mis2) == [1, 2, 3, 4]
+    @test num_variables(mis2) == 4
+    @test flavors(MaximalIS) == [0, 1]
+    @test parameters(mis2) == [1, 1, 1, 1]
+    mis2 =  set_parameters(mis2, [1, 2, 1, 2]) 
+    @test mis2 == MaximalIS(g,[1, 2, 1, 2])
+    @test is_maximal_independent_set(mis2.graph, [1, 0, 0, 1]) == true
+    @test evaluate(mis2, [1, 0, 0, 1]) == 3
+    mis2 =  set_parameters(mis2, [-2, 1, 1, 3])
+    @test evaluate(mis2, [1, 0, 0, 1]) == 1
+    @test evaluate(mis2,[0, 1, 1, 0]) == Inf
+    @test evaluate(mis2,[0, 1, 0, 0]) == Inf
+    @test is_maximal_independent_set(mis2.graph, [0, 0, 1, 0]) == true
+    @test sort(findbest(mis2, BruteForce())) == sort([[1, 0, 0, 1],[0, 0, 1, 0]]) 
+end
