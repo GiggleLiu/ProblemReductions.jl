@@ -47,3 +47,11 @@ end
 @testset "Factoring" begin
     include("Factoring.jl")
 end
+
+@testset "Matching.jl" begin
+    include("Matching.jl")
+end
+
+@testset "MaximalIS" begin
+    include("MaximalIS.jl")
+end
