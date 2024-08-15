@@ -51,3 +51,7 @@ end
 @test "Matching.jl" begin
     include("Matching.jl")
 end
+
+@testset "MaximalIS" begin
+    include("MaximalIS.jl")
+end

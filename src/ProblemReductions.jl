@@ -27,6 +27,7 @@ export DominatingSet
 export QUBO
 export Factoring
 export Matching
+export MaximalIS
 
 # rules
 export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, reduction_complexity
