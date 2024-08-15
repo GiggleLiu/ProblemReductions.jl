@@ -16,6 +16,7 @@ struct Matching{WT<:Union{UnitWeight,Vector}} <: AbstractProblem
         new{typeof(weights)}(g, weights)
     end
 end
+Base.:(==)(a::Matching, b::Matching) = a.graph == b.graph && a.weights == b.weights
 
 flavors(::Type{<:Matching}) = [0, 1]
 variables(gp::Matching) = collect(1:ne(gp.graph))
@@ -23,7 +24,7 @@ num_variables(gp::Matching) = ne(gp.graph)
 
 # weights interface
 parameters(c::Matching) = c.weights
-set_parametes(c::Matching, weights) = Matching(c.graph, weights)
+set_parameters(c::Matching, weights) = Matching(c.graph, weights)
 
 """
     evaluate(c::Matching, config)
