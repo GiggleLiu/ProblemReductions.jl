@@ -1,200 +1,78 @@
 """
-The reduction result of a general SAT problem to an Independent Set problem.
-"""
-struct ReductionSATToIndependentSet{T, GT}
-    sat_source::Satisfiability{T}
-    is_target::IndependentSet{GT}
-    k::Int
-    literal_to_nodes::Dict{BoolVar{T}, Vector{Int}}
-end
-target_problem(res::ReductionSATToIndependentSet) = res.is_target
+$TYPEDEF
 
-@with_complexity 1 function reduceto(::Type{<:IndependentSet}, sat_source::Satisfiability)
-    is_target, k, literal_to_nodes = reduce_sat_to_independent_set(sat_source)
-    return ReductionSATToIndependentSet(sat_source, is_target, k, literal_to_nodes )
+The reduction result of a general SAT problem to an Independent Set problem.
+
+### Fields
+$TYPEDFIELDS
+"""
+struct ReductionSATToIndependentSet{T, GT<:AbstractGraph, WT<:AbstractVector}
+    target::IndependentSet{GT, WT}  # the target problem
+    literals::Vector{BoolVar{T}}  # the literals in the SAT problem
+    source_variables::Vector{T}  # the variables in the SAT problem
+    num_clauses::Int   # number of clauses in the SAT problem
+end
+target_problem(res::ReductionSATToIndependentSet) = res.target
+
+@with_complexity 1 function reduceto(::Type{<:IndependentSet}, s::AbstractSatisfiabilityProblem)
+    literals = BoolVar{eltype(variables(s))}[]
+    g = SimpleGraph(0)
+    for c in clauses(s)  # add edges between literals in the same clause
+        add_vertices!(g, length(c.vars))
+        append!(literals, c.vars)
+        for i in nv(g)-length(c.vars)+1:nv(g), j in i+1:nv(g)  # add clique
+            add_edge!(g, i, j)
+        end
+    end
+    for i = 1:nv(g)       # add edges between variable and its negation
+        for j=i+1:nv(g)
+            literals[i] == ¬(literals[j]) && add_edge!(g, i, j)
+        end
+    end
+    return ReductionSATToIndependentSet(IndependentSet(g), literals, variables(s), length(clauses(s)))
 end
 
 function extract_solution(res::ReductionSATToIndependentSet, sol)
-    
-    return transform_is_to_sat_solution(res.sat_source, sol, res.literal_to_nodes )
-    
+    assignment = falses(length(res.source_variables))
+    covered_literals_name = Vector{Symbol}()
+    for (literal, value) in zip(res.literals, sol)
+        iszero(value) && continue
+        assignment[findfirst(==(literal.name), res.source_variables)] = !literal.neg
+        push!(covered_literals_name, literal.name)
+    end
+    missed_literals_name = setdiff(res.source_variables, covered_literals_name)
+    for literal_name in missed_literals_name
+        assignment[findfirst(==(literal_name), res.source_variables)] = rand(Bool)
+    end
+    return assignment
 end
 
-# ----Useful Functions----
-function reduce_sat_to_independent_set(s::Satisfiability{T}) where T
-
-    k = length(s.cnf.clauses)
-    num_nodes = 3 * k 
-    graph = SimpleGraph(num_nodes)
-
-    literal_to_nodes = Dict{BoolVar{T}, Vector{Int}}()
-    node_counter = 0
-
-    for clause_tmp in s.cnf.clauses
-        
-        clause_literals = clause_tmp.vars
-        
-        clause_nodes = []
-
-        for var in clause_literals
-            node_counter += 1
-
-            literal_node = node_counter
-            push!(clause_nodes, literal_node)
-
-            if haskey(literal_to_nodes, var)
-                push!(literal_to_nodes[var], literal_node)
-            else
-                literal_to_nodes[var] = [literal_node]
-            end
-
+function extract_multiple_solutions(res::ReductionSATToIndependentSet, sol_set)
+    all_assignments = Vector{Vector{Bool}}()
+    for sol_tmp in sol_set
+        assignment = falses(length(res.source_variables))
+        covered_literals_name = Vector{Symbol}()
+        for (literal, value) in zip(res.literals, sol_tmp)
+            iszero(value) && continue
+            assignment[findfirst(==(literal.name), res.source_variables)] = !literal.neg
+            push!(covered_literals_name, literal.name)
         end
-
-        for i in 1:length(clause_tmp)
-            for j in i+1:length(clause_tmp)
-                add_edge!(graph, clause_nodes[i], clause_nodes[j])
-            end
-        end
-    end
-
-    for (literal, nodes) in literal_to_nodes
-        if haskey( literal_to_nodes, BoolVar(literal.name, literal.neg ? false : true) )
-            for node in nodes
-                for neg_node in literal_to_nodes[ BoolVar(literal.name, literal.neg ? false : true) ]
-                    add_edge!(graph, node, neg_node)
-                end
-            end
-        end
-    end
-
-    return IndependentSet(graph), k, literal_to_nodes
-end
-
-function transform_is_to_sat_solution(sat_source::Satisfiability, sol, literal_to_nodes::Dict{BoolVar{Symbol}, Vector{Int}})
-    
-    k = length(sat_source.cnf.clauses)
-    num_source_vars = num_variables(sat_source)
-
-    if sol isa Vector{ Vector{Int64} }
-        all_original_solutions = Vector{Vector{Int64}}()
-        for sol_tmp in sol
-            assignments = Dict{Symbol, Int64}()
-
-            for (vertex, vertex_true) in enumerate( sol_tmp )
-        
-                if vertex_true == 1
-                    for (literal, nodes) in literal_to_nodes
-                        if vertex in nodes
-                            
-                            if literal.neg
-                                assignments[literal.name] = 0
-                            else
-                                assignments[literal.name] = 1
-                            end
-                            
-                            break
-                        end
-                    end
-                end
-            end
-
-            if length(assignments) == num_source_vars
-
-                original_solution = fill(-1, num_source_vars) 
-                for (var_i, var) in enumerate( variables( sat_source ) )
-                    original_solution[var_i] = assignments[var]
-                end
-                push!(all_original_solutions, original_solution)
-
-            elseif ( length( assignments ) != num_source_vars )
-
-                literals_missed = []
-                for literal in variables(sat_source)
-                    if !haskey(assignments, literal)
-                        push!(literals_missed, literal)
-                    end
-                end
-                
-                for each_case in 0:( 2^( length(literals_missed) ) - 1 )
-                    complete_assignments = copy( assignments )
-                    case_number = each_case
-                    for literal in literals_missed
-                        complete_assignments[literal] = rem(case_number, 2)
-                        case_number = div(case_number, 2)
-                    end
-
-                    original_solution = fill(-1, num_source_vars) 
-                    for (var_i, var) in enumerate( variables( sat_source ) )
-                        original_solution[var_i] = complete_assignments[var]
-                    end
-                    
-                    push!(all_original_solutions, original_solution)
-                end
-
-            end
-
-        end
-        
-        return unique(all_original_solutions)
-        
-    elseif sol isa Vector{Int64}
-
-        assignments = Dict{Symbol, Int64}()
-        for (vertex, vertex_true) in enumerate( sol )
-    
-            if vertex_true == 1
-                for (literal, nodes) in literal_to_nodes
-                    if vertex in nodes
-                        
-                        if literal.neg
-                            assignments[literal.name] = 0
-                        else
-                            assignments[literal.name] = 1
-                        end
-                        
-                        break
-                    end
-                end
-            end
-        end
-            
-        if length(assignments) == num_source_vars
-
-            original_solution = fill(-1, num_source_vars) 
-            for (var_i, var) in enumerate( variables( sat_source ) )
-                original_solution[var_i] = assignments[var]
-            end
-            return original_solution
-
-        elseif ( length( assignments ) != num_source_vars )
-            
-            all_original_solutions = Vector{Vector{Int64}}()
-            literals_missed = []
-            for literal in variables(sat_source)
-                if !haskey(assignments, literal)
-                    push!(literals_missed, literal)
-                end
-            end
-            @warn "return $(2^( length(literals_missed) )) degenerate solutions for single input"
-            
-            for each_case in 0:( 2^( length(literals_missed) ) - 1 )
-                complete_assignments = copy( assignments )
+        missed_literals_name = setdiff(res.source_variables, covered_literals_name)
+        if length(missed_literals_name) > 0
+            for each_case in 0:( 2^( length(missed_literals_name) ) - 1 )
+                copied_assignment = copy(assignment)
                 case_number = each_case
-                for literal in literals_missed
-                    complete_assignments[literal] = rem(case_number, 2)
+                for literal_name in missed_literals_name
+                    copied_assignment[findfirst(==(literal_name), res.source_variables)] = rem(case_number, 2)
                     case_number = div(case_number, 2)
                 end
-
-                original_solution = fill(-1, num_source_vars) 
-                for (var_i, var) in enumerate( variables( sat_source ) )
-                    original_solution[var_i] = complete_assignments[var]
-                end
-                
-                push!(all_original_solutions, original_solution)
+                push!(all_assignments, copied_assignment)
             end
-            return unique(all_original_solutions)
-
+        else
+            push!(all_assignments, assignment)
         end
-
     end
+    return unique(all_assignments)
 end
+
+
