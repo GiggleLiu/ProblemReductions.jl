@@ -18,8 +18,6 @@ struct PaintShop{LT} <: AbstractProblem
         new{eltype(sequence)}(sequence, isfirst)
     end
 end
-Base.:(==)(a::PaintShop, b::PaintShop) = a.sequence == b.sequence && a.isfirst == b.isfirst
-
 
 variables(gp::PaintShop) = unique(gp.sequence)
 flavors(::Type{<:PaintShop}) = [0, 1]
