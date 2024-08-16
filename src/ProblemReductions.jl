@@ -29,6 +29,7 @@ export QUBO
 export Factoring
 export Matching
 export MaximalIS
+export PaintShop
 
 # rules
 export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduction_complexity
