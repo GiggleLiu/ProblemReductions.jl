@@ -82,7 +82,7 @@ render_type_params(::TypeVar, t::DataType) = t
 render_type_params(var::TypeVar, t::UnionAll) = UnionAll(var, t)
 
 function show_reduction_graph(rg::ReductionGraph)
-    ns = NodeStore()
+    ns = nodestore()
     node = [offset(circlenode(rotatepoint(Point(1000, i*75), i*π/7), 200), (100,100)) for i=1:length(rg.nodes)]
     append!(ns, node)
     Fadjlist = rg.graph.fadjlist
@@ -105,3 +105,4 @@ function show_reduction_graph(rg::ReductionGraph)
         end
     end
 end
+

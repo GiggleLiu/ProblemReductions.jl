@@ -39,6 +39,7 @@ export Reduction3SATToIndependentSet
 
 # reduction path
 export ReductionGraph, reduction_graph, reduction_paths, implement_reduction_path
+export show_reduction_graph
 
 include("truth_table.jl")
 include("topology.jl")

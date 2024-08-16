@@ -29,10 +29,11 @@
 # ---
 # ## Factoring -> Spin Glass
 # To start with, we import the necessary packages.
-using ProblemReductions
+using ProblemReductions, LuxorGraphPlot
 # And then we use the reduction graph to find the reduction path from the factoring problem to the spin glass problem.
 g = reduction_graph()
 paths = reduction_paths(Factoring, SpinGlass)
+show_reduction_graph(g)
 # Here, `reduction_graph` returns a directed graph where the nodes are the problem types and the edges are the reduction rules.
 # For the original problem and the target problem, we check whether there is a path between their nodes and if so, the `reduction_paths` function will return the path.
 # show_reduction_graph(g)
@@ -43,7 +44,6 @@ paths = reduction_paths(Factoring, SpinGlass)
 
 n, m, input = 3, 2, 15
 f = Factoring(n, m, input)
-
 # We now need to reduce the factoring problem to the Circuit Sat problem and the process of reduction worths noticing -- how could we transfer a factoring problem to a circuit sat problem?
 # Our goal is to verify that the product of 2 prime numbers is 15 so we need a gadget in circuit that simulate the product sign and 
 # Then we could reduce the factoring problem to the Circuit Sat problem using `reduceto` function.
