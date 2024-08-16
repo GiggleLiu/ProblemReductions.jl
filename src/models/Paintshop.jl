@@ -7,27 +7,6 @@ Positional arguments
 -------------------------------
 * `sequence` is a vector of symbols, each symbol is associated with a color.
 * `isfirst` is a vector of boolean numbers, indicating whether the symbol is the first appearance in the sequence.
-
-Examples
--------------------------------
-One can encode the paint shop problem `abaccb` as the following
-
-```jldoctest; setup=:(using GenericTensorNetworks)
-julia> syms = collect("abaccb");
-
-julia> pb = GenericTensorNetwork(PaintShop(syms));
-
-julia> solve(pb, SizeMin())[]
-2.0ₜ
-
-julia> solve(pb, ConfigsMin())[].c.data
-2-element Vector{StaticBitVector{3, 1}}:
- 100
- 011
-```
-In our definition, we find the maximum number of unchanged color in this sequence, i.e. (n-1) - (minimum number of color changes)
-In the output of maximum configurations, the two configurations are defined on 5 bonds i.e. pairs of (i, i+1), `0` means color changed, while `1` means color not changed.
-If we denote two "colors" as `r` and `b`, then the optimal painting is `rbbbrr` or `brrrbb`, both change the colors twice.
 """
 struct PaintShop{LT} <: AbstractProblem
     sequence::Vector{LT}
