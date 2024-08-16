@@ -7,7 +7,7 @@ The reduction result of a vertex covering to a set covering problem.
 - `setcovering::SetCovering{ET,WT}`: the set covering problem, where ET is the sets type and WT is the weights type.
 - `edgelabel`: map each edge to a number in order to identify the edge (otherwise the vector would be cluttering)
 """
-struct ReductionVertexCoveringToSetCovering{ET, WT<:AbstractVector}
+struct ReductionVertexCoveringToSetCovering{ET, WT<:AbstractVector} <: AbstractReductionResult
     setcovering::SetCovering{ET, WT}
     edgelabel::Dict{Vector{Int}, Int}
 end

@@ -8,7 +8,7 @@ The reduction result of a qubo to a spin glass problem.
 
 We only consider a simple reduction from QUBO to SpinGlass(the graph must be `SimpleGraph`).
 """
-struct ReductionQUBOToSpinGlass{GT, T}
+struct ReductionQUBOToSpinGlass{GT, T} <: AbstractReductionResult
     spinglass::SpinGlass{GT, T}
 end
 

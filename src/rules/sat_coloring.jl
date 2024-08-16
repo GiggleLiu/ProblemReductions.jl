@@ -8,7 +8,7 @@ The reduction result of a Sat problem to a Coloring problem.
 
 Note: The coloring problem is a 3 coloring problem, in which a auxiliary color is used Auxiliary color => 2.
 """
-struct ReductionSatToColoring{K,T, WT<:AbstractVector}
+struct ReductionSatToColoring{K,T, WT<:AbstractVector} <: AbstractReductionResult
     coloring::Coloring{K, WT}
     varlabel::Dict{T, Int}
 end

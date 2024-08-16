@@ -4,7 +4,7 @@ The reduction result of a general SAT problem to a 3-SAT problem.
 ### Fields
 - `sat_source::Satisfiability{GT, T}`: the source general SAT problem.
 """
-struct ReductionSATTo3SAT{T}
+struct ReductionSATTo3SAT{T} <: AbstractReductionResult
     sat_source::Satisfiability{T}
     sat_target::KSatisfiability{3, T}
     new_var_map::Dict{Symbol, Symbol}
@@ -58,7 +58,7 @@ end
 
 # ----Useful functions----
 # 001: Function to rename variables in the CNF
-function rename_variables(sat::Satisfiability)
+function rename_variables(sat::Satisfiability) <: AbstractReductionResult
     
     original_vars = variables(sat)
     
