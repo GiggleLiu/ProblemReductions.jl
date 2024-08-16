@@ -55,3 +55,7 @@ end
 @testset "MaximalIS" begin
     include("MaximalIS.jl")
 end
+
+@testset "Paintshop" begin
+    include("Paintshop.jl")
+end
