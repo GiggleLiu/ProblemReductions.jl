@@ -18,15 +18,8 @@ struct PaintShop{LT} <: AbstractProblem
         new{eltype(sequence)}(sequence, isfirst)
     end
 end
-function paint_shop_from_pairs(pairs::AbstractVector{Tuple{Int,Int}})
-    n = length(pairs)
-    @assert sort!(vcat(collect.(pairs)...)) == collect(1:2n)
-    sequence = zeros(Int, 2*n)
-    @inbounds for i=1:n
-        sequence[pairs[i]] .= i
-    end
-    return PaintShop(sequence)
-end
+Base.:(==)(a::PaintShop, b::PaintShop) = a.sequence == b.sequence && a.isfirst == b.isfirst
+
 
 variables(gp::PaintShop) = unique(gp.sequence)
 flavors(::Type{<:PaintShop}) = [0, 1]

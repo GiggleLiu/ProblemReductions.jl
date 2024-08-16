@@ -48,7 +48,7 @@ end
     include("Factoring.jl")
 end
 
-@testset "Matching.jl" begin
+@testset "Matching" begin
     include("Matching.jl")
 end
 
