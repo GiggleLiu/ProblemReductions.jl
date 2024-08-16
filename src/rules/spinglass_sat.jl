@@ -46,7 +46,7 @@ function extract_solution(res::ReductionCircuitToSpinGlass, sol)
     end
     return out
 end
-extract_multiple_solutions(res::ReductionCircuitToSpinGlass, sol_set) = unique( extract_solution.(Ref(res), sol_set) ) 
+#extract_multiple_solutions(res::ReductionCircuitToSpinGlass, sol_set) = unique( extract_solution.(Ref(res), sol_set) ) 
 
 """
 $TYPEDEF

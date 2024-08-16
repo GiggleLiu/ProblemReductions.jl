@@ -32,4 +32,4 @@ function extract_solution(res::ReductionVertexCoveringToSetCovering, sol)
     end
     return out
 end
-extract_multiple_solutions(res::ReductionVertexCoveringToSetCovering, sol_set) = unique( extract_solution.(Ref(res), sol_set) )
+#extract_multiple_solutions(res::ReductionVertexCoveringToSetCovering, sol_set) = unique( extract_solution.(Ref(res), sol_set) )
