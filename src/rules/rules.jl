@@ -53,6 +53,17 @@ Extract the solution `solution` of the target problem to the original problem.
 """
 function extract_solution end
 
+"""
+    extract_multiple_solutions(reduction::AbstractReductionResult, solution_set)
+
+Extract multiple solutions together `solution_set` of the target problem to the original problem.
+
+### Arguments
+- `reduction`: The reduction result.
+- `solution_set`: The set of multiple solutions of the target problem.
+"""
+function extract_multiple_solutions end
+
 macro with_complexity(i::Int, ex::Expr)
     @assert ex.head == :function
     if ex.args[1].head == :call

@@ -5,6 +5,7 @@ using DocStringExtensions
 using PrettyTables
 using BitBasis
 using MLStyle
+using Random
 
 export @bit_str
 export TruthTable
@@ -26,9 +27,11 @@ export SetPacking, is_set_packing
 export DominatingSet
 export QUBO
 export Factoring
+export Matching
+export MaximalIS
 
 # rules
-export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, reduction_complexity
+export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduction_complexity
 export LogicGadget, truth_table
 export ReductionSATTo3SAT
 export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering, ReductionSatToColoring,
