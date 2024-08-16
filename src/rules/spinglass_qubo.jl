@@ -29,7 +29,7 @@ The reduction result of a spin glass to a QUBO problem.
 ### Fields
 - `qubo::QUBO{WT}`: the QUBO problem.
 """
-struct ReductionSpinGlassToQUBO{WT}
+struct ReductionSpinGlassToQUBO{WT} <: AbstractReductionResult
     qubo::QUBO{WT}
 end
 target_problem(res::ReductionSpinGlassToQUBO) = res.qubo
