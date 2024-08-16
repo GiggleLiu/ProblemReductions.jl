@@ -19,7 +19,6 @@ target_problem(res::ReductionQUBOToSpinGlass) = res.spinglass
     return ReductionQUBOToSpinGlass(sg)
 end 
 extract_solution(::ReductionQUBOToSpinGlass, sol) = sol .== -1
-# extract_multiple_solutions(res::ReductionQUBOToSpinGlass, sol_set) = unique( extract_solution.(Ref(res), sol_set) ) 
 
 """
 $TYPEDEF
@@ -50,5 +49,4 @@ target_problem(res::ReductionSpinGlassToQUBO) = res.qubo
     return ReductionSpinGlassToQUBO(QUBO(matrix))
 end
 
-extract_solution(::ReductionSpinGlassToQUBO, sol) = 1 .- 2 .* sol
-# extract_multiple_solutions(res::ReductionSpinGlassToQUBO, sol_set) = unique( extract_solution.(Ref(res), sol_set) ) 
+extract_solution(::ReductionSpinGlassToQUBO, sol) = 1 .- 2 .* sol 

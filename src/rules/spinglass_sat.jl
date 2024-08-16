@@ -45,8 +45,7 @@ function extract_solution(res::ReductionCircuitToSpinGlass, sol)
         out[k] = sol[v] == -1
     end
     return out
-end
-#extract_multiple_solutions(res::ReductionCircuitToSpinGlass, sol_set) = unique( extract_solution.(Ref(res), sol_set) ) 
+end 
 
 """
 $TYPEDEF

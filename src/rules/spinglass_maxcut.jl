@@ -21,7 +21,6 @@ target_problem(res::ReductionMaxCutToSpinGlass) = res.spinglass
 end 
 
 extract_solution(::ReductionMaxCutToSpinGlass, sol) = sol .== -1
-# extract_multiple_solutions(res::ReductionMaxCutToSpinGlass, sol_set) = unique( extract_solution.(Ref(res), sol_set) ) 
 
 """
 $TYPEDEF
@@ -68,8 +67,3 @@ function extract_solution(res::ReductionSpinGlassToMaxCut, sol)
     sol = sol[res.ancilla] == 0 ? 1 .- 2 .* sol : 2 .* sol .- 1  # the last index is the ancilla
     return deleteat!(copy(sol), res.ancilla)
 end
-"""
-function extract_multiple_solutions(res::ReductionSpinGlassToMaxCut, sol_set)
-    return unique( extract_solution.(Ref(res), sol_set) )
-end
-"""
