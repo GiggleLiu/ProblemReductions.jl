@@ -58,7 +58,7 @@ end
 
 # ----Useful functions----
 # 001: Function to rename variables in the CNF
-function rename_variables(sat::Satisfiability) <: AbstractReductionResult
+function rename_variables(sat::Satisfiability)
     
     original_vars = variables(sat)
     
@@ -142,7 +142,7 @@ function transform_to_3_literal_cnf(sat::Satisfiability)
 end
 
 # ----KSatisfiability to General Satisfiability----
-struct ReductionkSATToSAT{K, T}
+struct ReductionkSATToSAT{K, T} <: AbstractReductionResult
     sat_source::KSatisfiability{K, T}
     sat_target::Satisfiability{T}
 end
