@@ -8,7 +8,7 @@ The reduction result of a circuit to a spin glass problem.
 - `spinglass::SpinGlass{GT, T}`: the spin glass problem.
 - `variables::Vector{Int}`: the variables in the spin glass problem.
 """
-struct ReductionCircuitToSpinGlass{GT, T}
+struct ReductionCircuitToSpinGlass{GT, T} <: AbstractReductionResult
     num_source_vars::Int
     spinglass::SpinGlass{GT, T}
     variables::Vector{Int}
@@ -45,7 +45,7 @@ function extract_solution(res::ReductionCircuitToSpinGlass, sol)
         out[k] = sol[v] == -1
     end
     return out
-end
+end 
 
 """
 $TYPEDEF

@@ -62,7 +62,9 @@ Extract multiple solutions together `solution_set` of the target problem to the 
 - `reduction`: The reduction result.
 - `solution_set`: The set of multiple solutions of the target problem.
 """
-function extract_multiple_solutions end
+function extract_multiple_solutions(reduction::AbstractReductionResult, solution_set)
+    return unique( extract_solution.(Ref(reduction), solution_set) )
+end
 
 macro with_complexity(i::Int, ex::Expr)
     @assert ex.head == :function

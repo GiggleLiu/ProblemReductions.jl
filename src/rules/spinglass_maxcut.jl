@@ -8,7 +8,7 @@ The reduction result of a maxcut to a spin glass problem.
 
 We only consider a simple reduction from MaxCut to SpinGlass(the graph must be `SimpleGraph`).
 """
-struct ReductionMaxCutToSpinGlass{GT, T}
+struct ReductionMaxCutToSpinGlass{GT, T} <: AbstractReductionResult
     spinglass::SpinGlass{GT, T}
 end
 
@@ -31,7 +31,7 @@ The reduction result of a spin glass to a maxcut problem.
 - `maxcut::MaxCut{WT}`: the MaxCut problem.
 - `ancilla::Int`: the ancilla vertex.
 """
-struct ReductionSpinGlassToMaxCut{WT}
+struct ReductionSpinGlassToMaxCut{WT} <: AbstractReductionResult
     maxcut::MaxCut{WT}
     ancilla::Int
 end

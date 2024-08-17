@@ -4,7 +4,7 @@ The reduction result of a general SAT problem to a 3-SAT problem.
 ### Fields
 - `sat_source::Satisfiability{GT, T}`: the source general SAT problem.
 """
-struct ReductionSATTo3SAT{T}
+struct ReductionSATTo3SAT{T} <: AbstractReductionResult
     sat_source::Satisfiability{T}
     sat_target::KSatisfiability{3, T}
     new_var_map::Dict{Symbol, Symbol}
@@ -12,53 +12,48 @@ struct ReductionSATTo3SAT{T}
 end
 target_problem(res::ReductionSATTo3SAT) = res.sat_target
 
-function reduceto(::Type{<:KSatisfiability}, sat_source::Satisfiability)
+@with_complexity 1 function reduceto(::Type{<:KSatisfiability}, sat_source::Satisfiability)
     sat_source_renamed, new_var_map, inverse_new_var_map = rename_variables(sat_source)
     sat_target = transform_to_3_literal_cnf(sat_source_renamed)
     return ReductionSATTo3SAT(sat_source, sat_target, new_var_map, inverse_new_var_map )
 end
 
 function extract_solution(res::ReductionSATTo3SAT, sol)
-     
     num_source_vars = num_variables(res.sat_source)
     target_vars = variables( res.sat_target )
 
-    if sol isa Vector{Vector{Int64}}
-        @assert length(sol[1]) == length(target_vars)
-        all_original_solutions = Vector{Vector{Int64}}()
-
-        for sol_tmp in sol
-
-            original_solution = fill(-1, num_source_vars) 
-
-            for (i, new_var) in enumerate(target_vars)
-
-                new_var_str = string(new_var)
-                if startswith(new_var_str, "x_")
-                    original_index = parse(Int, new_var_str[3:end])
-                    original_solution[original_index] = sol_tmp[i]
-                end
-            end
-
-            push!(all_original_solutions, original_solution)
+    @assert length(sol) == length(target_vars)
+    original_solution = fill(-1, num_source_vars) 
+    for (i, new_var) in enumerate(target_vars)
+        new_var_str = string(new_var)
+        if startswith(new_var_str, "x_")
+            original_index = parse(Int, new_var_str[3:end])
+            original_solution[original_index] = sol[i]
         end
+    end
 
-        return unique( all_original_solutions )
+    return original_solution
+end
 
-    elseif sol isa Vector{Int64}
-        @assert length(sol) == length(target_vars)
+function extract_multiple_solutions(res::ReductionSATTo3SAT, sol_set)
+    num_source_vars = num_variables(res.sat_source)
+    target_vars = variables( res.sat_target )
+
+    @assert length(sol_set[1]) == length(target_vars)
+    all_original_solutions = Vector{Vector{Int64}}()
+    for sol_tmp in sol_set
         original_solution = fill(-1, num_source_vars) 
         for (i, new_var) in enumerate(target_vars)
-
             new_var_str = string(new_var)
             if startswith(new_var_str, "x_")
                 original_index = parse(Int, new_var_str[3:end])
-                original_solution[original_index] = sol[i]
+                original_solution[original_index] = sol_tmp[i]
             end
         end
-
-        return original_solution
+        push!(all_original_solutions, original_solution)
     end
+
+    return unique( all_original_solutions )
 end
 
 # ----Useful functions----
@@ -147,7 +142,7 @@ function transform_to_3_literal_cnf(sat::Satisfiability)
 end
 
 # ----KSatisfiability to General Satisfiability----
-struct ReductionkSATToSAT{K, T}
+struct ReductionkSATToSAT{K, T} <: AbstractReductionResult
     sat_source::KSatisfiability{K, T}
     sat_target::Satisfiability{T}
 end
@@ -157,6 +152,9 @@ function reduceto(::Type{<:Satisfiability}, sat_source::KSatisfiability)
     return ReductionkSATToSAT(sat_source, Satisfiability(sat_source.cnf) )
 end
 
-function extract_solution(res::ReductionkSATToSAT, sol)
+function extract_solution(::ReductionkSATToSAT, sol)
     return sol
+end
+function extract_multiple_solutions(::ReductionkSATToSAT, sol_set)
+    return sol_set
 end
