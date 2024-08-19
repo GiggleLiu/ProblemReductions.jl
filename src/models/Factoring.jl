@@ -1,3 +1,8 @@
+"""
+    Factoring(m::Int, n::Int, input::Int)
+
+The factoring problem is to find two numbers `a` and `b` such that `a * b = input`. And the numbers `a` and `b` are `m` and `n` bits long respectively.
+"""
 struct Factoring <: AbstractProblem
     m::Int       # number of bits for the first number
     n::Int       # number of bits for the second number

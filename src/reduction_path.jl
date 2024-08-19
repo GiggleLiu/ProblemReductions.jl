@@ -1,3 +1,8 @@
+"""
+    reduction_paths(::Type{S}, ::Type{T}) -> Vector{Vector{Int}}
+
+S is the source problem type and T is the target problem type. Return a nested vector containing all the reduction paths from S to T.
+"""
 function reduction_paths(::Type{S}, ::Type{T}) where {T <: AbstractProblem, S<:AbstractProblem}
     rg = reduction_graph()
     source_nodes = [i for i in 1:nv(rg.graph) if S <: rg.nodes[i]]
@@ -8,6 +13,7 @@ function reduction_paths(::Type{S}, ::Type{T}) where {T <: AbstractProblem, S<:A
     end
     return paths
 end
+
 
 struct ReductionGraph
     graph::SimpleDiGraph{Int}
@@ -51,6 +57,11 @@ function implement_reduction_path(rg::ReductionGraph, path::Vector{Int}, problem
     return ConcatenatedReduction(sequence, complexity)
 end
 
+"""
+    reduction_graph() -> ReductionGraph
+
+Return the reduction graph 
+"""
 function reduction_graph()
     ms = methods(reduceto)
     rules = extract_types.(getfield.(ms, :sig))
@@ -96,6 +107,17 @@ function show_reduction_graph(rg::ReductionGraph)
                     stroke(ns.nodes[k])
                     if(i != ns.nodes[k])
                         stroke(Connection(i,ns.nodes[k];mode =:natural,isarrow=true))
+                    end
+                end
+            end
+        end
+        for i in ns.nodes
+            for j in Badjlist
+                for k in j 
+                    stroke(i)
+                    stroke(ns.nodes[k])
+                    if(i != ns.nodes[k])
+                        stroke(Connection(ns.nodes[k],i;mode =:natural,isarrow=true))
                     end
                 end
             end
