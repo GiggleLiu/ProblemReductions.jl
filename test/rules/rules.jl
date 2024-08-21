@@ -31,6 +31,10 @@ end
     include("sat_independentset.jl")
 end
 
+@testset "sat_dominatingset" begin
+    include("sat_dominatingset.jl")
+end
+
 @testset "rules" begin
     circuit = CircuitSAT(@circuit begin
         x = a ∨ ¬b
@@ -58,7 +62,8 @@ end
             spinglass2 => QUBO,
             sat => KSatisfiability,
             ksat => Satisfiability,
-            sat => IndependentSet
+            sat => IndependentSet,
+            sat => DominatingSet
         ]
         @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve
