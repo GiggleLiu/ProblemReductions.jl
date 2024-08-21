@@ -6,7 +6,7 @@ The reduction result of a general SAT problem to an Independent Set problem.
 ### Fields
 $TYPEDFIELDS
 """
-struct ReductionSATToIndependentSet{T, GT<:AbstractGraph, WT<:AbstractVector}
+struct ReductionSATToIndependentSet{T, GT<:AbstractGraph, WT<:AbstractVector} <: AbstractReductionResult
     target::IndependentSet{GT, WT}  # the target problem
     literals::Vector{BoolVar{T}}  # the literals in the SAT problem
     source_variables::Vector{T}  # the variables in the SAT problem

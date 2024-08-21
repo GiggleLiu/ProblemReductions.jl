@@ -46,27 +46,26 @@ n, m, input = 3, 2, 15
 f = Factoring(n, m, input)
 # We now need to reduce the factoring problem to the Circuit Sat problem and the process of reduction worths noticing -- how could we transfer a factoring problem to a circuit sat problem?
 # #### Multiplier
-# Our goal is to verify that the product of 2 prime numbers is 15 so we need a gadget in circuit that simulate the product sign and put it into a function call [`reduceto`](@ref), then we could get the circuit sat problem.
+# Our goal is to verify that the product of 2 prime numbers is 15 so we need a gadget in circuit that simulate the product sign, then we construct a circuit to simulate the factoring problem.
 # That's actually what a multiplier does. It's a circuit that takes two inputs and outputs their product. And basically, half adder and full adder are the basic building blocks of multiplier.
-# Half adder and full adder are circuits composed of XOR and AND gates. Here's a table describing there relationship and structure.
+# Half adder and full adder are circuits composed of logical gates. Here's a table describing there relationship and structure.
 
 # |      | Half adder | Full adder | Multiplier |
 # | :---  | :--- | :--- | :--- |
 # | gadgets|  XOR, AND | XOR, AND, OR | Half adder, Full adder |
 # | inputs | 2 bits | 2 bits and 1 carry| two binary numbers |
 # | outputs | sum and carry | sum and carry | product |
-
-
+# Then we could consider how to build a multiplier using half adder and full adder. 
+# After figuring out how multiplier works in this reduction process, we could use the [`reduceto`](@ref) function. This function returns a reduction result containing the 
+# target problem and some other information in the reduction process.
 cs = reduceto(CircuitSAT, f) 
-
-# (Explain multiplier here,included half adder and full adder and how to use multiplier to reduce factoring to circuit Sat)
-
-# Circuit Sat, easily explained, is a circuit with some inputs and outputs and the circuit contains some logical constraints like $\land$ and $\lor$. The goal is to find the inputs that make the output true.
-# So here we wants to verify that the product of 2 prime numbers is 15. Then we could set the constraints to the outcome to ensure it's 15.
+# Now, we get a Circuit Sat problem `cs` and let's checkout how it looks like.
 
 # ### reduce the circuit Sat problem to the Spin Glass problem
-# Visualize this Spin Glass problem.
-# Introduce Ising and how to use Ising to solve the Spin Glass problem.
+# Similarly, use `reduceto` to reduce the circuit sat problem to the spin glass problem.
+sg = reduceto(SpinGlass, cs.circuit)
+# Finally, we get a spin glass problem `sg` and imagine we could use the ising machine to find the ground state of `sg`, here we may use `findbest` to solve it.
+# And then we could extract the solution back to the factoring problem.
 
 # notes: main figure
 

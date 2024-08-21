@@ -6,7 +6,7 @@ using Test, ProblemReductions, Graphs
         IS_tmp = reduction_results |> target_problem
         sol_IS = findbest(IS_tmp, BruteForce())
         s1 = Set(findbest(sat, BruteForce()))
-        s2 = Set(extract_solution.(Ref(reduction_results), sol_IS))
+        s2 = Set( unique( extract_solution.(Ref(reduction_results), sol_IS) ) )
         s3 = Set(extract_multiple_solutions(reduction_results, sol_IS))
         return (s2 ⊆ s1) && (s3 == s1)
     end

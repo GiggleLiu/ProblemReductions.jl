@@ -8,7 +8,7 @@ The reduction result of a qubo to a spin glass problem.
 
 We only consider a simple reduction from QUBO to SpinGlass(the graph must be `SimpleGraph`).
 """
-struct ReductionQUBOToSpinGlass{GT, T}
+struct ReductionQUBOToSpinGlass{GT, T} <: AbstractReductionResult
     spinglass::SpinGlass{GT, T}
 end
 
@@ -28,7 +28,7 @@ The reduction result of a spin glass to a QUBO problem.
 ### Fields
 - `qubo::QUBO{WT}`: the QUBO problem.
 """
-struct ReductionSpinGlassToQUBO{WT}
+struct ReductionSpinGlassToQUBO{WT} <: AbstractReductionResult
     qubo::QUBO{WT}
 end
 target_problem(res::ReductionSpinGlassToQUBO) = res.qubo
@@ -49,4 +49,4 @@ target_problem(res::ReductionSpinGlassToQUBO) = res.qubo
     return ReductionSpinGlassToQUBO(QUBO(matrix))
 end
 
-extract_solution(::ReductionSpinGlassToQUBO, sol) = 1 .- 2 .* sol
+extract_solution(::ReductionSpinGlassToQUBO, sol) = 1 .- 2 .* sol 

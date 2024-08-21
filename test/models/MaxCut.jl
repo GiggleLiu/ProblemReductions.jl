@@ -15,7 +15,8 @@ using Test, ProblemReductions, Graphs
     @test variables(mc) == [1, 2, 3, 4]
     @test num_variables(mc) == 4
     @test flavors(MaxCut) == [0, 1]
-
+    @test flavors(mc) == [0, 1]
+    @test num_flavors(mc) == 2
     # parameters
     @test parameters(mc) == [1, 3, 1, 4]
     @test set_parameters(mc, [1, 3, 4, 4]) == MaxCut(g, [1, 3, 4, 4])

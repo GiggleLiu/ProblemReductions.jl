@@ -8,7 +8,8 @@ using ProblemReductions:  is_maximal_independent_set
     @test mis1 isa MaximalIS
     @test variables(mis1) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     @test num_variables(mis1) == 10
-    @test flavors(MaximalIS) == [0, 1]
+    @test flavors(mis1) == [0, 1]
+    @test num_flavors(mis1) == 2
     @test parameters(mis1) == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     @test set_parameters(mis1, [1, 5, 1, 4, 1, 3, 1, 2, 1, 2]) == MaximalIS(g,[1, 5, 1, 4, 1, 3, 1, 2, 1, 2])
 
