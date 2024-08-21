@@ -1,3 +1,5 @@
+using Test, ProblemReductions, Graphs
+
 @testset "sat_dominatingset" begin
     function verify(sat)
         reduction_results = reduceto(DominatingSet, sat)
