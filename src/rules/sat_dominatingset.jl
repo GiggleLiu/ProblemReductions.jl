@@ -1,4 +1,12 @@
-struct ReductionSATToDominatingSet{T, GT<:AbstractGraph} <: AbstractReductionResult
+"""
+$TYPEDEF
+
+The reduction result of a general SAT problem to an Dominating Set problem.
+
+### Fields
+$TYPEDFIELDS
+"""
+struct ReductionSATToDominatingSet{GT<:AbstractGraph} <: AbstractReductionResult
     target::DominatingSet{GT}  # the target problem
     num_literals::Int # number of literals in the SAT problem
     num_clauses::Int   # number of clauses in the SAT problem
