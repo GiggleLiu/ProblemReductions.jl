@@ -40,14 +40,12 @@ function extract_solution(res::ReductionSATToDominatingSet, sol)
     assignment = fill(0, res.num_literals)
     for (i, value) in enumerate(sol)
         if value == 1
-            if value == 1
-                if rem(i, 3) == 1
-                    assignment[div(i, 3)+1] = 1
-                elseif rem(i, 3) == 2
-                    assignment[div(i, 3)+1] = 0
-                elseif rem(i, 3) == 0
-                    assignment[div(i, 3)] = rand([0,1])
-                end
+            if rem(i, 3) == 1
+                assignment[div(i, 3)+1] = 1
+            elseif rem(i, 3) == 2
+                assignment[div(i, 3)+1] = 0
+            elseif rem(i, 3) == 0
+                assignment[div(i, 3)] = rand([0,1])
             end
         end
     end
