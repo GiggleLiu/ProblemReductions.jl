@@ -25,6 +25,7 @@ using Test, ProblemReductions, Graphs
     IS_01 = IndependentSet(g01)
     IS_02 = IndependentSet(g02)
 
+    @test reduction_complexity(SetPacking, IS_01) == 1
     @test verify(IS_01)
     @test verify(IS_02)
 end
