@@ -43,7 +43,7 @@ end
 
 function cut_size(terms, config; weights=UnitWeight(length(terms)))
     size = zero(promote_type(eltype(weights)))
-    for (i,j)in zip(terms, weights)
+    for (i,j) in zip(terms, weights)
         size += (config[i[1]] != config[i[2]]) * j  # terms are the edges,and terms[1],terms[2] are the two vertices of the edge.
     end
     return size
