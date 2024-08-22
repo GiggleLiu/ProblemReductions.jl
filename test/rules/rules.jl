@@ -35,6 +35,10 @@ end
     include("sat_dominatingset.jl")
 end
 
+@testset "independentset_setpacking" begin
+    include("independentset_setpacking.jl")
+end
+
 @testset "rules" begin
     circuit = CircuitSAT(@circuit begin
         x = a ∨ ¬b
@@ -50,6 +54,7 @@ end
     graph2 = HyperGraph(3, [[1, 2], [1], [2,3], [2]])
     spinglass2 = SpinGlass(graph2, [1, 2, 1, -1])
     qubo = QUBO([0 1 -2; 1 0 -2; -2 -2 6])
+    is = IndependentSet(graph)
     for (source, target_type) in [
             # please add more tests here
             circuit => SpinGlass,
@@ -63,7 +68,8 @@ end
             sat => KSatisfiability,
             ksat => Satisfiability,
             sat => IndependentSet,
-            sat => DominatingSet
+            sat => DominatingSet,
+            is => SetPacking
         ]
         @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve
