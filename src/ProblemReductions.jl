@@ -5,6 +5,7 @@ using DocStringExtensions
 using PrettyTables
 using BitBasis
 using MLStyle
+using LuxorGraphPlot
 using Random
 
 export @bit_str
@@ -19,7 +20,7 @@ export BooleanExpr, Circuit, Assignment, simple_form, CircuitSAT, @circuit, bool
 export SpinGlass, spinglass_gadget
 export Coloring, coloring_energy, is_vertex_coloring
 export SetCovering, is_set_covering, set_covering_energy
-export BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, satisfiable, KSatisfiability
+export BoolVar, CNFClause, CNF, AbstractSatisfiabilityProblem, Satisfiability, is_kSAT, satisfiable, KSatisfiability
 export MaxCut
 export IndependentSet
 export VertexCovering, is_vertex_covering, vertex_covering_energy
