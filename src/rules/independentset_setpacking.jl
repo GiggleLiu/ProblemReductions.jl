@@ -19,8 +19,8 @@ target_problem(res::ReductionIndependentSetToSetPacking) = res.target
         push!(vertices_list, v)
         push!(subset_collection, Vector{Int}())
     end
-    for (i, e) in enumerate(edges(s.graph))
-        for v in _vec(e)
+    for (i, v_set) in enumerate(vedges(s.graph))
+        for v in v_set
             push!(subset_collection[findfirst(==(v), vertices_list)], i)
         end
     end
