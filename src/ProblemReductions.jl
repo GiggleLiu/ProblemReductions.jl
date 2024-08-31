@@ -40,6 +40,7 @@ export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGla
 export findbest, BruteForce
 export CNF
 export ReductionSATToIndependentSet, ReductionSATToDominatingSet
+export ReductionIndependentSetToSetPacking
 
 # reduction path
 export ReductionGraph, reduction_graph, reduction_paths, implement_reduction_path
