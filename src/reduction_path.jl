@@ -1,18 +1,40 @@
+"""
+    ReductionGraph
+
+A directed graph representing the reduction paths between different problems.
+A node represents a problem type, and an edge represents a reduction rule from one problem type to another.
+
+### Fields
+$TYPEDFIELDS
+"""
+struct ReductionGraph
+    graph::SimpleDiGraph{Int}
+    nodes::Vector{Any}
+    method_table::Dict{Pair{Int, Int}, Method}
+end
+
+"""
+    reduction_paths([rg::ReductionGraph, ]S::Type, T::Type)
+
+Find all reduction paths from problem type `S` to problem type `T`.
+Returns a list of paths, where each path is a sequence of problem types.
+
+### Arguments
+- `rg::ReductionGraph`: The reduction graph of type [`ReductionGraph`](@ref).
+- `S::Type`: The source problem type.
+- `T::Type`: The target problem type.
+"""
 function reduction_paths(::Type{S}, ::Type{T}) where {T <: AbstractProblem, S<:AbstractProblem}
-    rg = reduction_graph()
+    reduction_paths(reduction_graph(), S, T)
+end
+function reduction_paths(rg::ReductionGraph, ::Type{S}, ::Type{T}) where {T <: AbstractProblem, S<:AbstractProblem}
     source_nodes = [i for i in 1:nv(rg.graph) if S <: rg.nodes[i]]
     target_nodes = [i for i in 1:nv(rg.graph) if T <: rg.nodes[i]]
     paths = Vector{Int}[]
     for source_node in source_nodes, target_node in target_nodes
         append!(paths, all_simple_paths(rg.graph, source_node, target_node))
     end
-    return paths
-end
-
-struct ReductionGraph
-    graph::SimpleDiGraph{Int}
-    nodes::Vector{Any}
-    method_table::Dict{Pair{Int, Int}, Method}
+    return map(p->getindex.(Ref(rg.nodes), p), paths)
 end
 
 """
@@ -37,12 +59,21 @@ function extract_solution(cr::ConcatenatedReduction, sol)
 end
 reduction_complexity(cr::ConcatenatedReduction) = prod(cr.complexity)
 
-function implement_reduction_path(rg::ReductionGraph, path::Vector{Int}, problem::AbstractProblem)
-    @assert problem isa rg.nodes[path[1]] "The problem type must be the same as the first node: $(rg.nodes[path[1]]), got: $problem"
+"""
+    implement_reduction_path(rg::ReductionGraph, path::AbstractVector, problem::AbstractProblem)
+
+Implement a reduction path on a problem. Returns a [`ConcatenatedReduction`](@ref) instance.
+
+### Arguments
+- `path::AbstractVector`: A sequence of problem types, each element is an [`AbstractProblem`](@ref) instance.
+- `problem::AbstractProblem`: The source problem, the type of which must be the same as the first node in the path.
+"""
+function implement_reduction_path(path::AbstractVector, problem::AbstractProblem)
+    @assert problem isa path[1] "The problem type must be the same as the first node: $(path[1]), got: $problem"
     sequence = []
-    complexity = []
+    complexity = Int[]
     for i=1:length(path)-1
-        targetT = rg.nodes[path[i+1]]
+        targetT = path[i+1]
         res = reduceto(targetT, problem)
         push!(complexity, reduction_complexity(targetT, problem))
         push!(sequence, res)
@@ -51,6 +82,11 @@ function implement_reduction_path(rg::ReductionGraph, path::Vector{Int}, problem
     return ConcatenatedReduction(sequence, complexity)
 end
 
+"""
+     reduction_graph()
+
+Returns a [`ReductionGraph`](@ref) instance from the reduction rules defined with method `reduceto`.
+"""
 function reduction_graph()
     ms = methods(reduceto)
     rules = extract_types.(getfield.(ms, :sig))

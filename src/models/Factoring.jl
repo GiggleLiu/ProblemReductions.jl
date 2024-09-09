@@ -1,3 +1,13 @@
+"""
+    Factoring <: AbstractProblem
+
+Factoring problem. Given two numbers `a` and `b`, find the product `a * b`.
+
+### Fields
+$TYPEDFIELDS
+
+where `m` is the number of bits for the first number, `n` is the number of bits for the second number, and `input` is the number to factorize.
+"""
 struct Factoring <: AbstractProblem
     m::Int       # number of bits for the first number
     n::Int       # number of bits for the second number
