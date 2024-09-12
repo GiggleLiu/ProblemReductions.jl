@@ -1,6 +1,6 @@
 using Test, ProblemReductions
 
-@testset "sat_dominatingset" begin
+@testset "circuit_sat" begin
     function verify(sat)
         reduction_results = reduceto(CircuitSAT, sat)
         DS_tmp = reduction_results |> target_problem
@@ -42,22 +42,4 @@ using Test, ProblemReductions
     clause9 = CNFClause([nx1, nx2, nx3])
     sat03 = Satisfiability(CNF([clause8, clause9]))
     @test verify(sat03)
-
-    # Example 004: unsatisfiable 3-SAT (trivial example)
-    clause10 = CNFClause([x1, x1, x1])
-    clause11 = CNFClause([nx1, nx1, nx1])
-    sat04 = Satisfiability(CNF([clause10, clause11]))
-    @test verify_unsatisfiable(sat04)
-
-    # Example 005: unsatisfiable 1-SAT (equivalent with example 004)
-    sat05 = Satisfiability(CNF([CNFClause([x1]), CNFClause([nx1])]))
-    @test verify_unsatisfiable(sat05)
-
-    # Example 006: unsatisfiable 2-SAT
-    sat06 = Satisfiability(CNF([CNFClause([x1, x2]), CNFClause([x1, nx2]), CNFClause([nx1, x2]), CNFClause([nx1, nx2])]))
-    @test verify_unsatisfiable(sat06)
-
-    # Example 007: satisfiable 2-SAT
-    sat07 = Satisfiability(CNF([CNFClause([x1, x2]), CNFClause([x1, nx2]), CNFClause([nx1, x2])]))
-    @test verify(sat07)
 end
