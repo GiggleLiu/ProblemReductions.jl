@@ -39,6 +39,10 @@ end
     include("independentset_setpacking.jl")
 end
 
+@testset "circuit_sat" begin
+    include("circuit_sat.jl")
+end
+
 @testset "rules" begin
     circuit = CircuitSAT(@circuit begin
         x = a ∨ ¬b
