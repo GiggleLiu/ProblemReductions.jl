@@ -1,4 +1,4 @@
-using ProblemReductions, Test, LinearAlgebra, Graphs
+using ProblemReductions, Test, Graphs
 
 @testset "qubo" begin
     # construct several QUBO problems
