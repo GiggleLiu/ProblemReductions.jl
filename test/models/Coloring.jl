@@ -17,7 +17,7 @@ using Test, ProblemReductions, Graphs
     @test c2 == c
     @test c.graph == g && c.weights isa UnitWeight
     @test variables(c) == [1, 2, 3, 4]
-    @test problem_size(c) == 16
+    @test problem_size(c) == (; num_vertices=4, num_edges=4)
 
     # weights interface
     @test parameters(c) == UnitWeight(nv(g))

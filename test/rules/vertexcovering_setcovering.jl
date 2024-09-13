@@ -12,7 +12,6 @@ using ProblemReductions: vertexcovering2setcovering
     vc = VertexCovering(g, [1, 3, 1, 4])
     sc,edgelabel = vertexcovering2setcovering(vc)
     @test reduceto(SetCovering, vc) == ReductionVertexCoveringToSetCovering(sc, edgelabel)
-    @test reduction_complexity(SetCovering, vc) == 1
     @test target_problem(reduceto(SetCovering, vc)) == reduceto(SetCovering, vc).setcovering
     @test sc == SetCovering([[1,2],[1,3],[2,3,4],[4]], [1, 3, 1, 4])
     @test edgelabel == Dict([2, 3] => 3, [1, 3] => 2, [1, 2] => 1, [3, 4] => 4) # in lexicographic order

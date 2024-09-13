@@ -9,6 +9,7 @@ using Test, ProblemReductions, Graphs
     
     # construct a VertexCovering problem
     vc = VertexCovering(g, [1, 3, 1, 4])
+    @test problem_size(vc) == (; num_vertices = 4, num_edges = 4)
     @test variables(vc) == [1, 2, 3, 4]
     @test num_variables(vc) == 4
     @test flavors(VertexCovering) == [0, 1]

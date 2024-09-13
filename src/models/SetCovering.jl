@@ -25,7 +25,7 @@ Base.:(==)(a::SetCovering, b::SetCovering) = a.sets == b.sets && a.weights == b.
 """
 Defined as the number of sets.
 """
-problem_size(c::SetCovering) = length(c.sets)
+problem_size(c::SetCovering) = (; num_sets=length(c.sets), num_elements=length(c.elements))
 
 # variables interface
 variables(gp::SetCovering) = [1:length(gp.sets)...]

@@ -7,7 +7,7 @@ using Test, ProblemReductions, Graphs
     @test variables(c)==[1, 2, 3]
     @test num_variables(c) == 3
     @test flavors(SetCovering) == [0, 1]
-    @test problem_size(c) == 3
+    @test problem_size(c) == (; num_sets=3, num_elements=4)
     
     # weights interface
     @test parameters(c) == [1, 1, 2]

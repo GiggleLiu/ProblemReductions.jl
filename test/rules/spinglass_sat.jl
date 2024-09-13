@@ -88,5 +88,4 @@ end
     @test tb.values == vec([(x & y & (1-z)) | x for x in [0, 1], y in [0, 1], z in [0, 1]])
     res = reduceto(SpinGlass, CircuitSAT(circuit))
     @test target_problem(res) == sg
-    @test reduction_complexity(SpinGlass, CircuitSAT(circuit)) == 1
 end

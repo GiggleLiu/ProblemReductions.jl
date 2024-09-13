@@ -10,6 +10,7 @@ using Test, ProblemReductions, Graphs
 
     # construct a MaxCut problem
     mc = MaxCut(g, [1, 3, 1, 4])
+    @test problem_size(mc) == (; num_vertices = 4, num_edges = 4)
 
     # variables
     @test variables(mc) == [1, 2, 3, 4]

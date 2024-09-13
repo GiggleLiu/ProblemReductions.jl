@@ -44,11 +44,9 @@ A sequence of reductions.
 
 ### Fields
 - `sequence::Vector{Any}`: The sequence of reductions.
-- `complexity::Int`: The complexity of the reduction.
 """
 struct ConcatenatedReduction
     sequence::Vector{Any}
-    complexity::Vector{Int}
 end
 target_problem(cr::ConcatenatedReduction) = target_problem(cr.sequence[end])
 function extract_solution(cr::ConcatenatedReduction, sol)
@@ -57,7 +55,6 @@ function extract_solution(cr::ConcatenatedReduction, sol)
     end
     return sol
 end
-reduction_complexity(cr::ConcatenatedReduction) = prod(cr.complexity)
 
 """
     implement_reduction_path(rg::ReductionGraph, path::AbstractVector, problem::AbstractProblem)
@@ -71,15 +68,13 @@ Implement a reduction path on a problem. Returns a [`ConcatenatedReduction`](@re
 function implement_reduction_path(path::AbstractVector, problem::AbstractProblem)
     @assert problem isa path[1] "The problem type must be the same as the first node: $(path[1]), got: $problem"
     sequence = []
-    complexity = Int[]
     for i=1:length(path)-1
         targetT = path[i+1]
         res = reduceto(targetT, problem)
-        push!(complexity, reduction_complexity(targetT, problem))
         push!(sequence, res)
         problem = target_problem(res)
     end
-    return ConcatenatedReduction(sequence, complexity)
+    return ConcatenatedReduction(sequence)
 end
 
 """

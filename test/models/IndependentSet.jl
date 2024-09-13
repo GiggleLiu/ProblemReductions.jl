@@ -21,6 +21,8 @@ using Test, ProblemReductions, Graphs
     IS_02 = IndependentSet(g02)
     IS_03 = IndependentSet(g03)
     @test IS_01 == IS_02
+    @test problem_size(IS_01) == (; num_vertices = 4, num_edges = 4)
+    @test problem_size(IS_03) == (; num_vertices = 5, num_edges = 2)
 
     # variables
     @test variables(IS_01) == [1, 2, 3, 4]

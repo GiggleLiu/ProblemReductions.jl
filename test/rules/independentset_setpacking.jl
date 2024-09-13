@@ -32,7 +32,6 @@ using Test, ProblemReductions, Graphs
     IS_udg = IndependentSet(udg)
     IS_gg = IndependentSet(gg)
 
-    @test reduction_complexity(SetPacking, IS_01) == 1
     @test verify(IS_01)
     @test verify(IS_02)
     @test verify(IS_hg)

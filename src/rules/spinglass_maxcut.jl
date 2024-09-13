@@ -14,7 +14,7 @@ end
 
 target_problem(res::ReductionMaxCutToSpinGlass) = res.spinglass
 
-@with_complexity 1 function reduceto(::Type{<:SpinGlass}, maxcut::MaxCut)
+function reduceto(::Type{<:SpinGlass}, maxcut::MaxCut)
     @assert maxcut.graph isa SimpleGraph "the graph must be `SimpleGraph`"
     sg = SpinGlass(maxcut.graph, maxcut.weights)
     return ReductionMaxCutToSpinGlass(sg)
@@ -39,12 +39,12 @@ Base.:(==)(a::ReductionSpinGlassToMaxCut, b::ReductionSpinGlassToMaxCut) = a.max
 
 target_problem(res::ReductionSpinGlassToMaxCut) = res.maxcut
 
-@with_complexity 1 function reduceto(::Type{<:MaxCut}, sg::SpinGlass{<:SimpleGraph})
+function reduceto(::Type{<:MaxCut}, sg::SpinGlass{<:SimpleGraph})
     return ReductionSpinGlassToMaxCut(MaxCut(sg.graph, sg.weights), 0)
 end
 
 # modification
-@with_complexity 1 function reduceto(::Type{<:MaxCut}, sg::SpinGlass)
+function reduceto(::Type{<:MaxCut}, sg::SpinGlass)
     @assert all(c->length(c) <= 2, vedges(sg.graph)) "Invalid HyperGraph" 
     n = length(unique!(vcat(vedges(sg.graph)...)))
     g = SimpleGraph(n+1) # the last two vertices are the source and sink,designed for onsite terms
