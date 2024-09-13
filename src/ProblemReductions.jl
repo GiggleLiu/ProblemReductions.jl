@@ -43,7 +43,7 @@ export ReductionSATToIndependentSet, ReductionSATToDominatingSet
 export ReductionIndependentSetToSetPacking
 
 # reduction path
-export ReductionGraph, reduction_graph, reduction_paths, implement_reduction_path
+export ReductionGraph, reduction_graph, reduction_paths, implement_reduction_path, ConcatenatedReduction
 
 include("truth_table.jl")
 include("topology.jl")
