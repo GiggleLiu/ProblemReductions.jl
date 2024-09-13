@@ -21,9 +21,9 @@ Change the parameters for the `problem` and return a new problem instance.
 function set_parameters end
 
 """
-    problem_size(problem::AbstractProblem) -> Int
+    problem_size(problem::AbstractProblem) -> NamedTuple
 
-The size of the computational problem. The measure of which depends on the problem.
+The size of the computational problem, which is problem dependent.
 """
 function problem_size end
 

@@ -17,7 +17,7 @@ end
 
 target_problem(res::ReductionFactoringToSat) = res.circuit
 
-@with_complexity 1 function reduceto(::Type{<:CircuitSAT}, f::Factoring)
+function reduceto(::Type{<:CircuitSAT}, f::Factoring)
     # construct a circuit that multiplies two numbers
     n1, n2, z = f.m, f.n, f.input
     p = [BooleanExpr(Symbol("p$i")) for i in 1:n1]

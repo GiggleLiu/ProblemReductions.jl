@@ -15,7 +15,7 @@ Base.:(==)(a::ReductionVertexCoveringToSetCovering, b::ReductionVertexCoveringTo
 
 target_problem(res::ReductionVertexCoveringToSetCovering) = res.setcovering
 
-@with_complexity 1 function reduceto(::Type{<:SetCovering}, vc::VertexCovering)
+function reduceto(::Type{<:SetCovering}, vc::VertexCovering)
     sc, edgelabel = vertexcovering2setcovering(vc) #vertexcovering2setcovering
     return ReductionVertexCoveringToSetCovering(sc, edgelabel)
 end

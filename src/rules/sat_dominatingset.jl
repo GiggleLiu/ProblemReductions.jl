@@ -13,7 +13,7 @@ struct ReductionSATToDominatingSet{GT<:AbstractGraph} <: AbstractReductionResult
 end
 target_problem(res::ReductionSATToDominatingSet) = res.target
 
-@with_complexity 1 function reduceto(::Type{<:DominatingSet}, s::AbstractSatisfiabilityProblem)
+function reduceto(::Type{<:DominatingSet}, s::AbstractSatisfiabilityProblem)
     num_clauses = length(s.cnf.clauses)
     num_vertices = 3 * num_variables(s) + num_clauses
     g = SimpleGraph(num_vertices)

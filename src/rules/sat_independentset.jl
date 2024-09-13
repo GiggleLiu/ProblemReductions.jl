@@ -14,7 +14,7 @@ struct ReductionSATToIndependentSet{T, GT<:AbstractGraph, WT<:AbstractVector} <:
 end
 target_problem(res::ReductionSATToIndependentSet) = res.target
 
-@with_complexity 1 function reduceto(::Type{<:IndependentSet}, s::AbstractSatisfiabilityProblem)
+function reduceto(::Type{<:IndependentSet}, s::AbstractSatisfiabilityProblem)
     literals = BoolVar{eltype(variables(s))}[]
     g = SimpleGraph(0)
     for c in clauses(s)  # add edges between literals in the same clause

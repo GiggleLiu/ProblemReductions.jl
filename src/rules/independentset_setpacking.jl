@@ -12,7 +12,7 @@ struct ReductionIndependentSetToSetPacking{ET} <: AbstractReductionResult
 end
 target_problem(res::ReductionIndependentSetToSetPacking) = res.target
 
-@with_complexity 1 function reduceto(::Type{<:SetPacking}, s::IndependentSet)
+function reduceto(::Type{<:SetPacking}, s::IndependentSet)
     subset_collection = Vector{Vector{Int}}()
     vertices_list = Vector{Int}()
     for v in vertices(s.graph)
