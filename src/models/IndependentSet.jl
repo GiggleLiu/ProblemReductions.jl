@@ -22,6 +22,7 @@ Base.:(==)(a::IndependentSet, b::IndependentSet) = ( a.graph == b.graph )
 # Variables Interface
 variables(gp::IndependentSet) = [1:nv(gp.graph)...]
 flavors(::Type{<:IndependentSet}) = [0, 1]
+problem_size(c::IndependentSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 """
     evaluate(c::IndependentSet, config)

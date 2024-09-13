@@ -56,6 +56,7 @@ end
         d = x ∨ (c ∧ ¬z)
     end
     sat = CircuitSAT(circuit)
+    @test problem_size(sat) == (; num_exprs = 4, num_variables = 7)
     println(sat)
     @test sat.symbols[[1, 2, 3, 5, 7]] == [:c, :x, :y, :z, :d]
     @test variables(sat) == collect(1:7)

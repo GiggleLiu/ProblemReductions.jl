@@ -23,6 +23,7 @@ Base.:(==)(a::MaximalIS, b::MaximalIS) = a.graph == b.graph && a.weights == b.we
 variables(gp::MaximalIS) = [1:nv(gp.graph)...]
 num_variables(gp::MaximalIS) = nv(gp.graph)
 flavors(::Type{<:MaximalIS}) = [0, 1]
+problem_size(c::MaximalIS) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
 parameters(c::MaximalIS) = c.weights

@@ -19,7 +19,7 @@ struct SetPacking{ET} <: AbstractProblem
     end
 end
 Base.:(==)(a::SetPacking, b::SetPacking) = ( a.sets == b.sets )
-problem_size(c::SetPacking) = (; num_elements = c.elements, num_sets = c.sets)
+problem_size(c::SetPacking) = (; num_elements = length(c.elements), num_sets = length(c.sets))
 
 # Variables Interface
 variables(c::SetPacking) = [1:length(c.sets)...]

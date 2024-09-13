@@ -10,6 +10,7 @@ using ProblemReductions, Test, LinearAlgebra, Graphs
     graph = SimpleGraph(3)
     q03 = QUBO(graph, Float64[], [1., 1., 1.])
     @test q01 == q03
+    @test problem_size(q01) == (; num_variables = 3)
     
     # variables
     @test variables(q01) == [1, 2, 3]

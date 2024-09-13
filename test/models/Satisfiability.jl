@@ -18,7 +18,7 @@ using ProblemReductions: KSatisfiability,clauses
     vars = ["x", "y", "z", "w"]
     @test variables(sat_test) == vars
     @test num_variables(sat_test) == 4
-    @test problem_size(sat_test) == 2
+    @test problem_size(sat_test) == (; num_claues = 2, num_variables = 4)
 
     cfg = [1, 1, 1, 1]
     assignment = Dict(zip(vars, cfg))
