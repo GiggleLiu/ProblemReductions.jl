@@ -69,9 +69,19 @@ function reduction_graph()
     graph = SimpleDiGraph(length(nodes))
     method_table = Dict{Pair{Int, Int}, Method}()
     for (rule, m) in zip(rules, ms)
-        i, j = findfirst(==(first(rule)), nodes), findfirst(==(last(rule)), nodes)
-        add_edge!(graph, i, j)
-        method_table[i=>j] = m
+        if rule.first == AbstractSatisfiabilityProblem
+            for (i,j) in [
+                (findfirst(==(Satisfiability), nodes),findfirst(==(last(rule)), nodes)),
+                (findfirst(==(KSatisfiability), nodes),findfirst(==(last(rule)), nodes))
+            ]
+                add_edge!(graph, i, j)
+                method_table[i=>j] = m
+            end
+        else
+            i, j = findfirst(==(first(rule)), nodes), findfirst(==(last(rule)), nodes)
+            add_edge!(graph, i, j)
+            method_table[i=>j] = m
+        end
     end
     return ReductionGraph(graph, nodes, method_table)
 end
@@ -94,12 +104,12 @@ render_type_params(var::TypeVar, t::UnionAll) = UnionAll(var, t)
 
 function show_reduction_graph(rg::ReductionGraph)
     drawing = nodestore() do ns
-        nodes = [offset(circlenode(LuxorGraphPlot.rotatepoint(LuxorGraphPlot.Point(2000, 0), i*(2π/length(rg.nodes))), 300), (100,100)) for i=1:length(rg.nodes)]
+        nodes = [offset(circlenode(LuxorGraphPlot.rotatepoint(LuxorGraphPlot.Point(800, 0), i*(2π/length(rg.nodes))),100),(100,100)) for i=1:length(rg.nodes)]
         append!(ns, nodes)
         Fadjlist = rg.graph.fadjlist
         Badjlist = rg.graph.badjlist
         with_nodes(ns) do
-            LuxorGraphPlot.fontsize(40)
+            LuxorGraphPlot.fontsize(16)
             for i in ns.nodes
                 LuxorGraphPlot.stroke(i)
             end
