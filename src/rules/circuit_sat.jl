@@ -4,26 +4,27 @@ $TYPEDEF
 The reduction result of an SAT problem o a Circuit SAT problem.
 
 ### Fields
+- `target::CircuitSAT`: the target problem.
 $TYPEDFIELDS
 """
-struct ReductionSATToCircuit{ET} <: AbstractReductionResult
+struct ReductionSATToCircuit{} <: AbstractReductionResult
     target::CircuitSAT
 end
 target_problem(res::ReductionSATToCircuit) = res.target
 
 @with_complexity 1 function reduceto(::Type{<:CircuitSAT}, s::Satisfiability)
-    return cnf_to_circuit_sat(s.cnf)
+    return ReductionSATToCircuit( cnf_to_circuit_sat(s.cnf) )
 end
 
 function clause_to_boolean_expr(clause::CNFClause{T}) where T
     literal_exprs = map(var -> 
-        var.neg ? BooleanExpr(:¬, [BooleanExpr(Symbol(var.name))]) : BooleanExpr(Symbol(var.name)),
+        var.neg ? ¬( BooleanExpr(Symbol(var.name)) ) : BooleanExpr(Symbol(var.name)),
         clause.vars
     )
     if length(literal_exprs) == 1
         return literal_exprs[1]  
     else
-        return BooleanExpr(:∨, literal_exprs) 
+        return BooleanExpr(:∨, literal_exprs)
     end
 end
 
