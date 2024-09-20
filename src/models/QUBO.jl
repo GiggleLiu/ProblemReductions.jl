@@ -33,6 +33,7 @@ end
 # variables interface
 variables(c::QUBO) = collect(1:size(c.matrix, 1))
 flavors(::Type{<:QUBO}) = [0, 1]
+problem_size(c::QUBO) = (; num_variables=size(c.matrix, 1))
 
 function evaluate(c::QUBO, config)
     @assert length(config) == num_variables(c)

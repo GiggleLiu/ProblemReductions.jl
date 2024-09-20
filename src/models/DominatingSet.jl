@@ -21,6 +21,7 @@ Base.:(==)(a::DominatingSet, b::DominatingSet) = ( a.graph == b.graph )
 # Variables Interface
 variables(gp::DominatingSet) = [1:nv(gp.graph)...]
 flavors(::Type{<:DominatingSet}) = [0, 1]
+problem_size(c::DominatingSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 """
     evaluate(c::DominatingSet, config)

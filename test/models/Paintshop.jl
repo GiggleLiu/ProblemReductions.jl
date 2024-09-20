@@ -9,6 +9,7 @@ using ProblemReductions:paint_shop_coloring_from_config
     @test variables(ps1) == ["a","b","c"]
     @test num_variables(ps1) == 3
     @test flavors(ps1) == [0, 1]
+    @test problem_size(ps1) == (; sequence_length = 6)
 
     #test2 We could use number for the variables for our convenience
     ps2 = PaintShop([1,2,1,2,3,3])

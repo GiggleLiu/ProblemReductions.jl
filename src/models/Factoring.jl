@@ -1,7 +1,12 @@
 """
-    Factoring(m::Int, n::Int, input::Int)
+    Factoring <: AbstractProblem
 
-The factoring problem is to find two numbers `a` and `b` such that `a * b = input`. And the numbers `a` and `b` are `m` and `n` bits long respectively.
+Factoring problem. Given `input`, find its two prime factors, 
+
+### Fields
+$TYPEDFIELDS
+
+where `m` is the number of bits for the first number, `n` is the number of bits for the second number, and `input` is the number to factorize.
 """
 struct Factoring <: AbstractProblem
     m::Int       # number of bits for the first number
@@ -12,6 +17,7 @@ end
 # variables interface
 variables(f::Factoring) = collect(1:f.m+f.n)
 flavors(::Type{Factoring}) = [0, 1]
+problem_size(f::Factoring) = (; num_bits_first=f.m, num_bits_second=f.n)
 
 # utilities
 function evaluate(f::Factoring, config)

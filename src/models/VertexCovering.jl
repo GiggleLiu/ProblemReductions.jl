@@ -22,6 +22,7 @@ Base.:(==)(a::VertexCovering, b::VertexCovering) = a.graph == b.graph && a.weigh
 variables(gp::VertexCovering) = collect(1:nv(gp.graph))
 num_variables(gp::VertexCovering) = nv(gp.graph)
 flavors(::Type{<:VertexCovering}) = [0, 1] # whether the vertex is selected (1) or not (0)
+problem_size(c::VertexCovering) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 #weights interface 
 parameters(c::VertexCovering) = c.weights

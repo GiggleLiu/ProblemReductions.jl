@@ -5,8 +5,6 @@ using DocStringExtensions
 using PrettyTables
 using BitBasis
 using MLStyle
-using LuxorGraphPlot
-using Random
 
 export @bit_str
 export TruthTable
@@ -33,7 +31,7 @@ export MaximalIS
 export PaintShop
 
 # rules
-export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduction_complexity
+export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduce_size
 export LogicGadget, truth_table
 export ReductionSATTo3SAT
 export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering, ReductionSatToColoring,
@@ -41,10 +39,10 @@ export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGla
 export findbest, BruteForce
 export CNF
 export ReductionSATToIndependentSet, ReductionSATToDominatingSet
+export ReductionIndependentSetToSetPacking
 
 # reduction path
-export ReductionGraph, reduction_graph, reduction_paths, implement_reduction_path
-export show_reduction_graph
+export ReductionGraph, reduction_graph, reduction_paths, implement_reduction_path, ConcatenatedReduction
 
 include("truth_table.jl")
 include("topology.jl")

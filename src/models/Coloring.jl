@@ -18,7 +18,7 @@ struct Coloring{K, WT<:AbstractVector} <:AbstractProblem
     end
 end
 Base.:(==)(a::Coloring, b::Coloring) = a.graph == b.graph && a.weights == b.weights
-problem_size(c::Coloring) = nv(c.graph)^2
+problem_size(c::Coloring) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # variables interface
 variables(gp::Coloring{K}) where K = collect(1:nv(gp.graph))

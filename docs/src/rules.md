@@ -8,4 +8,4 @@ A problem reduction rule is a function that reduces a problem to another problem
 - [`extract_solution`](@ref): Extract the solution of the target problem to the original problem.
 
 Optional functions include:
-- [`reduction_complexity`](@ref): The computational complexity of the reduction rule.
+- [`reduce_size`](@ref): Infer the size of the target problem from the source problem size.

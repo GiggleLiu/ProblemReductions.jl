@@ -5,6 +5,7 @@ using ProblemReductions:  is_maximal_independent_set
     # test1 
     g = smallgraph(:petersen)
     mis1 = MaximalIS(g)
+    @test problem_size(mis1) == (; num_vertices = 10, num_edges = 15)
     @test mis1 isa MaximalIS
     @test variables(mis1) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     @test num_variables(mis1) == 10

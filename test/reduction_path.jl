@@ -5,16 +5,14 @@ using ProblemReductions, Test, Graphs
     @test g isa ReductionGraph
     paths = reduction_paths(MaxCut, SpinGlass)
     @test length(paths) >= 1
-    res = implement_reduction_path(g, paths[1], MaxCut(smallgraph(:petersen)))
+    res = implement_reduction_path(paths[1], MaxCut(smallgraph(:petersen)))
     @test target_problem(res) isa SpinGlass
-    @test reduction_complexity(res) == 1
 
     paths = reduction_paths(MaxCut, QUBO)
     @test length(paths) >= 1
     source = MaxCut(smallgraph(:petersen))
-    res = implement_reduction_path(g, paths[1], source)
+    res = implement_reduction_path(paths[1], source)
     @test target_problem(res) isa QUBO
-    @test reduction_complexity(res) == 1
 
     best1 = findbest(source, BruteForce())
     best2 = findbest(target_problem(res), BruteForce())
@@ -27,7 +25,7 @@ end
 
     # implement the reduction path
     factoring = Factoring(2, 1, 3)
-    res = implement_reduction_path(g, paths[1], factoring)
+    res = implement_reduction_path(paths[1], factoring)
     @test target_problem(res) isa SpinGlass
     @test configuration_space_size(target_problem(res)) ≈ 25
     sol = findbest(target_problem(res), BruteForce())

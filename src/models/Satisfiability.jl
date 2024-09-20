@@ -148,10 +148,7 @@ is_kSAT(cnf::CNF, k::Int) = all(c -> k == length(c.vars), cnf.clauses)
 clauses(c::KSatisfiability) = c.cnf.clauses
 variables(c::KSatisfiability) = c.variables
 
-"""
-problem size of the satisfiability problem is the number of clauses in the CNF.
-"""
-problem_size(c::AbstractSatisfiabilityProblem) = length(clauses(c))
+problem_size(c::AbstractSatisfiabilityProblem) = (; num_claues = length(clauses(c)), num_variables = length(variables(c)))
 flavors(::Type{<:AbstractSatisfiabilityProblem}) = [0, 1]  # false, true
 
 function evaluate(c::AbstractSatisfiabilityProblem, config)

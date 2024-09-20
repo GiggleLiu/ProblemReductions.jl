@@ -14,10 +14,15 @@ using Test, ProblemReductions, Graphs
     add_edge!(g02, 2, 3)
     add_edge!(g02, 3, 4)
 
+    g03 = HyperGraph(5, [[1, 2], [2, 3, 4]])
+
     # construct corresponding IndependentSet problems
     IS_01 = IndependentSet(g01)
     IS_02 = IndependentSet(g02)
+    IS_03 = IndependentSet(g03)
     @test IS_01 == IS_02
+    @test problem_size(IS_01) == (; num_vertices = 4, num_edges = 4)
+    @test problem_size(IS_03) == (; num_vertices = 5, num_edges = 2)
 
     # variables
     @test variables(IS_01) == [1, 2, 3, 4]
@@ -33,5 +38,6 @@ using Test, ProblemReductions, Graphs
 
     # test findbest function
     @test findbest(IS_01, BruteForce()) == [[1, 0, 0, 1], [0, 1, 0, 1]] # "1" is superior to "0"
+    @test Set( findbest(IS_03, BruteForce()) ) == Set( [[1, 0, 1, 0, 1], [1, 0, 0, 1, 1]] )
     @test configuration_space_size(IS_01) ≈ 4
 end

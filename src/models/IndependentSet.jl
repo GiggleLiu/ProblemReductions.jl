@@ -22,6 +22,7 @@ Base.:(==)(a::IndependentSet, b::IndependentSet) = ( a.graph == b.graph )
 # Variables Interface
 variables(gp::IndependentSet) = [1:nv(gp.graph)...]
 flavors(::Type{<:IndependentSet}) = [0, 1]
+problem_size(c::IndependentSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 """
     evaluate(c::IndependentSet, config)
@@ -31,10 +32,9 @@ If this number is zero, this 'config' corresponds to an Independent Set.
 * If the 'config' is an independent set, we return - (size(independent set));
 * If the 'config' is not an independent set, we return Inf.
 """
-
 function evaluate(c::IndependentSet, config)
     @assert length(config) == num_variables(c)
-    num_ill_edges = count(e -> config[e.src] == 1 && config[e.dst] == 1, edges(c.graph))
+    num_ill_edges = count(e -> count(v -> config[v] == 1, _vec(e)) > 1, edges(c.graph))
     if num_ill_edges == 0
         return - count(x -> x == 1, config)
     else

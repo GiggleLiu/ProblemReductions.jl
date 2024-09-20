@@ -33,6 +33,7 @@ end
 # variables interface
 variables(gp::SpinGlass) = collect(1:nv(gp.graph))
 flavors(::Type{<:SpinGlass}) = [1, -1]
+problem_size(c::SpinGlass) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
 parameters(gp::SpinGlass) = gp.weights

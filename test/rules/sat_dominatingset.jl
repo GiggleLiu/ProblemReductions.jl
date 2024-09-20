@@ -36,7 +36,6 @@ using Test, ProblemReductions, Graphs
     clause_lst = [clause1, clause2, clause3, clause4]
     sat01 = Satisfiability(CNF(clause_lst))
 
-    @test reduction_complexity(DominatingSet, sat01) == 1
     @test verify(sat01)
 
     # Example 002: satisfiable 3-SAT
