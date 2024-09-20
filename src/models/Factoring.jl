@@ -1,7 +1,7 @@
 """
     Factoring <: AbstractProblem
 
-Factoring problem. Given two numbers `a` and `b`, find the product `a * b`.
+Factoring problem. Given `input`, find its two prime factors, 
 
 ### Fields
 $TYPEDFIELDS
