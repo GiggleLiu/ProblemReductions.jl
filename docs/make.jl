@@ -28,7 +28,8 @@ makedocs(;
         "Interfaces" => ["models.md", "topology.md", "rules.md"],
         "Models" => [
             "models/CircuitSAT.md",
-            "models/SpinGlass.md"
+            "models/Factoring.md",
+            "models/SpinGlass.md"          
         ],
         "Rules" => [
             "rules/spinglass_sat.md",
