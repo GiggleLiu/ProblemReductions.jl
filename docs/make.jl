@@ -30,6 +30,7 @@ makedocs(;
             "models/CircuitSAT.md",
             "models/Coloring.md",
             "models/Factoring.md",
+            "models/MaxCut.md",
             "models/SpinGlass.md"          
         ],
         "Rules" => [
