@@ -3,11 +3,11 @@ using Test, ProblemReductions
 @testset "circuit_sat" begin
     function verify(sat)
         reduction_results = reduceto(CircuitSAT, sat)
-        DS_tmp = reduction_results |> target_problem
-        sol_DS = findbest(DS_tmp, BruteForce())
+        circuit_tmp = reduction_results.target
+        sol_circuit = findbest(circuit_tmp, BruteForce())
         s1 = Set(findbest(sat, BruteForce()))
-        s2 = Set( unique( extract_solution.(Ref(reduction_results), sol_DS) ) )
-        s3 = Set(extract_multiple_solutions(reduction_results, sol_DS))
+        s2 = Set( unique( extract_solution.(Ref(reduction_results), sol_circuit) ) )
+        s3 = Set(extract_multiple_solutions(reduction_results, sol_circuit))
         return (s2 ⊆ s1) && (s3 == s1)
     end
 
