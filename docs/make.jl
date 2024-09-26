@@ -28,6 +28,7 @@ makedocs(;
         "Interfaces" => ["models.md", "topology.md", "rules.md"],
         "Models" => [
             "models/CircuitSAT.md",
+            "models/Coloring.md",
             "models/Factoring.md",
             "models/SpinGlass.md"          
         ],
