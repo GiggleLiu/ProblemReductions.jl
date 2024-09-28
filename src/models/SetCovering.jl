@@ -1,7 +1,8 @@
 """
 $TYPEDEF
 
-The [set covering problem](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/SetCovering/).
+The Set Covering problem is defined as follow: given a universe of elements and a collection of subsets of the universe, each set is associated with a weight. 
+The goal is to find a subset of sets that covers all the elements with the minimum total weight.
 
 Positional arguments
 -------------------------------
@@ -9,7 +10,6 @@ Positional arguments
 * `sets` is a vector of vectors, a collection of subsets of universe , each set is associated with a weight specified in `weights`.
 * `weights` are associated with sets.
 """
-
 struct SetCovering{ET, WT<:AbstractVector} <: AbstractProblem
     elements::Vector{ET}
     sets::Vector{Vector{ET}}

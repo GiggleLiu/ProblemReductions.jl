@@ -31,6 +31,7 @@ makedocs(;
             "models/Coloring.md",
             "models/Factoring.md",
             "models/MaxCut.md",
+            "models/SetCovering.md",
             "models/SpinGlass.md"          
         ],
         "Rules" => [
