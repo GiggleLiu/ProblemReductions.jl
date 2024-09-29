@@ -32,7 +32,8 @@ makedocs(;
             "models/Factoring.md",
             "models/MaxCut.md",
             "models/SetCovering.md",
-            "models/SpinGlass.md"          
+            "models/SpinGlass.md",
+            "models/SetPacking.md",          
         ],
         "Rules" => [
             "rules/spinglass_sat.md",
