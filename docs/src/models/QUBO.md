@@ -1,7 +1,7 @@
-# Quadratic Unconstrained Binary Optimizati
+# Quadratic Unconstrained Binary Optimization
 
 ## Problem Definition
-Quadratic Unconstrained Binary Optimizati ([`QUBO`](@ref)) is a boolean optimization problem. The objective is to maximize or minimize the following quadratic form by varying $x$:
+Quadratic Unconstrained Binary Optimization ([`QUBO`](@ref)) is a boolean optimization problem. The objective is to maximize or minimize the following quadratic form by varying $x$:
 ```math
 y = x^T Q x
 ```
