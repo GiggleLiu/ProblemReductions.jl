@@ -40,6 +40,7 @@ export findbest, BruteForce
 export CNF
 export ReductionSATToIndependentSet, ReductionSATToDominatingSet
 export ReductionIndependentSetToSetPacking
+export ReductionSATToCircuit
 
 # reduction path
 export ReductionGraph, reduction_graph, reduction_paths, implement_reduction_path, ConcatenatedReduction
