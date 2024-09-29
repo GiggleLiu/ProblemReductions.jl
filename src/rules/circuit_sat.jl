@@ -13,7 +13,7 @@ struct ReductionSATToCircuit{} <: AbstractReductionResult
 end
 target_problem(res::ReductionSATToCircuit) = res.target
 
-@with_complexity 1 function reduceto(::Type{<:CircuitSAT}, s::Satisfiability)
+function reduceto(::Type{<:CircuitSAT}, s::Satisfiability)
     return ReductionSATToCircuit( cnf_to_circuit_sat(s.cnf), s.variables)
 end
 
