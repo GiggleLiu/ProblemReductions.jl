@@ -6,7 +6,7 @@ using Test, ProblemReductions
         circuit_tmp = reduction_results.target
         sol_circuit = findbest(circuit_tmp, BruteForce())
         s1 = Set(findbest(sat, BruteForce()))
-        s2 = Set( unique( extract_solution.(Ref(reduction_results), sol_circuit) ) )
+        s2 = Set(unique(filter(sol -> sol !== nothing, extract_solution.(Ref(reduction_results), sol_circuit))))
         s3 = Set(extract_multiple_solutions(reduction_results, sol_circuit))
         return (s2 ⊆ s1) && (s3 == s1)
     end
@@ -42,4 +42,5 @@ using Test, ProblemReductions
     clause9 = CNFClause([nx1, nx2, nx3])
     sat03 = Satisfiability(CNF([clause8, clause9]))
     @test verify(sat03)
+    
 end

@@ -9,11 +9,12 @@ $TYPEDFIELDS
 """
 struct ReductionSATToCircuit{} <: AbstractReductionResult
     target::CircuitSAT
+    sat_symbols::Vector{Symbol}
 end
 target_problem(res::ReductionSATToCircuit) = res.target
 
 @with_complexity 1 function reduceto(::Type{<:CircuitSAT}, s::Satisfiability)
-    return ReductionSATToCircuit( cnf_to_circuit_sat(s.cnf) )
+    return ReductionSATToCircuit( cnf_to_circuit_sat(s.cnf), s.variables)
 end
 
 function clause_to_boolean_expr(clause::CNFClause{T}) where T
@@ -44,6 +45,27 @@ function cnf_to_circuit_sat(cnf::CNF{T}) where T
 end
 
 function extract_solution(res::ReductionSATToCircuit, sol)
-    @assert length(sol) == length(circuit_sat.symbols) "Config length must match number of variables"
-    return sol
+    if sol[length(sol)] == false
+        return nothing
+    end
+    extract_sol = falses(length(res.sat_symbols))
+    for (i, var) in enumerate(res.sat_symbols)
+        extract_sol[i] = sol[findfirst(==(var), res.target.symbols)]
+    end
+    return extract_sol
+end
+
+function extract_multiple_solutions(res::ReductionSATToCircuit, sol_set)
+    all_assignments = Vector{Vector{Bool}}()
+    for sol_tmp in sol_set
+        if sol_tmp[length(sol_tmp)] == false
+            continue
+        end
+        assignment = falses(length(res.sat_symbols))
+        for (i, var) in enumerate(res.sat_symbols)
+            assignment[i] = sol_tmp[findfirst(==(var), res.target.symbols)]
+        end
+        push!(all_assignments, assignment)
+    end
+    return unique(filter(sol -> sol !== nothing, all_assignments))
 end
