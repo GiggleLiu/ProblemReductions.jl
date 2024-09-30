@@ -29,6 +29,6 @@ The required functions, [`variables`](@ref), [`flavors`](@ref), and [`evaluate`]
 ```@repl spinglass
 variables(spinglass)  # degrees of freedom
 flavors(spinglass)  # flavors of the spins
-evaluate(spinglass, [0, 1, 1, 0, 1, 1, 1, 0, 0, 1])  # energy of a configuration
+evaluate(spinglass, [-1, 1, 1, -1, 1, 1, 1, -1, -1, 1])  # energy of a configuration
 findbest(spinglass, BruteForce())  # solve the problem with brute force
 ```

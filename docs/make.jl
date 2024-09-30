@@ -33,6 +33,7 @@ makedocs(;
             "models/MaxCut.md",
             "models/SetCovering.md",
             "models/SpinGlass.md",
+            "models/DominatingSet.md",        
             "models/IndependentSet.md"          
         ],
         "Rules" => [
