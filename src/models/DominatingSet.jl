@@ -1,19 +1,19 @@
 """
-$TYPEDEF
-    DominatingSet(graph; weights=UnitWeight())
+$(TYPEDEF)
+    DominatingSet(graph::AbstractGraph, weights::AbstractVector=UnitWeight(ne(graph))) -> DominatingSet
 
-The [dominating set](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/DominatingSet/) problem.
+Represents the [dominating set](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/DominatingSet/) problem.
 
 Positional arguments
 -------------------------------
 * `graph` is the problem graph.
-
-We don't have weights for this problem.
+* `weights::AbstractVector`: Weights associated with the vertices of the `graph`. Defaults to `UnitWeight(nv(graph))`.
 """
-struct DominatingSet{ GT<:AbstractGraph} <: AbstractProblem
+struct DominatingSet{ GT<:AbstractGraph, WT<:AbstractVector} <: AbstractProblem
     graph::GT
-    function DominatingSet( graph::AbstractGraph)
-        return new{typeof(graph)}(graph)
+    weights::WT
+    function DominatingSet( graph::AbstractGraph, weights::AbstractVector=UnitWeight(nv(graph)))
+        return new{typeof(graph), typeof(weights)}(graph, weights)
     end
 end
 Base.:(==)(a::DominatingSet, b::DominatingSet) = ( a.graph == b.graph )
@@ -26,18 +26,17 @@ problem_size(c::DominatingSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.gra
 """
     evaluate(c::DominatingSet, config)
 
-Firstly, we count the number of vertices outside the dominating set and the neighbours of the dominating set: 
-If this number is zero, this configuration corresponds to a dominating set. 
-* If the configuration is not a dominating set return Inf;
+Count the number of vertices outside the dominating set and the neighbours of the dominating set. 
+When the number is zero, the configuration corresponds to a dominating set. 
 * If the configuration is a dominating set return size(dominating set).
+* If the configuration is not a dominating set return nv(graph);
 """
-
 function evaluate(c::DominatingSet, config)
     g = c.graph
     num_outside_vertices = count(w -> config[w] == 0 && all(v-> config[v] == 0, neighbors(g, w)), Graphs.vertices(g))
     if num_outside_vertices == 0
         return count(x -> x == 1, config)
     else
-        return Inf
+        return nv(g)
     end
 end

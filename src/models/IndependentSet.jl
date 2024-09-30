@@ -1,14 +1,13 @@
 """
-$TYPEDEF
+$(TYPEDEF)
+    IndependentSet(graph::AbstractGraph, weights::AbstractVector=UnitWeight(nv(graph))) -> IndependentSet
 
-The [independent set problem](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/IndependentSet/) in graph theory.
+Represents the [independent set problem](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/IndependentSet/) in graph theory.
 
 Positional arguments
 -------------------------------
-* `graph` is the problem graph.
-* `weights` are associated with the vertices of the `graph`.
-
-
+- `graph::AbstractGraph`: The problem graph.
+- `weights::AbstractVector`: Weights associated with the vertices of the `graph`. Defaults to `UnitWeight(nv(graph))`.
 """
 struct IndependentSet{GT<:AbstractGraph, WT<:AbstractVector} <: AbstractProblem
     graph::GT
@@ -27,10 +26,11 @@ problem_size(c::IndependentSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.gr
 """
     evaluate(c::IndependentSet, config)
 
-Firstly, we count the edges connecting the input 'config' (a subset of vertices):
+Count the edges connecting the input 'config' (a subset of vertices). 
 If this number is zero, this 'config' corresponds to an Independent Set.
+Otherwise, these edges would violate the definition of independent set.
 * If the 'config' is an independent set, we return - (size(independent set));
-* If the 'config' is not an independent set, we return Inf.
+* If the 'config' is not an independent set, we return 0.
 """
 function evaluate(c::IndependentSet, config)
     @assert length(config) == num_variables(c)

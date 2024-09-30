@@ -1,21 +1,23 @@
 """
-$TYPEDEF
+$(TYPEDEF)
+SetPacking(elements::AbstractVector, sets::AbstractVector, weights::AbstractVector=UnitWeight(length(sets))) -> SetPacking
 
-The [set packing problem](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/SetPacking/), a generalization of independent set problem to hypergraphs.
+The [set packing problem](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/SetPacking/)
+is to find a set of sets, where each set is pairwise disjoint from each other.
 
 Positional arguments
 -------------------------------
 * `elements` is a vector of elements in the universe.
 * `sets` is a vector of vectors, each set is associated with a weight specified in `weights`.
-
-Currently this type problem doesn't support weights.
+* `weights` are associated with sets. Defaults to `UnitWeight(length(sets))`.
 """
-struct SetPacking{ET} <: AbstractProblem
+struct SetPacking{ET, WT<:AbstractVector} <: AbstractProblem
     elements::Vector{ET}
-    sets::Vector{Vector{ET}}
-    function SetPacking(sets::Vector{Vector{ET}} ) where {ET}
+    sets:: AbstractVector{<:AbstractVector{ET}}
+    weights::WT
+    function SetPacking(sets::AbstractVector{<:AbstractVector{ET}}, weights::WT=UnitWeight(length(sets))) where {ET, WT<:AbstractVector}
         elements = unique!(vcat(sets...))
-        new{ET}(elements, sets)
+        return new{ET, WT}(elements, sets, weights)
     end
 end
 Base.:(==)(a::SetPacking, b::SetPacking) = ( a.sets == b.sets )
@@ -29,14 +31,14 @@ flavors(::Type{<:SetPacking}) = [0, 1]
     evaluate(c::SetPacking, config)
 
 * First step: We check if `config` (a vector of boolean numbers as the mask of sets) is a set packing of `sets`;
-* Second step: If it is a set packing, we return - (size(set packing)); Otherwise, we return size(variables) + 1.
+* Second step: If it is a set packing, we return (size(set packing)); Otherwise, we return 0.
 """
 function evaluate(c::SetPacking, config)
     @assert length(config) == num_variables(c)
     if is_set_packing(c.sets, config)
         return - count(x -> x == 1, config)
     else
-        return length(config) + 1
+        return 0
     end
 end
 

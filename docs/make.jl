@@ -33,7 +33,11 @@ makedocs(;
             "models/MaxCut.md",
             "models/SetCovering.md",
             "models/SpinGlass.md",
-            "models/Satisfiability.md"          
+            "models/Satisfiability.md",         
+            "models/QUBO.md",        
+            "models/SetPacking.md",          
+            "models/DominatingSet.md",        
+            "models/IndependentSet.md"          
         ],
         "Rules" => [
             "rules/spinglass_sat.md",
