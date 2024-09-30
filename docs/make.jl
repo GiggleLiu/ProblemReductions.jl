@@ -33,7 +33,7 @@ makedocs(;
             "models/MaxCut.md",
             "models/SetCovering.md",
             "models/SpinGlass.md",
-            "models/QUBO.md"          
+            "models/QUBO.md",        
             "models/SetPacking.md",          
             "models/DominatingSet.md",        
             "models/IndependentSet.md"          
