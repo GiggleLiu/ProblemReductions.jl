@@ -37,7 +37,8 @@ makedocs(;
             "models/QUBO.md",        
             "models/SetPacking.md",          
             "models/DominatingSet.md",        
-            "models/IndependentSet.md"          
+            "models/IndependentSet.md",
+            "models/VertexCovering.md"          
         ],
         "Rules" => [
             "rules/spinglass_sat.md",
