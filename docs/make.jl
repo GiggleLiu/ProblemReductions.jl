@@ -41,6 +41,7 @@ makedocs(;
         ],
         "Rules" => [
             "rules/spinglass_sat.md",
+            "rules/independentset_setpacking.md"
         ],
         "Examples" => [
             "generated/material_compute.md",
