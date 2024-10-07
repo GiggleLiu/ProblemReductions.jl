@@ -18,15 +18,15 @@ using Test, ProblemReductions
     @test num_variables(SP_01) == 5
     @test flavors(SetPacking) == [0, 1]
 
-    # evaluate
+    # energy
     # a Positive examples
     cfg01 = [1, 0, 0, 1, 0]
-    @test evaluate(SP_01, cfg01) == -2
+    @test energy(SP_01, cfg01) == -2
     is_set_packing(SP_01.sets, cfg01) == true
 
     # a Negative example
     cfg02 = [1, 0, 1, 1, 0]
-    @test evaluate(SP_01, cfg02) == 0
+    @test energy(SP_01, cfg02) == 0
     is_set_packing(SP_01.sets, cfg02) == false
 
     # test findbest function

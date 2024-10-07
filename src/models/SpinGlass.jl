@@ -1,20 +1,21 @@
 """
 $(TYPEDEF)
-    SpinGlass(graph::AbstractGraph, J, h=zeros(nv(graph)))
+    SpinGlass(graph::AbstractGraph, weights::AbstractVector)
+    SpinGlass(graph::SimpleGraph, J, h=zeros(nv(graph)))
 
-The [spin-glass](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/SpinGlass/) problem.
+The [spin-glass](https://giggleliu.github.io/ProblemReductions.jl/dev/models/SpinGlass/) problem.
 
 Positional arguments
 -------------------------------
 * `graph` is a graph object.
 * `weights` are associated with the edges.
 """
-struct SpinGlass{GT<:AbstractGraph, WT<:AbstractVector} <: AbstractProblem
+struct SpinGlass{GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::GT
     weights::WT
-    function SpinGlass(graph::AbstractGraph, weights::WT) where WT <: AbstractVector
+    function SpinGlass(graph::AbstractGraph, weights::WT) where {T, WT<:AbstractVector{T}}
         @assert length(weights) == ne(graph)
-        return new{typeof(graph), WT}(graph, weights)
+        return new{typeof(graph), T, WT}(graph, weights)
     end
 end
 function SpinGlass(graph::SimpleGraph, J::Vector, h::Vector)
@@ -36,50 +37,17 @@ flavors(::Type{<:SpinGlass}) = [1, -1]
 problem_size(c::SpinGlass) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
-parameters(gp::SpinGlass) = gp.weights
-set_parameters(c::SpinGlass, weights) = SpinGlass(c.graph, weights)
+weights(gp::SpinGlass) = gp.weights
+set_weights(c::SpinGlass, weights) = SpinGlass(c.graph, weights)
+constraint_specs(sg::SpinGlass) = vedges(sg.graph)
+local_energy(::Type{<:SpinGlass}, config) = prod(config)
 
-function evaluate(sg::SpinGlass, config)
-    @assert length(config) == num_variables(sg)
-    spinglass_energy(vedges(sg.graph), config; weights=sg.weights)
-end
-
-"""
-    spinglass_energy(g::SimpleGraph, config; J, h)
-    spinglass_energy(cliques::AbstractVector{Vector{Int}}, config; weights)
-
-Compute the spin glass state energy for the vertex configuration `config`.
-In the configuration, the spin ↑ is mapped to configuration 0, while spin ↓ is mapped to configuration 1.
-Let ``G=(V,E)`` be the input graph, the hamiltonian is
-```math
-H = \\sum_{ij \\in E} J_{ij} s_i s_j + \\sum_{i \\in V} h_i s_i,
-```
-where ``s_i \\in \\{-1, 1\\}`` stands for spin ↓ and spin ↑.
-
-In the hypergraph case, the hamiltonian is
-```math
-H = \\sum_{c \\in C} w_c \\prod_{i \\in c} s_i,
-```
-where ``C`` is the set of cliques, and ``w_c`` is the weight of the clique ``c``.
-"""
-function spinglass_energy(cliques::AbstractVector{Vector{Int}}, config; weights)::Real
-    size = zero(eltype(weights))
-    @assert length(cliques) == length(weights) "length of cliques and weights must be equal, got: $(length(cliques)), $(length(weights))"
-    @assert all(x->x == -1 || x == 1, config)
-    for (spins, wi) in zip(cliques, weights)
-        size += prod(i->config[i], spins) * wi
-    end
-    return size
-end
-function spinglass_energy(g::SimpleGraph, config; J, h)
-    eng = zero(promote_type(eltype(J), eltype(h)))
-    # coupling terms
-    for (i, e) in enumerate(edges(g))
-        eng += (config[e.src] * config[e.dst]) * J[i]
-    end
-    # onsite terms
-    for (i, v) in enumerate(vertices(g))
-        eng += config[v] * h[i]
+# energy interface
+function energy(problem::ConstraintSatisfactionProblem, config)
+    @assert length(config) == num_variables(problem)
+    eng = zero(eltype(weights(problem)))
+    for spec in constraint_specs(problem)
+        eng += local_energy(typeof(problem), config[spec]) * weights(problem)[spec]
     end
     return eng
 end

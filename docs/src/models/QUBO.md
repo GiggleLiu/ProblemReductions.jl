@@ -21,13 +21,13 @@ graph = SimpleGraph(3)
 QUBO02 = QUBO(graph, Float64[], [1., 1., 1.])
 ```
 
-Besides, the required functions, [`variables`](@ref), [`flavors`](@ref), and [`evaluate`](@ref), and optional functions, [`findbest`](@ref), are implemented for the [`QUBO`] problem.
+Besides, the required functions, [`variables`](@ref), [`flavors`](@ref), and [`energy`](@ref), and optional functions, [`findbest`](@ref), are implemented for the [`QUBO`] problem.
 ```@repl QUBO
 variables(QUBO01)  # degrees of freedom
 variables(QUBO02)
 flavors(QUBO01)  # flavors of the vertices
-evaluate(QUBO01, [0, 1, 0])
-evaluate(QUBO02, [0, 1, 0]) 
+energy(QUBO01, [0, 1, 0])
+energy(QUBO02, [0, 1, 0]) 
 findbest(QUBO01, BruteForce())  # solve the problem with brute force
 findbest(QUBO02, BruteForce()) 
 ```

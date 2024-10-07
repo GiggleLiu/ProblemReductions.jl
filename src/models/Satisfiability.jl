@@ -101,7 +101,7 @@ function literals(cnf::CNF{T}) where T
 end
 
 
-abstract type AbstractSatisfiabilityProblem{T} <: AbstractProblem end
+abstract type AbstractSatisfiabilityProblem{T} <: ConstraintSatisfactionProblem{Bool} end
 
 """
 $TYPEDEF
@@ -112,16 +112,24 @@ The [satisfiability](https://queracomputing.github.io/GenericTensorNetworks.jl/d
 * `cnf` is a conjunctive normal form ([`CNF`](@ref)) for specifying the satisfiability problems.
 * `weights` are associated with clauses.
 """
-struct Satisfiability{T} <:AbstractSatisfiabilityProblem{T}
+struct Satisfiability{T, WT} <:AbstractSatisfiabilityProblem{WT}
     variables::Vector{T}
+    weights::Vector{WT}
     cnf::CNF{T}
+    function Satisfiability(variables::Vector{T}, cnf::CNF{T}, weights::Vector{WT}) where {T, WT}
+        @assert length(weights) == length(cnf.clauses) "length of weights must be equal to the number of clauses $(length(cnf.clauses)), got: $(length(weights))"
+        new{T, WT}(variables, weights, cnf)
+    end
 end
-function Satisfiability(cnf::CNF{T}) where {T}
-    Satisfiability(literals(cnf), cnf)
+function Satisfiability(cnf::CNF{T}, weights::Vector{WT}=UnitWeight(length(cnf.clauses))) where {T, WT}
+    Satisfiability(literals(cnf), cnf, weights)
 end
 clauses(c::Satisfiability) = c.cnf.clauses
 variables(c::Satisfiability) = c.variables
 Base.:(==)(x::Satisfiability, y::Satisfiability) = x.cnf == y.cnf
+
+weights(c::Satisfiability) = c.weights
+set_weights(c::Satisfiability, weights::Vector{WT}) where {WT} = Satisfiability(c.variables, c.cnf, weights)
 
 """
 $TYPEDEF
@@ -151,7 +159,13 @@ variables(c::KSatisfiability) = c.variables
 problem_size(c::AbstractSatisfiabilityProblem) = (; num_claues = length(clauses(c)), num_variables = length(variables(c)))
 flavors(::Type{<:AbstractSatisfiabilityProblem}) = [0, 1]  # false, true
 
-function evaluate(c::AbstractSatisfiabilityProblem, config)
+weights(c::KSatisfiability) = c.weights
+set_weights(c::KSatisfiability, weights::Vector{WT}) where {WT} = KSatisfiability(c.variables, c.cnf, weights)
+
+constraints(c::AbstractSatisfiabilityProblem) = [(var)=>sat_local_energy.(configuration_space(AbstractSatisfiabilityProblem, length(clause))) for clause in clauses(c)]
+sat_local_energy(config, clause) = !satisfiable(clause, config)
+
+function energy(c::AbstractSatisfiabilityProblem, config)
     @assert length(config) == num_variables(c)
     dict = Dict(zip(variables(c), config))
     count(x->!satisfiable(x, dict), clauses(c))

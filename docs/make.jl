@@ -25,7 +25,6 @@ makedocs(;
     doctest = ("doctest=true" in ARGS),
     pages=[
         "Home" => "index.md",
-        "Interfaces" => ["models.md", "topology.md", "rules.md"],
         "Models" => [
             "models/CircuitSAT.md",
             "models/Coloring.md",
@@ -44,9 +43,9 @@ makedocs(;
             "rules/spinglass_sat.md",
         ],
         "Examples" => [
-            "generated/material_compute.md",
             "generated/Ising.md",
         ],
+        "Interfaces" => ["models.md", "topology.md", "rules.md"],
         "Reference" => "ref.md",
     ],
 )

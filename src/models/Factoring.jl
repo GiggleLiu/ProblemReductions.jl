@@ -20,7 +20,7 @@ flavors(::Type{Factoring}) = [0, 1]
 problem_size(f::Factoring) = (; num_bits_first=f.m, num_bits_second=f.n)
 
 # utilities
-function evaluate(f::Factoring, config)
+function energy(f::Factoring, config)
     @assert length(config) == num_variables(f)
     input1 = BitStr(config[1:f.m]).buf
     input2 = BitStr(config[f.m+1:f.m+f.n]).buf

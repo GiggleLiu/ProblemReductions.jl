@@ -15,15 +15,15 @@ factoring = Factoring(2,2,6)
 ```
 Here, the two `2` is the factors' bit size and `6` is the number to be factored. $6$ is $110$ in binary so its factors should be 2-bits number.
 
-Functions [`variables`](@ref),[`flavors`](@ref) and [`evaluate`](@ref) are implemented for `Factoring` model. 
+Functions [`variables`](@ref),[`flavors`](@ref) and [`energy`](@ref) are implemented for `Factoring` model. 
 
 ```@repl Factoring
 variables(factoring) # return the sum of factors' bit size
 
 flavors(factoring) 
 
-evaluate(factoring,[0,1,1,1]) # 01 -> 2, 11 -> 3
+energy(factoring,[0,1,1,1]) # 01 -> 2, 11 -> 3
 ```
 
 !!! note
-     `evaluate` function return `0` if the config is a correct factorization and `1` otherwise.
+     `energy` function return `0` if the config is a correct factorization and `1` otherwise.

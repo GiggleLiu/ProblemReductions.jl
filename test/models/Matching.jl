@@ -21,11 +21,11 @@ using ProblemReductions: is_matching
     @test variables(m2) == [1, 2, 3, 4]
     @test num_variables(m2) == 4
     @test flavors(m2) == [0, 1]
-    @test parameters(m2) == [1, 0, 0, 1]
-    @test set_parameters(m2, [1, 1, 0, 0]) == Matching(g2, [1, 1, 0, 0])
+    @test weights(m2) == [1, 0, 0, 1]
+    @test set_weights(m2, [1, 1, 0, 0]) == Matching(g2, [1, 1, 0, 0])
     @test is_matching(m2.graph, [1, 0, 0, 1]) == true
     @test is_matching(m2.graph, [1, 1, 0, 0]) == false
-    @test evaluate(m2, [1, 0, 0, 1]) == 2
-    @test evaluate(m2, [1, 1, 0, 0]) == Inf
+    @test energy(m2, [1, 0, 0, 1]) == 2
+    @test energy(m2, [1, 1, 0, 0]) == Inf
     @test sort(findbest(m2, BruteForce()))== sort([[0,0,0,0],[0,0,1,0],[0,1,0,0],[0,1,1,0]])
 end

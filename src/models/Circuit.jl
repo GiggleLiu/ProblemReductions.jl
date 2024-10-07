@@ -44,11 +44,11 @@ is_dnf(x::BooleanExpr) = x.head == :∨ && all(a->(a.head == :∧ && all(is_lite
 
 Base.:(==)(x::BooleanExpr, y::BooleanExpr) = x.head == y.head && x.var == y.var && all(x.args .== y.args)
 Base.hash(x::BooleanExpr, h::UInt) = hash(x.head, hash(x.var, hash(x.args, h)))
-function evaluate(ex::BooleanExpr, dict::Dict{BooleanExpr, Bool})
+function energy(ex::BooleanExpr, dict::Dict{BooleanExpr, Bool})
     @assert all(is_var, keys(dict))
-    evaluate(ex, Dict(k.var=>v for (k,v) in dict))
+    energy(ex, Dict(k.var=>v for (k,v) in dict))
 end
-function evaluate(ex::BooleanExpr, dict::Dict{Symbol, Bool})
+function energy(ex::BooleanExpr, dict::Dict{Symbol, Bool})
     if ex.head == :var
         if ex.var == Symbol("true")
             return true
@@ -58,9 +58,9 @@ function evaluate(ex::BooleanExpr, dict::Dict{Symbol, Bool})
             return dict[ex.var]
         end
     else
-        fmap = arg->evaluate(arg, dict)
+        fmap = arg->energy(arg, dict)
         if ex.head == :¬
-            return !evaluate(ex.args[1], dict)
+            return !energy(ex.args[1], dict)
         elseif ex.head == :∨
             return any(fmap, ex.args)
         elseif ex.head == :∧
@@ -68,7 +68,7 @@ function evaluate(ex::BooleanExpr, dict::Dict{Symbol, Bool})
         elseif ex.head == :⊻
             return mapreduce(fmap, xor, ex.args)
         else
-            _eval(Val(ex.head), dict, evaluate.(ex.args, Ref(dict))...)
+            _eval(Val(ex.head), dict, energy.(ex.args, Ref(dict))...)
         end
     end
 end
@@ -85,10 +85,10 @@ function extract_symbols!(ex::Assignment, vars::Vector{Symbol})
     extract_symbols!(ex.expr, vars)
 end
 
-function evaluate!(exprs::Vector{Assignment}, dict::Dict{Symbol, Bool})
+function energy(exprs::Vector{Assignment}, dict::Dict{Symbol, Bool})
     for ex in exprs
         for o in ex.outputs
-            dict[o] = evaluate(ex.expr, dict)
+            dict[o] = energy(ex.expr, dict)
         end
     end
     return dict
@@ -127,8 +127,8 @@ function symbols(c::Circuit)
     return unique!(vars)
 end
 
-function evaluate(c::Circuit, dict::Dict{Symbol, Bool})
-    evaluate!(c.exprs, copy(dict))
+function energy(c::Circuit, dict::Dict{Symbol, Bool})
+    energy(c.exprs, copy(dict))
 end
 
 """
@@ -198,9 +198,14 @@ Circuit satisfiability problem, where the goal is to find an assignment that sat
 - `circuit::Circuit`: The circuit expression in SSA form.
 - `symbols::Vector{Symbol}`: The variables in the circuit.
 """
-struct CircuitSAT <: AbstractProblem
+struct CircuitSAT{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     circuit::Circuit
+    weights::WT
     symbols::Vector{Symbol}
+    function CircuitSAT(circuit::Circuit, weights::AbstractVector{T}, symbols::Vector{Symbol}) where {T, WT<:AbstractVector{T}}
+        @assert length(weights) == length(circuit.exprs)
+        new{T, WT}(circuit, weights, symbols)
+    end
 end
 function CircuitSAT(circuit::Circuit)
     ssa = simple_form(circuit)
@@ -220,16 +225,17 @@ variables(c::CircuitSAT) = collect(1:length(c.symbols))
 flavors(::Type{<:CircuitSAT}) = [0, 1]
 problem_size(c::CircuitSAT) = (; num_exprs=length(c.circuit.exprs), num_variables=length(c.symbols))
 
-# parameters interface
-parameters(sat::CircuitSAT) = Int[]
+# weights interface
+weights(sat::CircuitSAT) = sat.weights
+set_weights(c::CircuitSAT, weights) = CircuitSAT(c.circuit, weights, c.symbols)
 
-function evaluate(sat::CircuitSAT, config)
+function energy(sat::CircuitSAT, config)
     @assert length(config) == num_variables(sat)
     dict = Dict(sat.symbols[i]=>Bool(config[i]) for i in 1:length(sat.symbols))
     for ex in sat.circuit.exprs
         for o in ex.outputs
             @assert haskey(dict, o) "The output variable `$o` is not in the configuration"
-            dict[o] != evaluate(ex.expr, dict) && return 1  # this is the loss!
+            dict[o] != energy(ex.expr, dict) && return 1  # this is the loss!
         end
     end
     return 0

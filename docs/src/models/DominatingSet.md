@@ -15,11 +15,11 @@ add_edge!(graph, 4, 5)
 DS = DominatingSet(graph)
 ```
 
-Besides, the required functions, [`variables`](@ref), [`flavors`](@ref), and [`evaluate`](@ref), and optional functions, [`findbest`](@ref), are implemented for the Dominating Set problem.
+Besides, the required functions, [`variables`](@ref), [`flavors`](@ref), and [`energy`](@ref), and optional functions, [`findbest`](@ref), are implemented for the Dominating Set problem.
 ```@repl DominatingSet
 variables(DS)  # degrees of freedom
 flavors(DS)  # flavors of the vertices
-evaluate(DS, [0, 1, 0, 1, 0]) # Positive sample: (size) of a dominating set
-evaluate(DS, [0, 1, 1, 0, 0]) # Negative sample: number of vertices
+energy(DS, [0, 1, 0, 1, 0]) # Positive sample: (size) of a dominating set
+energy(DS, [0, 1, 1, 0, 0]) # Negative sample: number of vertices
 findbest(DS, BruteForce())  # solve the problem with brute force
 ```

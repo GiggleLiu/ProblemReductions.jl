@@ -56,7 +56,7 @@ extract_solution(reduction_result, 1 .- 2 .* Int.(GenericTensorNetworks.read_con
 # In this example, we show how to reduce Factoring problem to SpinGlass and solve it with Ising machine solver. This shows the power of `ProblemReductions.jl` in helping Problem Reduction.   
 # 
 # For your convenience, here is how to use `ProblemReductions.jl` to reduce source problem to target problem:
-# - Initialize the source problem `source = SourceProblem(...) `, `...` is the parameters of the source problem.
+# - Initialize the source problem `source = SourceProblem(...) `.
 # - Obtain the reduction paths `paths = reduction_paths(reduction_graph(), SourceProblem, TargetProblem)`.
 # - Implement the reduction path `reduction_result = implement_reduction_path(paths[1], source)`.
 # - Extract the target problem `target = target_problem(reduction_result)`.

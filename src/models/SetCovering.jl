@@ -10,14 +10,14 @@ Positional arguments
 * `sets` is a vector of vectors, a collection of subsets of universe , each set is associated with a weight specified in `weights`.
 * `weights` are associated with sets.
 """
-struct SetCovering{ET, WT<:AbstractVector} <: AbstractProblem
+struct SetCovering{ET, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     elements::Vector{ET}
     sets::Vector{Vector{ET}}
     weights::WT
-    function SetCovering(sets::Vector{Vector{ET}}, weights::AbstractVector=UnitWeight(length(sets))) where {ET}
+    function SetCovering(sets::Vector{Vector{ET}}, weights::AbstractVector{T}=UnitWeight(length(sets))) where {ET, T}
         @assert length(weights) == length(sets)
         elements = unique!(vcat(sets...))
-        new{ET, typeof(weights)}(elements, sets, weights)
+        new{ET, T, typeof(weights)}(elements, sets, weights)
     end
 end
 Base.:(==)(a::SetCovering, b::SetCovering) = a.sets == b.sets && a.weights == b.weights && a.elements == b.elements
@@ -32,18 +32,10 @@ variables(gp::SetCovering) = [1:length(gp.sets)...]
 flavors(::Type{<:SetCovering}) = [0, 1] # whether the set is selected (1) or not (0)
 
 # weights interface
-parameters(c::SetCovering) = c.weights
-set_parameters(c::SetCovering, weights) = SetCovering(c.sets, weights)
+weights(c::SetCovering) = c.weights
+set_weights(c::SetCovering, weights) = SetCovering(c.sets, weights)
 
-"""
-    evaluate(c::SetCovering, config)
-   
-evaluate the energy of the set covering configuration `config`, the energy is the
-sum of the weights of the sets that are selected but return typemax(eltype(weights)) if the set is not covered.
-Config is a vector of boolean numbers.
-""" 
-
-function evaluate(c::SetCovering, config)
+function energy(c::SetCovering, config)
     @assert length(config) == num_variables(c)
     set_covering_energy(c.sets, c.weights, config )
 end

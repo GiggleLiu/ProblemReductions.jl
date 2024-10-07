@@ -9,7 +9,7 @@ function findbest(problem::AbstractProblem, ::BruteForce)
     best_size = Inf
     best_configs = Vector{Int}[]
     for config in Iterators.product([flavors(problem) for i in 1:num_variables(problem)]...)
-        size = Float64(evaluate(problem, collect(config)))
+        size = Float64(energy(problem, collect(config)))
         if size == best_size
             push!(best_configs, collect(config))
         elseif size < best_size[1]

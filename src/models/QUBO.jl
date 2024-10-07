@@ -10,7 +10,7 @@ where `x_i \\in \\{0, 1\\}`.
 ### Arguments
 - `matrix::AbstractMatrix`: the matrix Q of the QUBO problem.
 """
-struct QUBO{T <: Real} <: AbstractProblem
+struct QUBO{T <: Real} <: ConstraintSatisfactionProblem{T}
     matrix::Matrix{T}
     function QUBO(matrix::Matrix{T}) where T
         @assert size(matrix, 1) == size(matrix, 2)
@@ -35,7 +35,11 @@ variables(c::QUBO) = collect(1:size(c.matrix, 1))
 flavors(::Type{<:QUBO}) = [0, 1]
 problem_size(c::QUBO) = (; num_variables=size(c.matrix, 1))
 
-function evaluate(c::QUBO, config)
+# constraints interface
+constraints(c::QUBO) = [(i, j)=>qubo_local_energy.(configuration_space(QUBO, 2), i == j ? c.matrix[i, i] : c.matrix[i, j] + c.matrix[j, i]) for i in variables(c), j in variables(c) if i < j && c.matrix[i, j] != 0 && c.matrix[j, i] != 0]
+qubo_local_energy(config, weight) = config[1] * config[2] * weight
+
+function energy(c::QUBO, config)
     @assert length(config) == num_variables(c)
     @assert all(x -> x in (0, 1), config)
     return transpose(config) * c.matrix * config

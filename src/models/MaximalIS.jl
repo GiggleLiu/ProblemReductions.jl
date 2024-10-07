@@ -9,7 +9,7 @@ Positional arguments
 * `graph` is the problem graph.
 * `weights` are associated with the vertices of the `graph`.
 """
-struct MaximalIS{WT<:Union{UnitWeight, Vector}} <: AbstractProblem
+struct MaximalIS{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::SimpleGraph
     weights::WT
     function MaximalIS(g::SimpleGraph, weights::Union{UnitWeight, Vector}=UnitWeight(nv(g)))
@@ -26,15 +26,10 @@ flavors(::Type{<:MaximalIS}) = [0, 1]
 problem_size(c::MaximalIS) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
-parameters(c::MaximalIS) = c.weights
-set_parameters(c::MaximalIS, weights) = MaximalIS(c.graph, weights)
+weights(c::MaximalIS) = c.weights
+set_weights(c::MaximalIS, weights) = MaximalIS(c.graph, weights)
 
-
-"""
-    evaluate(c::MaximalIS, config)
-    Return the weights of the vertices that are not in the maximal independent set.
-"""
-function evaluate(c::MaximalIS, config)
+function energy(c::MaximalIS, config)
     @assert length(config) == nv(c.graph)
     if !is_maximal_independent_set(c.graph, config)
         return Inf

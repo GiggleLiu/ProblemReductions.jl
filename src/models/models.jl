@@ -2,23 +2,54 @@
     AbstractProblem
 
 The abstract base type of computational problems.
+
+### Required interfaces
+- [`variables`](@ref), the degrees of freedoms in the computational problem.
+- [`flavors`](@ref), the flavors (domain) of a degree of freedom.
+- [`energy`](@ref), energy the energy (the lower the better) of the input configuration.
+- [`problem_size`](@ref), the size of the computational problem. e.g. for a graph, it could be `(n_vertices=?, n_edges=?)`.
+
+### Optional interfaces
+- [`num_variables`](@ref), the number of variables in the computational problem.
+- [`num_flavors`](@ref), the number of flavors (domain) of a degree of freedom.
+- [`findbest`](@ref), find the best configurations of the input problem.
 """
 abstract type AbstractProblem end
 
+"""
+    ConstraintSatisfactionProblem{T} <: AbstractProblem
+
+The abstract base type of constraint satisfaction problems. `T` is the type of the local energy of the constraints.
+
+### Required interfaces
+- [`constraint_specs`](@ref), the specification of the constraints.
+- [`local_energy`](@ref), the local energy for the constraints.
+"""
+abstract type ConstraintSatisfactionProblem{T} <: AbstractProblem end
+
 ######## Interfaces for computational problems ##########
 """
-    parameters(problem::AbstractProblem) -> Vector
+    weights(problem::ConstraintSatisfactionProblem) -> Vector
 
-The parameters of the computational problem.
+The weights of the constraints in the problem.
 """
-function parameters end
+function weights end
 
 """
-    set_parameters(problem::AbstractProblem, parameters) -> AbstractProblem
+    set_weights(problem::ConstraintSatisfactionProblem, weights) -> ConstraintSatisfactionProblem
 
-Change the parameters for the `problem` and return a new problem instance.
+Change the weights for the `problem` and return a new problem instance.
 """
-function set_parameters end
+function set_weights end
+
+"""
+    is_weighted(problem::ConstraintSatisfactionProblem) -> Bool
+
+Check if the problem is weighted. Returns `true` if the problem has non-unit weights.
+"""
+function is_weighted(problem::ConstraintSatisfactionProblem)
+    isdefined(problem, :weights) && !(weights(problem) isa UnitWeight)
+end
 
 """
     problem_size(problem::AbstractProblem) -> NamedTuple
@@ -43,11 +74,11 @@ The number of variables in the computational problem.
 num_variables(c::AbstractProblem) = length(variables(c))
 
 """
-    parameter_type(problem::AbstractProblem) -> Type
+    weight_type(problem::AbstractProblem) -> Type
 
-The data type of the parameters in the computational problem.
+The data type of the weights in the computational problem.
 """
-parameter_type(gp::AbstractProblem) = eltype(parameters(gp))
+weight_type(gp::AbstractProblem) = eltype(weights(gp))
 
 """
     flavors(::Type{<:AbstractProblem}) -> Vector
@@ -82,12 +113,12 @@ Returns the number of flavors (domain) of a degree of freedom.
 num_flavors(::GT) where GT<:AbstractProblem = length(flavors(GT))
 
 """
-    evaluate(problem::AbstractProblem, config) -> Real
+    energy(problem::AbstractProblem, config) -> Real
 
-Evaluate the energy of the `problem` given the configuration `config`.
+Energy of the `problem` given the configuration `config`.
 The lower the energy, the better the configuration.
 """
-function evaluate end
+function energy end
 
 """
 $TYPEDSIGNATURES
@@ -105,12 +136,31 @@ Find the best configurations of the `problem` using the `method`.
 """
 function findbest end
 
+# """
+#     constraints(problem::AbstractProblem) -> Vector{NTuple{N, Int}=>Array{T, N}}
+
+# The constraints of the problem, where `N` is the number of variables involved in the constraint, and the array is the local energy of the constraint.
+# If a local configuration is forbidden, please set the local energy to `typemax(T)`.
+# """
+# function constraints(problem::AbstractProblem)
+#     map(constraint_specs(problem), weights(problem), constraint_variables(problem)) do spec, weight, e
+#         spec=>local_energy.(typeof(problem), spec, configuration_space(problem, length(e)), weight)
+#     end
+# end
+
+"""
+    UnitWeight <: AbstractVector{Int}
+
+The unit weight vector of length `n`.
+"""
 struct UnitWeight <: AbstractVector{Int}
     n::Int
 end
 Base.getindex(::UnitWeight, i) = 1
 Base.size(w::UnitWeight) = (w.n,)
 
+# returns a n-dimensional array.
+configuration_space(p::AbstractProblem, n::Int) = Iterators.product(fill(flavors(p), n)...)
 
 include("SpinGlass.jl")
 include("Circuit.jl")

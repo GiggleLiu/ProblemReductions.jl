@@ -29,12 +29,12 @@ using Test, ProblemReductions, Graphs
     @test num_variables(IS_01) == 4
     @test flavors(IndependentSet) == [0, 1]
 
-    # evaluate
+    # energy
     # Positive examples
-    @test evaluate(IS_01, [1, 0, 0, 1]) == -2
-    @test evaluate(IS_01, [0, 1, 0, 1]) == -2
+    @test energy(IS_01, [1, 0, 0, 1]) == -2
+    @test energy(IS_01, [0, 1, 0, 1]) == -2
     # a Negative example
-    @test evaluate(IS_01, [0, 1, 1, 0]) == 0
+    @test energy(IS_01, [0, 1, 1, 0]) == 0
 
     # test findbest function
     @test findbest(IS_01, BruteForce()) == [[1, 0, 0, 1], [0, 1, 0, 1]] # "1" is superior to "0"

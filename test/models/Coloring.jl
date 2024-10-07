@@ -20,11 +20,11 @@ using Test, ProblemReductions, Graphs
     @test problem_size(c) == (; num_vertices=4, num_edges=4)
 
     # weights interface
-    @test parameters(c) == UnitWeight(nv(g))
-    @test set_parameters(c, [1, 2, 2, 1]) == Coloring{3}(g, [1, 2, 2, 1])
+    @test weights(c) == UnitWeight(nv(g))
+    @test set_weights(c, [1, 2, 2, 1]) == Coloring{3}(g, [1, 2, 2, 1])
 
-    # evaluate,here I found the definition of Config is not clear, so I can't test the evaluate function
-    @test evaluate(c,[0, 1, 2, 0]) == 1
+    # energy,here I found the definition of Config is not clear, so I can't test the energy function
+    @test energy(c,[0, 1, 2, 0]) == 1
     @test coloring_energy(ProblemReductions.vedges(c.graph), [1, 3, 2, 5], [0, 1, 2, 0]) == 3
     @test is_vertex_coloring(g, [0, 1, 2, 0]) == false
 end

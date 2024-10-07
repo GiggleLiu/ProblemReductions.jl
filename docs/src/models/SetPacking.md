@@ -11,11 +11,11 @@ sets = [[1, 2, 5], [1, 3], [2, 4], [3, 6], [2, 3, 6]]
 SP = SetPacking(sets)
 ```
 
-Then, the required functions, [`variables`](@ref), [`flavors`](@ref), and [`evaluate`](@ref), and optional functions, [`findbest`](@ref), are implemented for the Set Packing problem.
+Then, the required functions, [`variables`](@ref), [`flavors`](@ref), and [`energy`](@ref), and optional functions, [`findbest`](@ref), are implemented for the Set Packing problem.
 ```@repl SetPacking
 variables(SP)  # degrees of freedom
 flavors(SP)  # flavors of the subsets
-evaluate(SP, [1, 0, 0, 1, 0]) # Positive sample: -(size) of a packing
-evaluate(SP, [1, 0, 1, 1, 0]) # Negative sample: 0
+energy(SP, [1, 0, 0, 1, 0]) # Positive sample: -(size) of a packing
+energy(SP, [1, 0, 1, 1, 0]) # Negative sample: 0
 findbest(SP, BruteForce())  # solve the problem with brute force
 ```

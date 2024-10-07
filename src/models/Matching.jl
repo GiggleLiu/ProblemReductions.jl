@@ -8,12 +8,12 @@ Positional arguments
 * `graph` is the problem graph.
 * `weights` are associated with the edges of the `graph`.
 """
-struct Matching{WT<:Union{UnitWeight,Vector}} <: AbstractProblem
+struct Matching{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::SimpleGraph{Int}
     weights::WT
-    function Matching(g::SimpleGraph, weights::Union{UnitWeight, Vector}=UnitWeight(ne(g)))
-        @assert weights isa UnitWeight || length(weights) == ne(g)
-        new{typeof(weights)}(g, weights)
+    function Matching(g::SimpleGraph, weights::AbstractVector{T}=UnitWeight(ne(g))) where {T}
+        @assert length(weights) == ne(g)
+        new{T, typeof(weights)}(g, weights)
     end
 end
 Base.:(==)(a::Matching, b::Matching) = a.graph == b.graph && a.weights == b.weights
@@ -24,14 +24,10 @@ num_variables(gp::Matching) = ne(gp.graph)
 problem_size(c::Matching) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
-parameters(c::Matching) = c.weights
-set_parameters(c::Matching, weights) = Matching(c.graph, weights)
+weights(c::Matching) = c.weights
+set_weights(c::Matching, weights) = Matching(c.graph, weights)
 
-"""
-    evaluate(c::Matching, config)
-    Return Inf if the configuration is not a matching, otherwise return the sum of the weights of the edges in the matching.
-"""
-function evaluate(c::Matching, config)
+function energy(c::Matching, config)
     @assert length(config) == ne(c.graph)
     if !is_matching(c.graph, config)
         return Inf
