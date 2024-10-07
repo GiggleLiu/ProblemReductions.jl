@@ -29,6 +29,18 @@ num_flavors(::Type{<:Coloring{K}}) where K = K # number of colors
 weights(c::Coloring) = c.weights
 set_weights(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
 
+# constraints interface
+@nohard_constraints Coloring
+function energy_terms(c::Coloring)
+    # constraints on edges
+    return [LocalConstraint(e, :coloring) for e in vedges(c.graph)]
+end
+
+function local_energy(::Type{<:Coloring{K, T}}, spec::LocalConstraint, config) where {K, T}
+    @assert length(config) == num_variables(spec)
+    return config[spec.variables[1]] == config[spec.variables[2]] ? one(T) : zero(T)
+end
+
 # utilities
 """
     energy(c::Coloring, config)

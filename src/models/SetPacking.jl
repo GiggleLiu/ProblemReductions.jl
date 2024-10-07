@@ -30,19 +30,28 @@ flavors(::Type{<:SetPacking}) = [0, 1]
 weights(c::SetPacking) = c.weights
 set_weights(c::SetPacking, weights::Vector{T}) where {T} = SetPacking(c.sets, weights)
 
-"""
-    energy(c::SetPacking, config)
-
-* First step: We check if `config` (a vector of boolean numbers as the mask of sets) is a set packing of `sets`;
-* Second step: If it is a set packing, we return (size(set packing)); Otherwise, we return 0.
-"""
-function energy(c::SetPacking, config)
-    @assert length(config) == num_variables(c)
-    if is_set_packing(c.sets, config)
-        return - count(x -> x == 1, config)
-    else
-        return 0
+# constraints interface
+function hard_constraints(c::SetPacking)  # sets sharing the same element
+    d = Dict{eltype(c.elements), Vector{Int}}()
+    for (i, set) in enumerate(c.sets)
+        for e in set
+            push!(get!(()->Int[], d, e), i)
+        end
     end
+    return [LocalConstraint(v, :independent) for v in values(d)]
+end
+function is_satisfied(::Type{<:SetPacking}, spec::LocalConstraint, config)
+    @assert length(config) == num_variables(spec)
+    return count(isone, config) <= 1
+end
+
+function energy_terms(c::SetPacking)  # sets sharing the same element
+    return [LocalConstraint([s], :set) for s in 1:length(c.sets)]
+end
+
+function local_energy(::Type{<:SetPacking}, spec::LocalConstraint, config)
+    @assert length(config) == num_variables(spec) == 1
+    return -config[]
 end
 
 """

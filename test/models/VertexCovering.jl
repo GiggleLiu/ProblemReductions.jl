@@ -13,11 +13,11 @@ using Test, ProblemReductions, Graphs
     @test variables(vc) == [1, 2, 3, 4]
     @test num_variables(vc) == 4
     @test flavors(VertexCovering) == [0, 1]
-    @test weights(vc) == [1, 3, 1, 4]
+    @test ProblemReductions.weights(vc) == [1, 3, 1, 4]
     @test set_weights(vc, [1, 3, 4, 4]) == VertexCovering(g, [1, 3, 4, 4])
 
     # energy
-    @test energy(vc, [1, 0, 0, 1]) == typemax(Int)
+    @test energy(vc, [1, 0, 0, 1]) > 1000
     @test energy(set_weights(vc,[1,2,4,1]), [0, 1, 1, 0]) == 6
     @test is_vertex_covering(vc.graph, [1, 0, 0, 1]) == false
     

@@ -10,7 +10,7 @@ using Test, ProblemReductions, Graphs
     @test problem_size(c) == (; num_sets=3, num_elements=4)
     
     # weights interface
-    @test weights(c) == [1, 1, 2]
+    @test ProblemReductions.weights(c) == [1, 1, 2]
     @test set_weights(c, [1, 2, 3]) == SetCovering([[1, 2], [2, 3], [2, 3, 4]], [1, 2, 3])
     
     # energy

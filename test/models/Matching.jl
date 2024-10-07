@@ -21,8 +21,8 @@ using ProblemReductions: is_matching
     @test variables(m2) == [1, 2, 3, 4]
     @test num_variables(m2) == 4
     @test flavors(m2) == [0, 1]
-    @test weights(m2) == [1, 0, 0, 1]
-    @test set_weights(m2, [1, 1, 0, 0]) == Matching(g2, [1, 1, 0, 0])
+    @test ProblemReductions.weights(m2) == [1, 0, 0, 1]
+    @test ProblemReductions.set_weights(m2, [1, 1, 0, 0]) == Matching(g2, [1, 1, 0, 0])
     @test is_matching(m2.graph, [1, 0, 0, 1]) == true
     @test is_matching(m2.graph, [1, 1, 0, 0]) == false
     @test energy(m2, [1, 0, 0, 1]) == 2

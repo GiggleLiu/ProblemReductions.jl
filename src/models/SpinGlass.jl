@@ -12,19 +12,15 @@ Positional arguments
 """
 struct SpinGlass{GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::GT
-    weights::WT
-    function SpinGlass(graph::AbstractGraph, weights::WT) where {T, WT<:AbstractVector{T}}
-        @assert length(weights) == ne(graph)
-        return new{typeof(graph), T, WT}(graph, weights)
+    J::WT
+    h::WT
+    function SpinGlass(graph::AbstractGraph, J::WT, h::WT) where {T, WT<:AbstractVector{T}}
+        @assert length(J) == ne(graph)
+        @assert length(h) == nv(graph)
+        return new{typeof(graph), T, WT}(graph, J, h)
     end
 end
-function SpinGlass(graph::SimpleGraph, J::Vector, h::Vector)
-    @assert length(J) == ne(graph) "length of J must be equal to the number of edges $(ne(graph)), got: $(length(J))"
-    @assert length(h) == nv(graph) "length of h must be equal to the number of vertices $(nv(graph)), got: $(length(h))"
-    SpinGlass(HyperGraph(nv(graph), Vector{Int}[[[src(e), dst(e)] for e in edges(graph)]..., [[i] for i in 1:nv(graph)]...]), [J..., h...])
-end
-# Base.:(<symbol>) to overload the operators
-Base.:(==)(a::SpinGlass, b::SpinGlass) = a.graph == b.graph && a.weights == b.weights
+Base.:(==)(a::SpinGlass, b::SpinGlass) = a.graph == b.graph && a.J == b.J && a.h == b.h
 function spin_glass_from_matrix(M::AbstractMatrix, h::AbstractVector)
     g = SimpleGraph((!iszero).(M))
     J = [M[e.src, e.dst] for e in edges(g)]
@@ -37,17 +33,16 @@ flavors(::Type{<:SpinGlass}) = [1, -1]
 problem_size(c::SpinGlass) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
-weights(gp::SpinGlass) = gp.weights
-set_weights(c::SpinGlass, weights) = SpinGlass(c.graph, weights)
-constraint_specs(sg::SpinGlass) = vedges(sg.graph)
-local_energy(::Type{<:SpinGlass}, config) = prod(config)
+weights(gp::SpinGlass) = vcat(gp.J, gp.h)
+set_weights(c::SpinGlass, weights) = SpinGlass(c.graph, weights[1:ne(c.graph)], weights[ne(c.graph)+1:end])
 
-# energy interface
-function energy(problem::ConstraintSatisfactionProblem, config)
-    @assert length(config) == num_variables(problem)
-    eng = zero(eltype(weights(problem)))
-    for spec in constraint_specs(problem)
-        eng += local_energy(typeof(problem), config[spec]) * weights(problem)[spec]
-    end
-    return eng
+# constraints interface
+function energy_terms(sg::SpinGlass)
+    return vcat([LocalConstraint(e, :edge) for e in vedges(sg.graph)], [LocalConstraint([v], :vertex) for v in vertices(sg.graph)])
+end
+@nohard_constraints SpinGlass
+
+function local_energy(::Type{<:SpinGlass}, spec::LocalConstraint, config)
+    @assert length(config) == num_variables(spec)
+    spec.specification == :edge ? prod(config) : config[]
 end

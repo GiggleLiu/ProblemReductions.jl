@@ -12,9 +12,9 @@ Positional arguments
 struct MaximalIS{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::SimpleGraph
     weights::WT
-    function MaximalIS(g::SimpleGraph, weights::Union{UnitWeight, Vector}=UnitWeight(nv(g)))
+    function MaximalIS(g::SimpleGraph, weights::AbstractVector{T}=UnitWeight(nv(g))) where {T}
         @assert weights isa UnitWeight || length(weights) == nv(g)
-        new{typeof(weights)}(g, weights)
+        new{T, typeof(weights)}(g, weights)
     end
 end
 Base.:(==)(a::MaximalIS, b::MaximalIS) = a.graph == b.graph && a.weights == b.weights
@@ -28,6 +28,21 @@ problem_size(c::MaximalIS) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 # weights interface
 weights(c::MaximalIS) = c.weights
 set_weights(c::MaximalIS, weights) = MaximalIS(c.graph, weights)
+
+# constraints interface
+function energy_terms(c::MaximalIS)
+    return [LocalConstraint(vcat(v, neighbors(c.graph, v)), :maximal_independent) for v in vertices(c.graph)]
+end
+@nohard_constraints MaximalIS
+function local_energy(::Type{<:MaximalIS{T}}, spec::LocalConstraint, config) where {T}
+    @assert length(config) == num_variables(spec)
+    nselect = count(isone, config[spec.variables])
+    if !iszero(config[1])
+        return nselect > 1 ? energy_max(T) : -one(T)
+    else
+        return nselect < 1 ? energy_max(T) : zero(T)
+    end
+end
 
 function energy(c::MaximalIS, config)
     @assert length(config) == nv(c.graph)

@@ -11,8 +11,8 @@ using ProblemReductions:  is_maximal_independent_set
     @test num_variables(mis1) == 10
     @test flavors(mis1) == [0, 1]
     @test num_flavors(mis1) == 2
-    @test weights(mis1) == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    @test set_weights(mis1, [1, 5, 1, 4, 1, 3, 1, 2, 1, 2]) == MaximalIS(g,[1, 5, 1, 4, 1, 3, 1, 2, 1, 2])
+    @test ProblemReductions.weights(mis1) == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    @test ProblemReductions.set_weights(mis1, [1, 5, 1, 4, 1, 3, 1, 2, 1, 2]) == MaximalIS(g,[1, 5, 1, 4, 1, 3, 1, 2, 1, 2])
 
     #test2
     g = SimpleGraph(4)
@@ -25,7 +25,7 @@ using ProblemReductions:  is_maximal_independent_set
     @test variables(mis2) == [1, 2, 3, 4]
     @test num_variables(mis2) == 4
     @test flavors(MaximalIS) == [0, 1]
-    @test weights(mis2) == [1, 1, 1, 1]
+    @test ProblemReductions.weights(mis2) == [1, 1, 1, 1]
     mis2 =  set_weights(mis2, [1, 2, 1, 2]) 
     @test mis2 == MaximalIS(g,[1, 2, 1, 2])
     @test is_maximal_independent_set(mis2.graph, [1, 0, 0, 1]) == true

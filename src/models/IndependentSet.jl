@@ -23,6 +23,28 @@ variables(gp::IndependentSet) = [1:nv(gp.graph)...]
 flavors(::Type{<:IndependentSet}) = [0, 1]
 problem_size(c::IndependentSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
+# weights interface
+weights(c::IndependentSet) = c.weights
+set_weights(c::IndependentSet, weights) = IndependentSet(c.graph, weights)
+
+# constraints interface
+function hard_constraints(c::IndependentSet)
+    return [LocalConstraint(i, nothing) for i in 1:ne(c.graph)]
+end
+function is_satisfied(spec::LocalConstraint, config)
+    @assert length(config) == num_variables(spec)
+    return count(isone, config) <= 1
+end
+
+function energy_terms(c::IndependentSet)
+    return [LocalConstraint(i, nothing) for i in 1:nv(c.graph)]
+end
+
+function local_energy(::Type{<:IndependentSet{T}}, spec::LocalConstraint, config) where {T}
+    @assert length(config) == num_variables(spec)
+    return T(config[])
+end
+
 """
     energy(c::IndependentSet, config)
 

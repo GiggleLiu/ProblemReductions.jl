@@ -30,17 +30,15 @@ problem_size(c::MaxCut) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 weights(c::MaxCut) = c.weights
 set_weights(c::MaxCut, weights) = MaxCut(c.graph, weights)
 
-
-
-"""
-    energy(c::MaxCut, config)
-Compute the cut weights for the vertex configuration `config` (an iterator). The energy is the 
-sum of the weights of the edges that are cut.
-"""
-function energy(c::MaxCut, config)
-    @assert length(config) == nv(c.graph)
-    -cut_size(vedges(c.graph), config; weights=c.weights)
+# constraints interface
+function energy_terms(c::MaxCut)
+    return [LocalConstraint(e, :cut) for e in vedges(c.graph)]
 end
+function local_energy(::Type{<:MaxCut{T}}, spec::LocalConstraint, config) where {T}
+    @assert length(config) == num_variables(spec)
+    return (config[1] != config[2]) ? -one(T) : zero(T)
+end
+@nohard_constraints MaxCut
 
 function cut_size(terms, config; weights=UnitWeight(length(terms)))
     size = zero(promote_type(eltype(weights)))

@@ -19,7 +19,7 @@ using Test, ProblemReductions, Graphs
     @test flavors(mc) == [0, 1]
     @test num_flavors(mc) == 2
     # weights
-    @test weights(mc) == [1, 3, 1, 4]
+    @test ProblemReductions.weights(mc) == [1, 3, 1, 4]
     @test set_weights(mc, [1, 3, 4, 4]) == MaxCut(g, [1, 3, 4, 4])
 
     # energy

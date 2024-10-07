@@ -7,7 +7,7 @@ using ProblemReductions, Test, Graphs
     add_edge!(g, 1, 3)
     add_edge!(g, 2, 3)
     sg = SpinGlass(g, [1, -2, -2], [1, 1, -2])
-    @test problem_size(sg) == (; num_vertices = 3, num_edges = 6)
+    @test problem_size(sg) == (; num_vertices = 3, num_edges = 3)
 
     # variables
     @test variables(sg) == [1, 2, 3]
@@ -16,7 +16,7 @@ using ProblemReductions, Test, Graphs
     @test num_flavors(sg) == 2
 
     # weights
-    @test weights(sg) == [1, -2, -2, 1, 1, -2]
+    @test ProblemReductions.weights(sg) == [1, -2, -2, 1, 1, -2]
     @test set_weights(sg, [1, 2, 2, -1, -1, -2]) == SpinGlass(g, [1, 2, 2], [-1, -1, -2])
 
     @test energy(sg, [1, 1, 1]) == -3

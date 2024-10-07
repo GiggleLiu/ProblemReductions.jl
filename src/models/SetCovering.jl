@@ -35,6 +35,24 @@ flavors(::Type{<:SetCovering}) = [0, 1] # whether the set is selected (1) or not
 weights(c::SetCovering) = c.weights
 set_weights(c::SetCovering, weights) = SetCovering(c.sets, weights)
 
+# constraints interface
+function energy_terms(c::SetCovering)
+    d = Dict{eltype(c.elements), Vector{Int}}()
+    for (i, set) in enumerate(c.sets)
+        for e in set
+            push!(get!(()->Int[], d, e), i)
+        end
+    end
+    return [LocalConstraint(v, :cover) for v in values(d)]
+end
+function local_energy(::Type{<:SetCovering{T}}, spec::LocalConstraint, config) where {T}
+    @assert length(config) == num_variables(spec)
+    nselect = count(isone, config[spec.variables])
+    return nselect < 1 ? energy_max(T) : nselect
+end
+
+@nohard_constraints SetCovering
+
 function energy(c::SetCovering, config)
     @assert length(config) == num_variables(c)
     set_covering_energy(c.sets, c.weights, config )

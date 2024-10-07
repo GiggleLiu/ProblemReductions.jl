@@ -36,8 +36,12 @@ flavors(::Type{<:QUBO}) = [0, 1]
 problem_size(c::QUBO) = (; num_variables=size(c.matrix, 1))
 
 # constraints interface
-constraints(c::QUBO) = [(i, j)=>qubo_local_energy.(configuration_space(QUBO, 2), i == j ? c.matrix[i, i] : c.matrix[i, j] + c.matrix[j, i]) for i in variables(c), j in variables(c) if i < j && c.matrix[i, j] != 0 && c.matrix[j, i] != 0]
-qubo_local_energy(config, weight) = config[1] * config[2] * weight
+energy_terms(c::QUBO) = vcat([LocalConstraint([i, j], :offdiagonal) for i in variables(c), j in variables(c) if i < j && c.matrix[i, j] != 0 && c.matrix[j, i] != 0], [LocalConstraint(i, :diagonal) for i in variables(c) if c.matrix[i, i] != 0])
+@nohard_constraints QUBO
+function local_energy(::Type{<:QUBO}, spec::LocalConstraint, config)
+    @assert length(config) == num_variables(spec)
+    return spec.type == :offdiagonal ? config[spec.variables[1]] * config[spec.variables[2]] : config[spec.variables[]]
+end
 
 function energy(c::QUBO, config)
     @assert length(config) == num_variables(c)

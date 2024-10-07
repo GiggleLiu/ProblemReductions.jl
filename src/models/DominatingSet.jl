@@ -27,20 +27,15 @@ problem_size(c::DominatingSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.gra
 weights(c::DominatingSet) = c.weights
 set_weights(c::DominatingSet, weights) = DominatingSet(c.graph, weights)
 
-"""
-    energy(c::DominatingSet, config)
+# Constraints Interface
+@nohard_constraints DominatingSet
+function energy_terms(c::DominatingSet)
+    # constraints on vertex and its neighbours
+    return [LocalConstraint(vcat(v, neighbors(c.graph, v)), :dominating) for v in vertices(c.graph)]
+end
 
-Count the number of vertices outside the dominating set and the neighbours of the dominating set. 
-When the number is zero, the configuration corresponds to a dominating set. 
-* If the configuration is a dominating set return size(dominating set).
-* If the configuration is not a dominating set return nv(graph);
-"""
-function energy(c::DominatingSet, config)
-    g = c.graph
-    num_outside_vertices = count(w -> config[w] == 0 && all(v-> config[v] == 0, neighbors(g, w)), Graphs.vertices(g))
-    if num_outside_vertices == 0
-        return count(x -> x == 1, config)
-    else
-        return nv(g)
-    end
+function local_energy(::Type{<:DominatingSet{GT, T}}, spec::LocalConstraint, config) where {GT, T}
+    @assert length(config) == num_variables(spec)
+    nselect = count(isone, config)
+    return nselect < 1 ? energy_max(T) : T(config[1])
 end

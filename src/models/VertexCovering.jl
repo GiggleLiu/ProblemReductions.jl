@@ -28,14 +28,20 @@ problem_size(c::VertexCovering) = (; num_vertices=nv(c.graph), num_edges=ne(c.gr
 weights(c::VertexCovering) = c.weights
 set_weights(c::VertexCovering, weights) = VertexCovering(c.graph, weights)
 
-function energy(c::VertexCovering, config)
-    @assert length(config) == nv(c.graph)
-    vertex_covering_energy(c.graph, c.weights, config)
+# constraints interface
+function hard_constraints(c::VertexCovering)
+    return [LocalConstraint(e, :cover) for e in vedges(c.graph)]
 end
-
-function vertex_covering_energy(g::SimpleGraph, weights::AbstractVector, config)
-    !is_vertex_covering(g, config) && return typemax(eltype(weights))
-    return sum(weights[i] * config[i] for i in 1:length(config))
+function is_satisfied(::Type{<:VertexCovering}, spec::LocalConstraint, config)
+    @assert length(config) == num_variables(spec)
+    return any(!iszero, config)
+end
+function energy_terms(c::VertexCovering)
+    return [LocalConstraint([v], :vertex) for v in vertices(c.graph)]
+end
+function local_energy(::Type{<:VertexCovering{T}}, spec::LocalConstraint, config) where T
+    @assert length(config) == num_variables(spec)
+    return T(config[])
 end
 
 """

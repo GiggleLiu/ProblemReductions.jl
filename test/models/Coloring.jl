@@ -20,8 +20,8 @@ using Test, ProblemReductions, Graphs
     @test problem_size(c) == (; num_vertices=4, num_edges=4)
 
     # weights interface
-    @test weights(c) == UnitWeight(nv(g))
-    @test set_weights(c, [1, 2, 2, 1]) == Coloring{3}(g, [1, 2, 2, 1])
+    @test ProblemReductions.weights(c) == UnitWeight(nv(g))
+    @test ProblemReductions.set_weights(c, [1, 2, 2, 1]) == Coloring{3}(g, [1, 2, 2, 1])
 
     # energy,here I found the definition of Config is not clear, so I can't test the energy function
     @test energy(c,[0, 1, 2, 0]) == 1

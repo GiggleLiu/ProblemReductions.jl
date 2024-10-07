@@ -22,7 +22,8 @@ abstract type AbstractProblem end
 The abstract base type of constraint satisfaction problems. `T` is the type of the local energy of the constraints.
 
 ### Required interfaces
-- [`constraint_specs`](@ref), the specification of the constraints.
+- [`energy_terms`](@ref), the specification of the energy terms, it is associated with weights.
+- [`hard_constraints`](@ref), the specification of the hard constraints. Once the hard constraints are violated, the energy goes to infinity.
 - [`local_energy`](@ref), the local energy for the constraints.
 """
 abstract type ConstraintSatisfactionProblem{T} <: AbstractProblem end
@@ -48,7 +49,7 @@ function set_weights end
 Check if the problem is weighted. Returns `true` if the problem has non-unit weights.
 """
 function is_weighted(problem::ConstraintSatisfactionProblem)
-    isdefined(problem, :weights) && !(weights(problem) isa UnitWeight)
+    hasmethod(weights, Tuple{typeof(problem)}) && !(weights(problem) isa UnitWeight)
 end
 
 """
@@ -120,6 +121,21 @@ The lower the energy, the better the configuration.
 """
 function energy end
 
+# energy interface
+function energy(problem::ConstraintSatisfactionProblem{T}, config) where T
+    @assert length(config) == num_variables(problem)
+    hard_specs = hard_constraints(problem)
+    for spec in hard_specs
+        is_satisfied(typeof(problem), spec, config[spec.variables]) || return energy_max(T)
+    end
+    terms = energy_terms(problem)
+    ws = is_weighted(problem) ? weights(problem) : UnitWeight(length(terms))
+    return sum(zip(terms, ws)) do (spec, weight)
+        subconfig = config[spec.variables]
+        local_energy(typeof(problem), spec, subconfig) * weight
+    end
+end
+
 """
 $TYPEDSIGNATURES
 
@@ -136,18 +152,6 @@ Find the best configurations of the `problem` using the `method`.
 """
 function findbest end
 
-# """
-#     constraints(problem::AbstractProblem) -> Vector{NTuple{N, Int}=>Array{T, N}}
-
-# The constraints of the problem, where `N` is the number of variables involved in the constraint, and the array is the local energy of the constraint.
-# If a local configuration is forbidden, please set the local energy to `typemax(T)`.
-# """
-# function constraints(problem::AbstractProblem)
-#     map(constraint_specs(problem), weights(problem), constraint_variables(problem)) do spec, weight, e
-#         spec=>local_energy.(typeof(problem), spec, configuration_space(problem, length(e)), weight)
-#     end
-# end
-
 """
     UnitWeight <: AbstractVector{Int}
 
@@ -161,6 +165,54 @@ Base.size(w::UnitWeight) = (w.n,)
 
 # returns a n-dimensional array.
 configuration_space(p::AbstractProblem, n::Int) = Iterators.product(fill(flavors(p), n)...)
+
+"""
+$TYPEDEF
+
+The local constraint of the problem.
+
+### Fields
+- `variables`: the indices of the variables involved in the constraint.
+- `specification`: the specification of the constraint.
+"""
+struct LocalConstraint{ST}
+    variables::Vector{Int}
+    specification::ST
+end
+num_variables(spec::LocalConstraint) = length(spec.variables)
+
+"""
+    energy_terms(problem::AbstractProblem) -> Vector{LocalConstraint}
+
+The energy terms of the problem. Each term is associated with weights.
+"""
+function energy_terms end
+
+"""
+    hard_constraints(problem::AbstractProblem) -> Vector{LocalConstraint}
+
+The hard constraints of the problem. Once the hard constraints are violated, the energy goes to infinity.
+"""
+function hard_constraints end
+
+macro nohard_constraints(problem)
+    esc(quote
+        function $ProblemReductions.hard_constraints(problem::$(problem))
+            return LocalConstraint{Nothing}[]
+        end
+    end)
+end
+
+"""
+    local_energy(::Type{<:ConstraintSatisfactionProblem{T}}, constraint::LocalConstraint, config) -> T
+
+The local energy of the `constraint` given the configuration `config`.
+"""
+function local_energy end
+
+# the maximum energy for the local energy function, this is used to avoid overflow of integer energy
+energy_max(::Type{T}) where T = typemax(T)
+energy_max(::Type{T}) where T<:Integer = round(T, sqrt(typemax(T)))
 
 include("SpinGlass.jl")
 include("Circuit.jl")

@@ -23,18 +23,34 @@ variables(gp::PaintShop) = unique(gp.sequence)
 flavors(::Type{<:PaintShop}) = [0, 1]
 problem_size(c::PaintShop) = (; sequence_length=length(c.sequence))
 
-"""
-    energy(ps::PaintShop, config) 
-
-Returns the number of color switches.
-For example, if the sequence is `abaccb` ,there are three variables, then the config should be [1,0,1] or [0,1,0].
-Here [1,0,1] means you want the first color for `a` and `c` is red, and the first color for `b` is blue.
-"""
-function energy(ps::PaintShop,config)
-    @assert length(config) == length(unique(ps.sequence)) "The length of the configuration should be equal to the length of the sequence."
-    coloring = paint_shop_coloring_from_config(ps, config)
-    return count(i->coloring[i] != coloring[i+1], 1:length(ps.sequence)-1)
+# constraints interface
+function energy_terms(c::PaintShop)
+    # constraints on alphabets with the same color
+    vars = variables(c)
+    return [LocalConstraint([findfirst(==(c.sequence[i]), vars), findfirst(==(c.sequence[i+1]), vars)], (c.isfirst[i], c.isfirst[i+1])) for i=1:length(c.sequence)-1]
 end
+
+function local_energy(::Type{<:PaintShop{T}}, spec::LocalConstraint, config) where {T}
+    @assert length(config) == num_variables(spec)
+    isfirst1, isfirst2 = spec.specification
+    c1, c2 = config
+    return (c1 == c2) == (isfirst1 == isfirst2) ? zero(T) : one(T)
+end
+
+@nohard_constraints PaintShop
+
+# """
+#     energy(ps::PaintShop, config) 
+
+# Returns the number of color switches.
+# For example, if the sequence is `abaccb` ,there are three variables, then the config should be [1,0,1] or [0,1,0].
+# Here [1,0,1] means you want the first color for `a` and `c` is red, and the first color for `b` is blue.
+# """
+# function energy(ps::PaintShop,config)
+#     @assert length(config) == length(unique(ps.sequence)) "The length of the configuration should be equal to the length of the sequence."
+#     coloring = paint_shop_coloring_from_config(ps, config)
+#     return count(i->coloring[i] != coloring[i+1], 1:length(ps.sequence)-1)
+# end
 
 """
     paint_shop_coloring_from_config(p::PaintShop, config)

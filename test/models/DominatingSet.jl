@@ -31,8 +31,8 @@ using Test, ProblemReductions, Graphs
     @test energy(DS_01, [0, 1, 0, 1, 0]) == 2
     @test energy(DS_01, [1, 1, 1, 1, 0]) == 4
     # Negative examples
-    @test energy(DS_01, [0, 1, 1, 0, 0]) == 5
-    @test energy(DS_01, [1, 0, 0, 0, 1]) == 5
+    @test energy(DS_01, [0, 1, 1, 0, 0]) > 1000
+    @test energy(DS_01, [1, 0, 0, 0, 1]) > 1000
     # findbest function
     @test findbest(DS_01, BruteForce()) == [[1, 0, 0, 1, 0], [0, 1, 0, 1, 0], [0, 1, 0, 0, 1]]
 end

@@ -32,6 +32,7 @@ function Base.show(io::IO, b::CNFClause)
 end
 Base.:(==)(x::CNFClause, y::CNFClause) = x.vars == y.vars
 Base.length(x::CNFClause) = length(x.vars)
+variables(clause::CNFClause) = unique([var.name for var in clause.vars])
 
 """
     CNF{T}
@@ -96,10 +97,9 @@ macro bools(syms::Symbol...)
     esc(Expr(:block, [:($s = $BoolVar($(QuoteNode(s)))) for s in syms]..., nothing))
 end
 
-function literals(cnf::CNF{T}) where T
+function variables(cnf::CNF{T}) where T
     unique([var.name for clause in cnf.clauses for var in clause.vars])
 end
-
 
 abstract type AbstractSatisfiabilityProblem{T} <: ConstraintSatisfactionProblem{Bool} end
 
@@ -112,24 +112,24 @@ The [satisfiability](https://queracomputing.github.io/GenericTensorNetworks.jl/d
 * `cnf` is a conjunctive normal form ([`CNF`](@ref)) for specifying the satisfiability problems.
 * `weights` are associated with clauses.
 """
-struct Satisfiability{T, WT} <:AbstractSatisfiabilityProblem{WT}
-    variables::Vector{T}
-    weights::Vector{WT}
-    cnf::CNF{T}
-    function Satisfiability(variables::Vector{T}, cnf::CNF{T}, weights::Vector{WT}) where {T, WT}
+struct Satisfiability{S, T, WT<:AbstractArray{T}} <:AbstractSatisfiabilityProblem{T}
+    variables::Vector{S}
+    weights::WT
+    cnf::CNF{S}
+    function Satisfiability(variables::Vector{S}, cnf::CNF{S}, weights::WT) where {S, T, WT<:AbstractArray{T}}
         @assert length(weights) == length(cnf.clauses) "length of weights must be equal to the number of clauses $(length(cnf.clauses)), got: $(length(weights))"
-        new{T, WT}(variables, weights, cnf)
+        new{S, T, WT}(variables, weights, cnf)
     end
 end
-function Satisfiability(cnf::CNF{T}, weights::Vector{WT}=UnitWeight(length(cnf.clauses))) where {T, WT}
-    Satisfiability(literals(cnf), cnf, weights)
+function Satisfiability(cnf::CNF{S}, weights::AbstractVector=UnitWeight(length(cnf.clauses))) where {S}
+    Satisfiability(variables(cnf), cnf, weights)
 end
 clauses(c::Satisfiability) = c.cnf.clauses
 variables(c::Satisfiability) = c.variables
 Base.:(==)(x::Satisfiability, y::Satisfiability) = x.cnf == y.cnf
 
 weights(c::Satisfiability) = c.weights
-set_weights(c::Satisfiability, weights::Vector{WT}) where {WT} = Satisfiability(c.variables, c.cnf, weights)
+set_weights(c::Satisfiability, weights::AbstractVector) = Satisfiability(c.variables, c.cnf, weights)
 
 """
 $TYPEDEF
@@ -140,16 +140,17 @@ The satisfiability problem for k-SAT, where the goal is to find an assignment th
 - `variables::Vector{T}`: The variables in the CNF.
 - `cnf::CNF{T}`: The CNF expression.
 """
-struct KSatisfiability{K, T} <:AbstractSatisfiabilityProblem{T}
-    variables::Vector{T}
-    cnf::CNF{T}
-    function KSatisfiability{K}(variables::Vector{T}, cnf::CNF{T}) where {K, T}
+struct KSatisfiability{K, S, T, WT<:AbstractArray{T}} <:AbstractSatisfiabilityProblem{T}
+    variables::Vector{S}
+    cnf::CNF{S}
+    weights::WT
+    function KSatisfiability{K}(variables::Vector{S}, cnf::CNF{S}, weights::WT) where {K, S, T, WT<:AbstractVector{T}}
         @assert is_kSAT(cnf, K) "The CNF is not a $K-SAT problem"
-        new{K, T}(variables, cnf)
+        new{K, S, T, WT}(variables, cnf, weights)
     end
 end
-function KSatisfiability{K}(cnf::CNF{T}) where {K, T}
-    KSatisfiability{K}(literals(cnf), cnf)
+function KSatisfiability{K}(cnf::CNF{S}, weights::WT=UnitWeight(length(cnf.clauses))) where {K, S, WT<:AbstractVector}
+    KSatisfiability{K}(variables(cnf), cnf, weights)
 end
 Base.:(==)(x::KSatisfiability, y::KSatisfiability) = x.cnf == y.cnf
 is_kSAT(cnf::CNF, k::Int) = all(c -> k == length(c.vars), cnf.clauses)
@@ -162,26 +163,36 @@ flavors(::Type{<:AbstractSatisfiabilityProblem}) = [0, 1]  # false, true
 weights(c::KSatisfiability) = c.weights
 set_weights(c::KSatisfiability, weights::Vector{WT}) where {WT} = KSatisfiability(c.variables, c.cnf, weights)
 
-constraints(c::AbstractSatisfiabilityProblem) = [(var)=>sat_local_energy.(configuration_space(AbstractSatisfiabilityProblem, length(clause))) for clause in clauses(c)]
-sat_local_energy(config, clause) = !satisfiable(clause, config)
-
-function energy(c::AbstractSatisfiabilityProblem, config)
-    @assert length(config) == num_variables(c)
-    dict = Dict(zip(variables(c), config))
-    count(x->!satisfiable(x, dict), clauses(c))
+# constraints interface
+function energy_terms(c::AbstractSatisfiabilityProblem)
+    vars = variables(c)
+    return map(clauses(c)) do cl
+        idx = [findfirst(==(v), vars) for v in variables(cl)]
+        LocalConstraint(idx, vars[idx] => cl)
+    end
 end
+function local_energy(::Type{<:AbstractSatisfiabilityProblem{T}}, spec::LocalConstraint, config) where T
+    @assert length(config) == num_variables(spec)
+    vars, expr = spec.specification
+    assignment = Dict(zip(vars, config))
+    return !satisfiable(expr, assignment) ? one(T) : zero(T)
+end
+
+@nohard_constraints AbstractSatisfiabilityProblem
 
 """
-    satisfiable(cnf::CNF, config::AbstractDict)
+    satisfiable(expr, config::AbstractDict{T}) where T
 
-Returns true if an assignment of variables satisfies a [`CNF`](@ref).
+Check if the boolean expression `expr` is satisfied by the configuration `config`.
 """
-function satisfiable(cnf::CNF{T}, config::AbstractDict{T}) where T
-    all(x->satisfiable(x, config), cnf.clauses)
-end
-function satisfiable(c::CNFClause{T}, config::AbstractDict{T}) where T
-    any(x->satisfiable(x, config), c.vars)
-end
 function satisfiable(v::BoolVar{T}, config::AbstractDict{T}) where T
     config[v.name] == ~v.neg
+end
+
+function satisfiable(c::CNFClause{T}, config::AbstractDict{T}) where T
+    any(v -> satisfiable(v, config), c.vars)
+end
+
+function satisfiable(cnf::CNF{T}, config::AbstractDict{T}) where T
+    all(c -> satisfiable(c, config), cnf.clauses)
 end
