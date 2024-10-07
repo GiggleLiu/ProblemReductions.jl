@@ -29,11 +29,11 @@ using ProblemReductions:  is_maximal_independent_set
     mis2 =  set_weights(mis2, [1, 2, 1, 2]) 
     @test mis2 == MaximalIS(g,[1, 2, 1, 2])
     @test is_maximal_independent_set(mis2.graph, [1, 0, 0, 1]) == true
-    @test energy(mis2, [1, 0, 0, 1]) == 3
+    @test energy(mis2, [1, 0, 0, 1]) == -3
     mis2 =  set_weights(mis2, [-2, 1, 1, 3])
-    @test energy(mis2, [1, 0, 0, 1]) == 1
-    @test energy(mis2,[0, 1, 1, 0]) == Inf
-    @test energy(mis2,[0, 1, 0, 0]) == Inf
+    @test energy(mis2, [1, 0, 0, 1]) == -1
+    @test energy(mis2,[0, 1, 1, 0]) > 1000
+    @test energy(mis2,[0, 1, 0, 0]) > 1000
     @test is_maximal_independent_set(mis2.graph, [0, 0, 1, 0]) == true
-    @test sort(findbest(mis2, BruteForce())) == sort([[1, 0, 0, 1],[0, 0, 1, 0]]) 
+    @test sort(findbest(mis2, BruteForce())) == sort([[0, 1, 0, 1]]) 
 end

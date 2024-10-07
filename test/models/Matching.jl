@@ -26,6 +26,6 @@ using ProblemReductions: is_matching
     @test is_matching(m2.graph, [1, 0, 0, 1]) == true
     @test is_matching(m2.graph, [1, 1, 0, 0]) == false
     @test energy(m2, [1, 0, 0, 1]) == 2
-    @test energy(m2, [1, 1, 0, 0]) == Inf
+    @test energy(m2, [1, 1, 0, 0]) > 1000
     @test sort(findbest(m2, BruteForce()))== sort([[0,0,0,0],[0,0,1,0],[0,1,0,0],[0,1,1,0]])
 end

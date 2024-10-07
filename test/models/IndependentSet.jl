@@ -34,7 +34,7 @@ using Test, ProblemReductions, Graphs
     @test energy(IS_01, [1, 0, 0, 1]) == -2
     @test energy(IS_01, [0, 1, 0, 1]) == -2
     # a Negative example
-    @test energy(IS_01, [0, 1, 1, 0]) == 0
+    @test energy(IS_01, [0, 1, 1, 0]) > 1000
 
     # test findbest function
     @test findbest(IS_01, BruteForce()) == [[1, 0, 0, 1], [0, 1, 0, 1]] # "1" is superior to "0"

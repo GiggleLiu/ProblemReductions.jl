@@ -250,15 +250,3 @@ function local_energy(::Type{<:CircuitSAT{T}}, spec::LocalConstraint, config) wh
     end
     return 0
 end
-
-# function energy(sat::CircuitSAT, config)
-#     @assert length(config) == num_variables(sat)
-#     dict = Dict(sat.symbols[i]=>Bool(config[i]) for i in 1:length(sat.symbols))
-#     for ex in sat.circuit.exprs
-#         for o in ex.outputs
-#             @assert haskey(dict, o) "The output variable `$o` is not in the configuration"
-#             dict[o] != evaluate_expr(ex.expr, dict) && return 1  # this is the loss!
-#         end
-#     end
-#     return 0
-# end

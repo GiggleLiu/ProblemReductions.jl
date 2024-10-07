@@ -29,37 +29,37 @@ set_weights(c::IndependentSet, weights) = IndependentSet(c.graph, weights)
 
 # constraints interface
 function hard_constraints(c::IndependentSet)
-    return [LocalConstraint(i, nothing) for i in 1:ne(c.graph)]
+    return [LocalConstraint(e, nothing) for e in vedges(c.graph)]
 end
-function is_satisfied(spec::LocalConstraint, config)
+function is_satisfied(::Type{<:IndependentSet}, spec::LocalConstraint, config)
     @assert length(config) == num_variables(spec)
-    return count(isone, config) <= 1
+    return count(!iszero, config) <= 1
 end
 
 function energy_terms(c::IndependentSet)
-    return [LocalConstraint(i, nothing) for i in 1:nv(c.graph)]
+    return [LocalConstraint([i], nothing) for i in 1:nv(c.graph)]
 end
 
-function local_energy(::Type{<:IndependentSet{T}}, spec::LocalConstraint, config) where {T}
-    @assert length(config) == num_variables(spec)
-    return T(config[])
+function local_energy(::Type{<:IndependentSet{GT, T}}, spec::LocalConstraint, config) where {GT, T}
+    @assert length(config) == num_variables(spec) == 1
+    return T(-config[1])
 end
 
-"""
-    energy(c::IndependentSet, config)
+# """
+#     energy(c::IndependentSet, config)
 
-Count the edges connecting the input 'config' (a subset of vertices). 
-If this number is zero, this 'config' corresponds to an Independent Set.
-Otherwise, these edges would violate the definition of independent set.
-* If the 'config' is an independent set, we return - (size(independent set));
-* If the 'config' is not an independent set, we return 0.
-"""
-function energy(c::IndependentSet, config)
-    @assert length(config) == num_variables(c)
-    num_ill_edges = count(e -> count(v -> config[v] == 1, _vec(e)) > 1, edges(c.graph))
-    if num_ill_edges == 0
-        return - count(x -> x == 1, config)
-    else
-        return 0
-    end
-end
+# Count the edges connecting the input 'config' (a subset of vertices). 
+# If this number is zero, this 'config' corresponds to an Independent Set.
+# Otherwise, these edges would violate the definition of independent set.
+# * If the 'config' is an independent set, we return - (size(independent set));
+# * If the 'config' is not an independent set, we return 0.
+# """
+# function energy(c::IndependentSet, config)
+#     @assert length(config) == num_variables(c)
+#     num_ill_edges = count(e -> count(v -> config[v] == 1, _vec(e)) > 1, edges(c.graph))
+#     if num_ill_edges == 0
+#         return - count(x -> x == 1, config)
+#     else
+#         return 0
+#     end
+# end

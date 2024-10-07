@@ -28,24 +28,34 @@ weights(c::Matching) = c.weights
 set_weights(c::Matching, weights) = Matching(c.graph, weights)
 
 # constraints interface
-function energy_terms(c::Matching)
+function hard_constraints(c::Matching)
     # edges sharing a vertex cannot be both in the matching
     edges = vedges(c.graph)
-    return [LocalConstraint(findall(e -> v ∈ e, edges), :matching) for v in vertices(c.graph)]
-end
-function local_energy(::Type{<:Matching{T}}, spec::LocalConstraint, config) where {T}
-    @assert length(config) == num_variables(spec)
-    nselect = count(isone, config)
-    return nselect > 1 ? energy_max(T) : -one(T)
+    return [LocalConstraint(findall(e -> v ∈ e, edges), :noshare) for v in vertices(c.graph)]
 end
 
-function energy(c::Matching, config)
-    @assert length(config) == ne(c.graph)
-    if !is_matching(c.graph, config)
-        return Inf
-    end
-    return sum(i -> config[i]*c.weights[i], 1:ne(c.graph))
+function is_satisfied(::Type{<:Matching}, spec::LocalConstraint, config)
+    @assert length(config) == num_variables(spec)
+    return count(isone, config) <= 1
 end
+
+function energy_terms(c::Matching)
+    # as many edges as possible
+    return [LocalConstraint([e], :edge) for e in variables(c)]
+end
+
+function local_energy(::Type{<:Matching{T}}, spec::LocalConstraint, config) where {T}
+    @assert length(config) == num_variables(spec) == 1
+    return T(config[])
+end
+
+# function energy(c::Matching, config)
+#     @assert length(config) == ne(c.graph)
+#     if !is_matching(c.graph, config)
+#         return Inf
+#     end
+#     return sum(i -> config[i]*c.weights[i], 1:ne(c.graph))
+# end
 
 """
     is_matching(graph::SimpleGraph, config)

@@ -29,28 +29,30 @@ problem_size(c::MaximalIS) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 weights(c::MaximalIS) = c.weights
 set_weights(c::MaximalIS, weights) = MaximalIS(c.graph, weights)
 
-# constraints interface
-function energy_terms(c::MaximalIS)
+function hard_constraints(c::MaximalIS)
     return [LocalConstraint(vcat(v, neighbors(c.graph, v)), :maximal_independent) for v in vertices(c.graph)]
 end
-@nohard_constraints MaximalIS
+function is_satisfied(::Type{<:MaximalIS}, spec::LocalConstraint, config)
+    @assert length(config) == num_variables(spec)
+    nselect = count(!iszero, config)
+    return !(nselect == 0 || (nselect > 1 && !iszero(config[1])))
+end
+# constraints interface
+function energy_terms(c::MaximalIS)
+    return [LocalConstraint([v], :vertex) for v in vertices(c.graph)]
+end
 function local_energy(::Type{<:MaximalIS{T}}, spec::LocalConstraint, config) where {T}
     @assert length(config) == num_variables(spec)
-    nselect = count(isone, config[spec.variables])
-    if !iszero(config[1])
-        return nselect > 1 ? energy_max(T) : -one(T)
-    else
-        return nselect < 1 ? energy_max(T) : zero(T)
-    end
+    return T(-config[1])
 end
 
-function energy(c::MaximalIS, config)
-    @assert length(config) == nv(c.graph)
-    if !is_maximal_independent_set(c.graph, config)
-        return Inf
-    end
-    return sum(i -> config[i]*c.weights[i], 1:nv(c.graph))
-end
+# function energy(c::MaximalIS, config)
+#     @assert length(config) == nv(c.graph)
+#     if !is_maximal_independent_set(c.graph, config)
+#         return Inf
+#     end
+#     return sum(i -> config[i]*c.weights[i], 1:nv(c.graph))
+# end
 
 """
     is_maximal_independent_set(g::SimpleGraph, config)

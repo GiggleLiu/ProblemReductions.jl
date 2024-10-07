@@ -35,16 +35,28 @@ variables(c::QUBO) = collect(1:size(c.matrix, 1))
 flavors(::Type{<:QUBO}) = [0, 1]
 problem_size(c::QUBO) = (; num_variables=size(c.matrix, 1))
 
+function weights(c::QUBO)
+    return vcat(
+        [c.matrix[i, j] + c.matrix[j, i] for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
+        [c.matrix[i, i] for i in variables(c) if c.matrix[i, i] != 0]
+    )
+end
+
 # constraints interface
-energy_terms(c::QUBO) = vcat([LocalConstraint([i, j], :offdiagonal) for i in variables(c), j in variables(c) if i < j && c.matrix[i, j] != 0 && c.matrix[j, i] != 0], [LocalConstraint(i, :diagonal) for i in variables(c) if c.matrix[i, i] != 0])
+function energy_terms(c::QUBO)
+    vcat(
+        [LocalConstraint([i, j], :offdiagonal) for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
+        [LocalConstraint([i], :diagonal) for i in variables(c) if c.matrix[i, i] != 0]
+    )
+end
 @nohard_constraints QUBO
 function local_energy(::Type{<:QUBO}, spec::LocalConstraint, config)
     @assert length(config) == num_variables(spec)
-    return spec.type == :offdiagonal ? config[spec.variables[1]] * config[spec.variables[2]] : config[spec.variables[]]
+    return spec.specification == :offdiagonal ? config[1] * config[2] : config[]
 end
 
-function energy(c::QUBO, config)
-    @assert length(config) == num_variables(c)
-    @assert all(x -> x in (0, 1), config)
-    return transpose(config) * c.matrix * config
-end
+# function energy(c::QUBO, config)
+#     @assert length(config) == num_variables(c)
+#     @assert all(x -> x in (0, 1), config)
+#     return transpose(config) * c.matrix * config
+# end

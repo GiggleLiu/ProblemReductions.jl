@@ -130,6 +130,7 @@ function energy(problem::ConstraintSatisfactionProblem{T}, config) where T
     end
     terms = energy_terms(problem)
     ws = is_weighted(problem) ? weights(problem) : UnitWeight(length(terms))
+    @assert length(ws) == length(terms) "The length of the weights must be the same as the number of energy terms, got: $(length(ws)) != $(length(terms))"
     return sum(zip(terms, ws)) do (spec, weight)
         subconfig = config[spec.variables]
         local_energy(typeof(problem), spec, subconfig) * weight

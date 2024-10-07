@@ -36,31 +36,20 @@ weights(c::SetCovering) = c.weights
 set_weights(c::SetCovering, weights) = SetCovering(c.sets, weights)
 
 # constraints interface
+function hard_constraints(c::SetCovering)
+    return [LocalConstraint(findall(s->v in s, c.sets), :cover) for v in c.elements]
+end
+function is_satisfied(::Type{<:SetCovering{T}}, spec::LocalConstraint, config) where {T}
+    @assert length(config) == num_variables(spec)
+    return count(isone, config) > 0
+end
+
 function energy_terms(c::SetCovering)
-    d = Dict{eltype(c.elements), Vector{Int}}()
-    for (i, set) in enumerate(c.sets)
-        for e in set
-            push!(get!(()->Int[], d, e), i)
-        end
-    end
-    return [LocalConstraint(v, :cover) for v in values(d)]
+    return [LocalConstraint([i], :set) for i in variables(c)]
 end
 function local_energy(::Type{<:SetCovering{T}}, spec::LocalConstraint, config) where {T}
     @assert length(config) == num_variables(spec)
-    nselect = count(isone, config[spec.variables])
-    return nselect < 1 ? energy_max(T) : nselect
-end
-
-@nohard_constraints SetCovering
-
-function energy(c::SetCovering, config)
-    @assert length(config) == num_variables(c)
-    set_covering_energy(c.sets, c.weights, config )
-end
-function set_covering_energy(sets::AbstractVector, weights::AbstractVector, config)
-    @assert length(sets) == length(weights) == length(config)
-    !is_set_covering(SetCovering(sets, weights), config) && return typemax(eltype(weights))
-    return sum(weights[i] * config[i] for i=1:length(weights))
+    return T(config[])
 end
 
 """

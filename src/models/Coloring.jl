@@ -38,22 +38,8 @@ end
 
 function local_energy(::Type{<:Coloring{K, T}}, spec::LocalConstraint, config) where {K, T}
     @assert length(config) == num_variables(spec)
-    return config[spec.variables[1]] == config[spec.variables[2]] ? one(T) : zero(T)
+    return config[1] == config[2] ? one(T) : zero(T)
 end
-
-# utilities
-"""
-    energy(c::Coloring, config)
-
-Compute the energy of the vertex coloring configuration `config`, the energy is the number of violated edges.
-"""
-function energy(c::Coloring, config)
-    @assert length(config) == nv(c.graph)
-    coloring_energy(vedges(c.graph), c.weights,config)
-end
-
-coloring_energy(terms::AbstractVector, weights::AbstractVector, config) = sum(ew->(config[ew[1][1]] == config[ew[1][2]]) * ew[2], zip(terms, weights))
-
 
 """
     is_vertex_coloring(graph::SimpleGraph, config)
