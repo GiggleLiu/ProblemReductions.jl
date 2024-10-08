@@ -2,6 +2,18 @@
 
 In this tutorial, we will demonstrate how to reduce the [`IndependentSet`] (@ref) problem to the [`SetPacking`] (@ref) problem and how to extract solutions back to the original problem.
 
+## Reduction Framework
+Given an undirected graph $G=(V,E)$ and parameter $k$, we can have an instance of the [`IndependentSet`] (@ref) problem $(G, k)$. we aim to generate a corresponding [`SetPacking`] (@ref) instance $(U, S, k)$ (where $U$ is the union set, $S$ is the set of subsets and parameter $k$ is the required set packing size).
+
+- Step-0: $k$ are the same;
+- Step-1: Each edge $(u,v)\in E$ -> Create an element $x_{u,v}$ in $U$;
+- Step-2: Each vertex $v \in V$ -> Create a subset $\{S_{u,v}|(u,v)\in E \}$.
+
+It can be proven that:
+
+- The instance $(G,k)$ is an yes-instance if and only if generated $(U,S,k)$ is an yes-instance;
+- This transformation is within polynomial time.
+
 ## Construct Reduction
 We can firstly define a [`IndependentSet`] (@ref) problem over a simple graph with $4$ vertices.
 ```@repl independentset_setpacking
