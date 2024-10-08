@@ -14,7 +14,7 @@ end
 
 target_problem(res::ReductionQUBOToSpinGlass) = res.spinglass
 
-function reduceto(::Type{<:SpinGlass}, qubo::QUBO)
+function reduceto(::Type{<:SpinGlass{<:SimpleGraph}}, qubo::QUBO)
     sg = spin_glass_from_matrix(2 * qubo.matrix, (-).(vec(sum(qubo.matrix, dims=1))) .- vec(sum(qubo.matrix, dims=2)))
     return ReductionQUBOToSpinGlass(sg)
 end 

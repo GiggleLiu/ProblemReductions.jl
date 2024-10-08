@@ -37,9 +37,9 @@ target = target_problem(reduction_result)
 
 import GenericTensorNetworks # import Ising machine solver
 gtn_problem = GenericTensorNetworks.SpinGlass(
-                  target.graph.n,
-                  target.graph.edges,
-                  target.weights
+                  ProblemReductions.nv(target.graph),
+                  vcat(ProblemReductions.vedges(target.graph), [[i] for i=1:ProblemReductions.nv(target.graph)]),
+                  ProblemReductions.weights(target)
                 )
 result = GenericTensorNetworks.solve(
                     GenericTensorNetworks.GenericTensorNetwork(gtn_problem),

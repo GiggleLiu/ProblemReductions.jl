@@ -20,7 +20,7 @@ The variables are mapped to integers that pointing to the symbols that stored in
 
 The we can convert the circuit to a [`SpinGlass`](@ref) problem using the [`reduceto`](@ref) function.
 ```@repl spinglass_sat
-result = reduceto(SpinGlass, circuitsat)
+result = reduceto(SpinGlass{<:SimpleGraph}, circuitsat)
 ```
 The resulting `result` is a `ReductionCircuitToSpinGlass` instance that contains the spin glass problem.
 

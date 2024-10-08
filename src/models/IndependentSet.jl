@@ -44,22 +44,3 @@ function local_energy(::Type{<:IndependentSet{GT, T}}, spec::LocalConstraint, co
     @assert length(config) == num_variables(spec) == 1
     return T(-config[1])
 end
-
-# """
-#     energy(c::IndependentSet, config)
-
-# Count the edges connecting the input 'config' (a subset of vertices). 
-# If this number is zero, this 'config' corresponds to an Independent Set.
-# Otherwise, these edges would violate the definition of independent set.
-# * If the 'config' is an independent set, we return - (size(independent set));
-# * If the 'config' is not an independent set, we return 0.
-# """
-# function energy(c::IndependentSet, config)
-#     @assert length(config) == num_variables(c)
-#     num_ill_edges = count(e -> count(v -> config[v] == 1, _vec(e)) > 1, edges(c.graph))
-#     if num_ill_edges == 0
-#         return - count(x -> x == 1, config)
-#     else
-#         return 0
-#     end
-# end

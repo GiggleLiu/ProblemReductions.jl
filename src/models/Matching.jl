@@ -49,14 +49,6 @@ function local_energy(::Type{<:Matching{T}}, spec::LocalConstraint, config) wher
     return T(config[])
 end
 
-# function energy(c::Matching, config)
-#     @assert length(config) == ne(c.graph)
-#     if !is_matching(c.graph, config)
-#         return Inf
-#     end
-#     return sum(i -> config[i]*c.weights[i], 1:ne(c.graph))
-# end
-
 """
     is_matching(graph::SimpleGraph, config)
 

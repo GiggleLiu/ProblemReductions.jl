@@ -54,9 +54,3 @@ function local_energy(::Type{<:QUBO}, spec::LocalConstraint, config)
     @assert length(config) == num_variables(spec)
     return spec.specification == :offdiagonal ? config[1] * config[2] : config[]
 end
-
-# function energy(c::QUBO, config)
-#     @assert length(config) == num_variables(c)
-#     @assert all(x -> x in (0, 1), config)
-#     return transpose(config) * c.matrix * config
-# end

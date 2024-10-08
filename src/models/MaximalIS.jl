@@ -46,14 +46,6 @@ function local_energy(::Type{<:MaximalIS{T}}, spec::LocalConstraint, config) whe
     return T(-config[1])
 end
 
-# function energy(c::MaximalIS, config)
-#     @assert length(config) == nv(c.graph)
-#     if !is_maximal_independent_set(c.graph, config)
-#         return Inf
-#     end
-#     return sum(i -> config[i]*c.weights[i], 1:nv(c.graph))
-# end
-
 """
     is_maximal_independent_set(g::SimpleGraph, config)
 
