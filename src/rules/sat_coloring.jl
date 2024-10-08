@@ -3,14 +3,14 @@ $TYPEDEF
 The reduction result of a Sat problem to a Coloring problem.
 
 ### Fields
-- `Coloring{K, WT<:AbstractVector}`: the coloring problem, where K is the number of colors and WT is the weights type. 
+- `Coloring{K, T, WT<:AbstractVector{T}}`: the coloring problem, where K is the number of colors and WT is the weights type. 
 - `varlabel`, used to filter extra variables
 
 Note: The coloring problem is a 3 coloring problem, in which a auxiliary color is used Auxiliary color => 2.
 """
-struct ReductionSatToColoring{K,T, WT<:AbstractVector} <: AbstractReductionResult
-    coloring::Coloring{K, WT}
-    varlabel::Dict{T, Int}
+struct ReductionSatToColoring{K,S,T,WT<:AbstractVector{T}} <: AbstractReductionResult
+    coloring::Coloring{K, T, WT}
+    varlabel::Dict{S, Int}
 end
 
 target_problem(res::ReductionSatToColoring) = res.coloring

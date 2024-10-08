@@ -32,7 +32,7 @@ function circuit2spinglass(c::Circuit)
     end
     unique!(all_variables)
     indexof(v) = findfirst(==(v), all_variables)
-    sg = SpinGlass(HyperGraph(length(all_variables), Vector{Int}[]), Int[])
+    sg = SpinGlass(SimpleGraph(length(all_variables)), Int[], zeros(Int, length(all_variables)))
     for (m, variables) in modules
         add_sg!(sg, m, indexof.(variables))
     end
@@ -165,7 +165,7 @@ function expr_to_spinglass_gadget(expr::BooleanExpr)
         vmap[v] = gensym("spin")
         push!(all_variables, vmap[v])
     end
-    sg = SpinGlass(HyperGraph(length(all_variables), Vector{Int}[]), Int[])
+    sg = SpinGlass(SimpleGraph(length(all_variables)), Int[], zeros(Int, length(all_variables)))
     indexof(v) = Int(findfirst(==(v), all_variables))
     for (m, variables) in modules
         add_sg!(sg, m, indexof.(variables))
@@ -192,7 +192,7 @@ The array multiplier gadget.
 - constraints: 2 * c_{i,j} + s_{i,j} = p_i q_j + c_{i-1,j} + s_{i+1,j-1}
 """
 function spinglass_gadget(::Val{:arraymul})
-    sg = SpinGlass(HyperGraph(7, Vector{Int}[]), Int[])
+    sg = SpinGlass(SimpleGraph(7), Int[], zeros(Int, 7))
     add_sg!(sg, spinglass_gadget(Val(:∧)).problem, [1, 2, 3])
     for (clique, weight) in [[6, 7] => 2, [6, 3]=>-2, [6, 4]=>-2, [6, 5]=>-2,
                     [7, 3]=>-1, [7, 4]=>-1, [7, 5]=>-1,
@@ -204,27 +204,49 @@ end
 
 function add_sg!(sg::SpinGlass, g::SpinGlass, vmap::Vector{Int})
     @assert length(vmap) == num_variables(g) "length of vmap must be equal to the number of vertices $(num_variables(g)), got: $(length(vmap))"
-    mapped_edges = [map(x->vmap[x], clique) for clique in edges(g.graph)]
-    for (clique, weight) in zip(mapped_edges, g.weights)
+    mapped_edges = [map(x->vmap[x], clique) for clique in vedges(g.graph)]
+    for (clique, weight) in zip(mapped_edges, g.J)
         add_clique!(sg, clique, weight)
+    end
+    for (v, h) in zip(vmap, g.h)
+        sg.h[v] += h
     end
     return sg
 end
 function add_clique!(sg::SpinGlass, clique::Vector{Int}, weight)
-    for (k, c) in enumerate(edges(sg.graph))
-        if sort(_vec(c)) == sort(clique)
-            sg.weights[k] += weight
+    isempty(clique) && return sg
+    # add a vertex
+    if length(clique) == 1
+        sg.h[clique[1]] += weight
+        return sg
+    end
+
+    # add a clique, first check if the edge already exists
+    for (k, c) in enumerate(vedges(sg.graph))
+        if sort(c) == sort(clique)
+            sg.J[k] += weight
             return sg
         end
     end
-    _add_edge!(sg.graph, clique)
-    push!(sg.weights, weight)
+    _add_edge_weight!(sg.graph, clique, sg.J, weight)
     return sg
 end
-_add_edge!(g::SimpleGraph, c::Vector{Int}) = add_edge!(g, c...)
-function _add_edge!(g::HyperGraph, c::Vector{Int})
+
+# TODO: make it more efficient
+# add an edge to a graph with a given weight
+function _add_edge_weight!(g::SimpleGraph, c::Vector{Int}, J, weight)
+    add_edge!(g, c[1], c[2])
+    # fix the edge index
+    for (i, e) in enumerate(vedges(g))
+        if sort(e) == sort(c)
+            insert!(J, i, weight)
+        end
+    end
+end
+function _add_edge!(g::HyperGraph, c::Vector{Int}, J, weight)
     @assert all(b->1<=b<=nv(g), c) "vertex index out of bound 1-$(nv(g)), got: $c"
     push!(g.edges, c)
+    push!(J, weight)
 end
 
 function compose_multiplier(m::Int, n::Int)
@@ -258,7 +280,7 @@ function compose_multiplier(m::Int, n::Int)
             spre = s
         end
     end
-    sg = SpinGlass(SimpleGraph(N), Vector{Int}[], zeros(Int, N))
+    sg = SpinGlass(SimpleGraph(N), Int[], zeros(Int, N))
     for (m, pins) in modules
         add_sg!(sg, m, pins)
     end

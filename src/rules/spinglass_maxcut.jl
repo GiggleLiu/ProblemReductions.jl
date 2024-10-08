@@ -16,7 +16,7 @@ target_problem(res::ReductionMaxCutToSpinGlass) = res.spinglass
 
 function reduceto(::Type{<:SpinGlass}, maxcut::MaxCut)
     @assert maxcut.graph isa SimpleGraph "the graph must be `SimpleGraph`"
-    sg = SpinGlass(maxcut.graph, maxcut.weights)
+    sg = SpinGlass(maxcut.graph, maxcut.weights, zeros(Int, nv(maxcut.graph)))
     return ReductionMaxCutToSpinGlass(sg)
 end 
 
@@ -39,24 +39,30 @@ Base.:(==)(a::ReductionSpinGlassToMaxCut, b::ReductionSpinGlassToMaxCut) = a.max
 
 target_problem(res::ReductionSpinGlassToMaxCut) = res.maxcut
 
-function reduceto(::Type{<:MaxCut}, sg::SpinGlass{<:SimpleGraph})
-    return ReductionSpinGlassToMaxCut(MaxCut(sg.graph, sg.weights), 0)
-end
-
 # modification
 function reduceto(::Type{<:MaxCut}, sg::SpinGlass)
-    @assert all(c->length(c) <= 2, vedges(sg.graph)) "Invalid HyperGraph" 
-    n = length(unique!(vcat(vedges(sg.graph)...)))
-    g = SimpleGraph(n+1) # the last two vertices are the source and sink,designed for onsite terms
-    anc = n+1
-    wt = eltype(sg.weights)[]
-    for (w, c) in zip(sg.weights, vedges(sg.graph))
+    edgs = vedges(sg.graph)
+    @assert all(c->length(c) <= 2, edgs) "Invalid HyperGraph" 
+    n = nv(sg.graph)
+    need_ancilla = any(c->length(c) <= 1, edgs) || any(!iszero, sg.h)
+    g = SimpleGraph(need_ancilla ? n+1 : n) # the last two vertices are the source and sink,designed for onsite terms
+    anc = need_ancilla ? n+1 : 0
+    wt = eltype(sg.J)[]
+    # add interaction terms
+    for (w, c) in zip(sg.J, edgs)
         if length(c) == 2  # simple edge
             add_edge!(g, c[1], c[2])
             push!(wt, w)
         else # onsite term
             add_edge!(g, c[1], anc)
             push!(wt, w)  # assume ancilla having spin up
+        end
+    end
+    # add onsite terms
+    for (i, h) in enumerate(sg.h)
+        if !iszero(h)
+            add_edge!(g, i, anc)
+            push!(wt, h)
         end
     end
     return ReductionSpinGlassToMaxCut(MaxCut(g, wt), anc)

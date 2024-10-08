@@ -13,8 +13,8 @@ Positional arguments
 struct SpinGlass{GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::GT
     J::WT
-    h::WT
-    function SpinGlass(graph::AbstractGraph, J::WT, h::WT) where {T, WT<:AbstractVector{T}}
+    h::Vector{T}
+    function SpinGlass(graph::AbstractGraph, J::WT, h::Vector{T}) where {T, WT<:AbstractVector{T}}
         @assert length(J) == ne(graph)
         @assert length(h) == nv(graph)
         return new{typeof(graph), T, WT}(graph, J, h)

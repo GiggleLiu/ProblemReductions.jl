@@ -8,7 +8,7 @@ using Test, ProblemReductions
     circ = Circuit(exprs)
     for p in [true, false], q in [true, false], spre in [true, false], cpre in [true, false]
         assignment = Dict(:p => p, :q => q, :spre => spre, :cpre => cpre)
-        res = energy(circ, assignment)
+        res = ProblemReductions.evaluate_expr(circ, assignment)
         @test res[:s] + 2 * res[:c] == (p * q) + spre + cpre
     end
 end

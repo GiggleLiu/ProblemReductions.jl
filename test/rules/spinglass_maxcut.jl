@@ -13,7 +13,7 @@ using Test, ProblemReductions, Graphs
     res = reduceto(SpinGlass, mc)
     @test target_problem(res) == res.spinglass
     @test reduceto(SpinGlass, mc) == res
-    @test reduceto(SpinGlass, mc).spinglass == SpinGlass(g, [1, 3, 1, 4])
+    @test reduceto(SpinGlass, mc).spinglass == SpinGlass(g, [1, 3, 1, 4], zeros(Int, 4))
     @test findbest(mc, BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
     @test sort(findbest(target_problem(reduceto(SpinGlass, mc)), BruteForce())) == sort([[1, 1, -1, 1], [1, -1, -1, 1], [-1, 1, 1, -1], [-1, -1, 1, -1]]) # in lexicographic order
 end
@@ -23,7 +23,7 @@ end
     for (i, j) in [(1, 2), (1, 3), (3, 4), (2, 3)]
         add_edge!(g1, i, j)
     end
-    sg = SpinGlass(g1, [1, 3, 1, 4])
+    sg = SpinGlass(g1, [1, 3, 1, 4], zeros(Int, 4))
     mcr = reduceto(MaxCut, sg)
     res = ReductionSpinGlassToMaxCut(mcr.maxcut, mcr.ancilla)
     @test mcr.maxcut == MaxCut(g1, [1, 3, 1, 4])
@@ -35,7 +35,7 @@ end
 
     # hyper graph
     g2 = HyperGraph(3, [[1, 2], [1], [2,3], [2]])
-    sg = SpinGlass(g2, [1, 2, 1, -1])
+    sg = SpinGlass(g2, [1, 2, 1, -1], [0, 0, 0])
     mcr = reduceto(MaxCut, sg) 
     expected_g = SimpleGraph(4)
     for (i, j) in [(1, 2), (1, 4), (2, 3), (2, 4)]
