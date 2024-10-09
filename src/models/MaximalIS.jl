@@ -35,7 +35,7 @@ end
 function is_satisfied(::Type{<:MaximalIS}, spec::LocalConstraint, config)
     @assert length(config) == num_variables(spec)
     nselect = count(!iszero, config)
-    return !(nselect == 0 || (nselect > 1 && !iszero(config[1])))
+    return !(nselect == 0 || (nselect > 1 && !iszero(first(config))))
 end
 # constraints interface
 function energy_terms(c::MaximalIS)
@@ -43,7 +43,7 @@ function energy_terms(c::MaximalIS)
 end
 function local_energy(::Type{<:MaximalIS{T}}, spec::LocalConstraint, config) where {T}
     @assert length(config) == num_variables(spec)
-    return T(-config[1])
+    return T(-first(config))
 end
 
 """

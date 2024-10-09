@@ -41,7 +41,7 @@ function energy_terms(c::VertexCovering)
 end
 function local_energy(::Type{<:VertexCovering{T}}, spec::LocalConstraint, config) where T
     @assert length(config) == num_variables(spec)
-    return T(config[])
+    return T(first(config))
 end
 
 """

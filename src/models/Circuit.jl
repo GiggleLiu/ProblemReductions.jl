@@ -242,8 +242,8 @@ end
 
 function local_energy(::Type{<:CircuitSAT{T}}, spec::LocalConstraint, config) where {T}
     @assert length(config) == num_variables(spec)
-    syms,ex = spec.specification
-    dict = Dict(syms[i]=>Bool(config[i]) for i in 1:length(config))
+    syms, ex = spec.specification
+    dict = Dict(syms[i]=>Bool(c) for (i, c) in enumerate(config))
     for o in ex.outputs
         @assert haskey(dict, o) "The output variable `$o` is not in the configuration"
         dict[o] != evaluate_expr(ex.expr, dict) && return 1  # this is the loss!

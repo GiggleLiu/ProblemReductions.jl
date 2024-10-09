@@ -38,7 +38,8 @@ end
 
 function local_energy(::Type{<:Coloring{K, T}}, spec::LocalConstraint, config) where {K, T}
     @assert length(config) == num_variables(spec)
-    return config[1] == config[2] ? one(T) : zero(T)
+    a, b = config
+    return a == b ? one(T) : zero(T)
 end
 
 """

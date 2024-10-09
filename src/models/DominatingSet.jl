@@ -37,5 +37,5 @@ end
 function local_energy(::Type{<:DominatingSet{GT, T}}, spec::LocalConstraint, config) where {GT, T}
     @assert length(config) == num_variables(spec)
     nselect = count(isone, config)
-    return nselect < 1 ? energy_max(T) : T(config[1])
+    return nselect < 1 ? energy_max(T) : T(first(config))
 end

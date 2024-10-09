@@ -49,7 +49,7 @@ function energy_terms(c::SetCovering)
 end
 function local_energy(::Type{<:SetCovering{ET, T}}, spec::LocalConstraint, config) where {ET, T}
     @assert length(config) == num_variables(spec)
-    return T(config[])
+    return T(first(config))
 end
 
 """

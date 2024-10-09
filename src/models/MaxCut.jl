@@ -36,7 +36,8 @@ function energy_terms(c::MaxCut)
 end
 function local_energy(::Type{<:MaxCut{T}}, spec::LocalConstraint, config) where {T}
     @assert length(config) == num_variables(spec)
-    return (config[1] != config[2]) ? -one(T) : zero(T)
+    a, b = config
+    return (a != b) ? -one(T) : zero(T)
 end
 @nohard_constraints MaxCut
 

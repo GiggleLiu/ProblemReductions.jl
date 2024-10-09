@@ -52,5 +52,10 @@ end
 @nohard_constraints QUBO
 function local_energy(::Type{<:QUBO}, spec::LocalConstraint, config)
     @assert length(config) == num_variables(spec)
-    return spec.specification == :offdiagonal ? config[1] * config[2] : config[]
+    if spec.specification == :offdiagonal
+        a, b = config
+        return a * b
+    else
+        return first(config)
+    end
 end

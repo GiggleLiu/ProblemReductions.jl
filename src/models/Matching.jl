@@ -45,7 +45,7 @@ end
 
 function local_energy(::Type{<:Matching{T}}, spec::LocalConstraint, config) where {T}
     @assert length(config) == num_variables(spec) == 1
-    return T(config[])
+    return T(first(config))
 end
 
 """
