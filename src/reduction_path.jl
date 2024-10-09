@@ -10,7 +10,7 @@ $TYPEDFIELDS
 struct ReductionGraph
     graph::SimpleDiGraph{Int}
     nodes::Vector{Any}
-    method_table::Dict{Pair{Int, Int}, Method}
+    method_table::Dict{Pair{Int, Int}, Function}
 end
 
 """
@@ -20,11 +20,11 @@ A sequence of reductions.
 
 ### Fields
 - `nodes::Vector{AbstractProblem}`: The sequence of problem types.
-- `methods::Vector{Method}`: The sequence of methods used to reduce the problems.
+- `methods::Vector{Function}`: The sequence of methods used to reduce the problems.
 """
 struct ReductionPath
     nodes::Vector{Any}
-    methods::Vector{Method}
+    methods::Vector{Function}
 end
 
 """
@@ -87,13 +87,14 @@ function implement_reduction_path(path::ReductionPath, problem::AbstractProblem)
     @assert problem isa path.nodes[1] "The problem type must be the same as the first node: $(path.nodes[1]), got: $problem"
     sequence = []
     for method in path.methods
-        first, second = extract_types(method.sig)
-        res = reduceto(second, problem)
+        res = method(problem)
         push!(sequence, res)
         problem = target_problem(res)
     end
     return ConcatenatedReduction(sequence)
 end
+
+identity_reduction(::Type{<:AbstractProblem}, source) = IdentityReductionResult(source)  # trivial reduction
 
 """
      reduction_graph()
@@ -105,14 +106,21 @@ function reduction_graph()
     rules = extract_types.(getfield.(ms, :sig))
     nodes = unique!(vcat(concrete_subtypes(AbstractProblem), first.(rules), last.(rules)))
     graph = SimpleDiGraph(length(nodes))
-    method_table = Dict{Pair{Int, Int}, Method}()
-    for (rule, m) in zip(rules, ms)
-        # x <: first(rule) => last(rule) <: y
-        is, js = findall(x -> x <: first(rule), nodes), findall(y -> last(rule) <: y, nodes)
-        for i in is, j in js
-            add_edge!(graph, i, j)
-            method_table[i=>j] = m
+    method_table = Dict{Pair{Int, Int}, Function}()
+
+    # if T <: S, then add a trivial reduction rule
+    for i in eachindex(nodes)
+        for j in eachindex(nodes)
+            if i !== j && nodes[i] <: nodes[j]
+                add_edge!(graph, i, j)
+                method_table[i=>j] = problem -> identity_reduction(nodes[j], problem)
+            end
         end
+    end
+    for (rule, m) in zip(rules, ms)
+        i, j = findfirst(x -> x == first(rule), nodes), findfirst(x -> x == last(rule), nodes)
+        add_edge!(graph, i, j)
+        method_table[i=>j] = problem -> reduceto(last(rule), problem)
     end
     return ReductionGraph(graph, nodes, method_table)
 end

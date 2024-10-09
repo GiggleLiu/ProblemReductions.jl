@@ -5,12 +5,18 @@ The base type for a reduction result.
 """
 abstract type AbstractReductionResult end
 
+# identity reduction
+struct IdentityReductionResult{T} <: AbstractReductionResult
+    problem::T
+end
+
 """
     target_problem(res::AbstractReductionResult) -> AbstractProblem
 
 Return the target problem of the reduction result.
 """
 function target_problem end
+target_problem(res::IdentityReductionResult) = res.problem
 
 """
     reduceto(::Type{TA}, x::AbstractProblem)
@@ -52,6 +58,7 @@ Extract the solution `solution` of the target problem to the original problem.
 - `solution`: The solution of the target problem.
 """
 function extract_solution end
+extract_solution(::IdentityReductionResult, solution) = solution
 
 """
     extract_multiple_solutions(reduction::AbstractReductionResult, solution_set)
