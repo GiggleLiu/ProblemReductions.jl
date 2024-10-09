@@ -51,7 +51,7 @@ end
 
 function local_energy(::Type{<:SetPacking}, spec::LocalConstraint, config)
     @assert length(config) == num_variables(spec) == 1
-    return -config[]
+    return -first(config)
 end
 
 """

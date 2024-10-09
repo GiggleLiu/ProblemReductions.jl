@@ -26,7 +26,7 @@ The resulting `result` is a `ReductionCircuitToSpinGlass` instance that contains
 
 With the `result` instance, we can define a logic gadget that maps the spin glass variables to the circuit variables.
 ```@repl spinglass_sat
-indexof(x) = findfirst(==(findfirst(==(x), circuitsat.symbols)), result.variables)
+indexof(x) = findfirst(==(x), circuitsat.symbols[sortperm(result.variables)])
 gadget = LogicGadget(result.spinglass, indexof.([:x, :y, :z]), [indexof(:d)])
 tb = truth_table(gadget; variables=circuitsat.symbols[result.variables])
 ```

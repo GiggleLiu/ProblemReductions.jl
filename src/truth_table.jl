@@ -51,7 +51,7 @@ function infer_logic(configs, inputs::Vector{Int}, outputs::Vector{Int})
     for c in configs
         key = c[inputs]
         if haskey(output, key)
-            @assert output[key] == max(output[key], c[outputs])
+            @assert output[key] == max(output[key], c[outputs]) "Inconsistent logic inference on input $key. Got configs: $configs"
         else
             output[key] = c[outputs]
         end

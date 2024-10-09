@@ -16,7 +16,7 @@
 
 # Run the following code in Julia REPL: 
 
-using ProblemReductions
+using ProblemReductions, Graphs
 factoring = Factoring(2, 2, 6) # initialize the Factoring problem
 
 # Using [`reduction_graph`](@ref) and [`reduction_paths`](@ref), we could obtain the way to reduce Factoring to SpinGlass.  
@@ -38,7 +38,7 @@ target = target_problem(reduction_result)
 import GenericTensorNetworks, Graphs # import Ising machine solver
 gtn_problem = GenericTensorNetworks.SpinGlass(
                   ProblemReductions.nv(target.graph),
-                  vcat(ProblemReductions._vec.(edges(target.graph)), [[i] for i=1:Graphs.nv(target.graph)]),
+                  vcat(ProblemReductions._vec.(Graphs.edges(target.graph)), [[i] for i=1:Graphs.nv(target.graph)]),
                   ProblemReductions.weights(target)
                 )
 result = GenericTensorNetworks.solve(

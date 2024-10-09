@@ -204,9 +204,8 @@ end
 
 function add_sg!(sg::SpinGlass{<:SimpleGraph}, g::SpinGlass{<:SimpleGraph}, vmap::Vector{Int})
     @assert length(vmap) == num_variables(g) "length of vmap must be equal to the number of vertices $(num_variables(g)), got: $(length(vmap))"
-    mapped_edges = [Graphs.SimpleEdge(vmap[e.src], vmap[e.dst]) for e in edges(g.graph)]
-    for (edg, weight) in zip(mapped_edges, g.J)
-        add_coupling!(sg, edg, weight)
+    for (edg, weight) in zip(edges(g.graph), g.J)
+        add_coupling!(sg, Graphs.SimpleEdge(vmap[edg.src], vmap[edg.dst]), weight)
     end
     for (v, h) in zip(vmap, g.h)
         add_onsite!(sg, v, h)

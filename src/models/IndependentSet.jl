@@ -42,5 +42,5 @@ end
 
 function local_energy(::Type{<:IndependentSet{GT, T}}, spec::LocalConstraint, config) where {GT, T}
     @assert length(config) == num_variables(spec) == 1
-    return T(-config[1])
+    return T(-first(config))
 end
