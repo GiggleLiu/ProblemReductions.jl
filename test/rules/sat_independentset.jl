@@ -2,7 +2,7 @@ using Test, ProblemReductions, Graphs
 
 @testset "sat_independentset" begin
     function verify(sat)
-        reduction_results = reduceto(IndependentSet, sat)
+        reduction_results = reduceto(IndependentSet{<:SimpleGraph}, sat)
         IS_tmp = reduction_results |> target_problem
         sol_IS = findbest(IS_tmp, BruteForce())
         s1 = Set(findbest(sat, BruteForce()))

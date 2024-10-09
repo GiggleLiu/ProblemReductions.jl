@@ -29,7 +29,7 @@ set_weights(c::IndependentSet, weights) = IndependentSet(c.graph, weights)
 
 # constraints interface
 function hard_constraints(c::IndependentSet)
-    return [LocalConstraint(e, nothing) for e in vedges(c.graph)]
+    return [LocalConstraint(_vec(e), nothing) for e in edges(c.graph)]
 end
 function is_satisfied(::Type{<:IndependentSet}, spec::LocalConstraint, config)
     @assert length(config) == num_variables(spec)

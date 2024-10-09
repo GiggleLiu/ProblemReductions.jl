@@ -194,51 +194,49 @@ The array multiplier gadget.
 function spinglass_gadget(::Val{:arraymul})
     sg = SpinGlass(SimpleGraph(7), Int[], zeros(Int, 7))
     add_sg!(sg, spinglass_gadget(Val(:∧)).problem, [1, 2, 3])
-    for (clique, weight) in [[6, 7] => 2, [6, 3]=>-2, [6, 4]=>-2, [6, 5]=>-2,
-                    [7, 3]=>-1, [7, 4]=>-1, [7, 5]=>-1,
-                    [3, 4]=>1, [3, 5]=>1, [4, 5]=>1]
-        add_clique!(sg, clique, weight)
+    for (clique, weight) in [(6, 7) => 2, (6, 3) => -2, (6, 4) => -2, (6, 5) => -2,
+                    (7, 3) => -1, (7, 4) => -1, (7, 5) => -1,
+                    (3, 4) => 1, (3, 5) => 1, (4, 5) => 1]
+        add_coupling!(sg, Graphs.SimpleEdge(clique...), weight)
     end
     return LogicGadget(sg, [1, 2, 4, 5], [6, 7])
 end
 
-function add_sg!(sg::SpinGlass, g::SpinGlass, vmap::Vector{Int})
+function add_sg!(sg::SpinGlass{<:SimpleGraph}, g::SpinGlass{<:SimpleGraph}, vmap::Vector{Int})
     @assert length(vmap) == num_variables(g) "length of vmap must be equal to the number of vertices $(num_variables(g)), got: $(length(vmap))"
-    mapped_edges = [map(x->vmap[x], clique) for clique in vedges(g.graph)]
-    for (clique, weight) in zip(mapped_edges, g.J)
-        add_clique!(sg, clique, weight)
+    mapped_edges = [Graphs.SimpleEdge(vmap[e.src], vmap[e.dst]) for e in edges(g.graph)]
+    for (edg, weight) in zip(mapped_edges, g.J)
+        add_coupling!(sg, edg, weight)
     end
     for (v, h) in zip(vmap, g.h)
-        sg.h[v] += h
+        add_onsite!(sg, v, h)
     end
     return sg
 end
-function add_clique!(sg::SpinGlass, clique::Vector{Int}, weight)
-    isempty(clique) && return sg
-    # add a vertex
-    if length(clique) == 1
-        sg.h[clique[1]] += weight
-        return sg
-    end
+function add_onsite!(sg::SpinGlass, v::Int, weight)
+    sg.h[v] += weight
+    return sg
+end
 
+function add_coupling!(sg::SpinGlass, edg::Graphs.SimpleEdge{Int}, weight)
     # add a clique, first check if the edge already exists
-    for (k, c) in enumerate(vedges(sg.graph))
-        if sort(c) == sort(clique)
+    for (k, c) in enumerate(edges(sg.graph))
+        if same_edge(c, edg)
             sg.J[k] += weight
             return sg
         end
     end
-    _add_edge_weight!(sg.graph, clique, sg.J, weight)
+    _add_edge_weight!(sg.graph, edg, sg.J, weight)
     return sg
 end
 
 # TODO: make it more efficient
 # add an edge to a graph with a given weight
-function _add_edge_weight!(g::SimpleGraph, c::Vector{Int}, J, weight)
-    add_edge!(g, c[1], c[2])
+function _add_edge_weight!(g::SimpleGraph, edg::Graphs.SimpleEdge{Int}, J, weight)
+    add_edge!(g, edg)
     # fix the edge index
-    for (i, e) in enumerate(vedges(g))
-        if sort(e) == sort(c)
+    for (i, e) in enumerate(edges(g))
+        if same_edge(edg, e)
             insert!(J, i, weight)
         end
     end
@@ -290,7 +288,7 @@ end
 function set_input!(ga::LogicGadget, inputs::Vector{Int})
     @assert length(inputs) == length(ga.inputs)
     for (k, v) in zip(ga.inputs, inputs)
-        add_clique!(ga.problem, [k], v == 1 ? 1 : -1)  # 1 for down, 0 for up
+        add_onsite!(ga.problem, k, v == 1 ? 1 : -1)  # 1 for down, 0 for up
     end
     return ga
 end

@@ -1,11 +1,12 @@
 using Test, ProblemReductions, Graphs
 using Graphs: SimpleEdge
+using ProblemReductions: HyperEdge
 
 @testset "hyper graph" begin
     hg = HyperGraph(5, [[1, 2], [2, 3, 4]])
     @test ne(hg) == 2
     @test nv(hg) == 5
-    @test edges(hg) == [[1, 2], [2, 3, 4]]
+    @test edges(hg) == [HyperEdge([1, 2]), HyperEdge([2, 3, 4])]
     @test vertices(hg) == 1:5
 end
 

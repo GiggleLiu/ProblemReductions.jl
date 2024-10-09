@@ -86,6 +86,6 @@ end
     gadget = LogicGadget(sg, indexof.([:x, :y, :z]), [indexof(:d)])
     tb = truth_table(gadget; variables)
     @test tb.values == vec([(x & y & (1-z)) | x for x in [0, 1], y in [0, 1], z in [0, 1]])
-    res = reduceto(SpinGlass, CircuitSAT(circuit))
+    res = reduceto(SpinGlass{<:SimpleGraph}, CircuitSAT(circuit))
     @test target_problem(res) == sg
 end

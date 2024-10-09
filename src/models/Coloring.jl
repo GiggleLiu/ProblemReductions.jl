@@ -33,7 +33,7 @@ set_weights(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
 @nohard_constraints Coloring
 function energy_terms(c::Coloring)
     # constraints on edges
-    return [LocalConstraint(e, :coloring) for e in vedges(c.graph)]
+    return [LocalConstraint(_vec(e), :coloring) for e in edges(c.graph)]
 end
 
 function local_energy(::Type{<:Coloring{K, T}}, spec::LocalConstraint, config) where {K, T}

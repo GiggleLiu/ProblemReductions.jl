@@ -8,7 +8,7 @@ Positional arguments
 * `sequence` is a vector of symbols, each symbol is associated with a color.
 * `isfirst` is a vector of boolean numbers, indicating whether the symbol is the first appearance in the sequence.
 """
-struct PaintShop{LT} <: ConstraintSatisfactionProblem{Bool}
+struct PaintShop{LT} <: ConstraintSatisfactionProblem{Int}
     sequence::Vector{LT}
     isfirst::Vector{Bool}
     function PaintShop(sequence::AbstractVector{T}) where T

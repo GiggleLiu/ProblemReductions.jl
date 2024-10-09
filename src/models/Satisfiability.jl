@@ -101,7 +101,7 @@ function variables(cnf::CNF{T}) where T
     unique([var.name for clause in cnf.clauses for var in clause.vars])
 end
 
-abstract type AbstractSatisfiabilityProblem{T} <: ConstraintSatisfactionProblem{Bool} end
+abstract type AbstractSatisfiabilityProblem{S, T} <: ConstraintSatisfactionProblem{T} end
 
 """
 $TYPEDEF
@@ -112,7 +112,7 @@ The [satisfiability](https://queracomputing.github.io/GenericTensorNetworks.jl/d
 * `cnf` is a conjunctive normal form ([`CNF`](@ref)) for specifying the satisfiability problems.
 * `weights` are associated with clauses.
 """
-struct Satisfiability{S, T, WT<:AbstractArray{T}} <:AbstractSatisfiabilityProblem{T}
+struct Satisfiability{S, T, WT<:AbstractArray{T}} <:AbstractSatisfiabilityProblem{S, T}
     variables::Vector{S}
     weights::WT
     cnf::CNF{S}
@@ -140,7 +140,7 @@ The satisfiability problem for k-SAT, where the goal is to find an assignment th
 - `variables::Vector{T}`: The variables in the CNF.
 - `cnf::CNF{T}`: The CNF expression.
 """
-struct KSatisfiability{K, S, T, WT<:AbstractArray{T}} <:AbstractSatisfiabilityProblem{T}
+struct KSatisfiability{K, S, T, WT<:AbstractArray{T}} <:AbstractSatisfiabilityProblem{S, T}
     variables::Vector{S}
     cnf::CNF{S}
     weights::WT
@@ -171,7 +171,7 @@ function energy_terms(c::AbstractSatisfiabilityProblem)
         LocalConstraint(idx, vars[idx] => cl)
     end
 end
-function local_energy(::Type{<:AbstractSatisfiabilityProblem{T}}, spec::LocalConstraint, config) where T
+function local_energy(::Type{<:AbstractSatisfiabilityProblem{S, T}}, spec::LocalConstraint, config) where {S, T}
     @assert length(config) == num_variables(spec)
     vars, expr = spec.specification
     assignment = Dict(zip(vars, config))

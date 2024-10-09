@@ -30,7 +30,7 @@ set_weights(c::VertexCovering, weights) = VertexCovering(c.graph, weights)
 
 # constraints interface
 function hard_constraints(c::VertexCovering)
-    return [LocalConstraint(e, :cover) for e in vedges(c.graph)]
+    return [LocalConstraint(_vec(e), :cover) for e in edges(c.graph)]
 end
 function is_satisfied(::Type{<:VertexCovering}, spec::LocalConstraint, config)
     @assert length(config) == num_variables(spec)

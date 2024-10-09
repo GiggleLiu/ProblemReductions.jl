@@ -47,7 +47,7 @@ end
 function energy_terms(c::SetCovering)
     return [LocalConstraint([i], :set) for i in variables(c)]
 end
-function local_energy(::Type{<:SetCovering{T}}, spec::LocalConstraint, config) where {T}
+function local_energy(::Type{<:SetCovering{ET, T}}, spec::LocalConstraint, config) where {ET, T}
     @assert length(config) == num_variables(spec)
     return T(config[])
 end

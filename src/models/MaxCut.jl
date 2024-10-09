@@ -32,7 +32,7 @@ set_weights(c::MaxCut, weights) = MaxCut(c.graph, weights)
 
 # constraints interface
 function energy_terms(c::MaxCut)
-    return [LocalConstraint(e, :cut) for e in vedges(c.graph)]
+    return [LocalConstraint(_vec(e), :cut) for e in edges(c.graph)]
 end
 function local_energy(::Type{<:MaxCut{T}}, spec::LocalConstraint, config) where {T}
     @assert length(config) == num_variables(spec)

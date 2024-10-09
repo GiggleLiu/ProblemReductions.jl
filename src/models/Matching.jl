@@ -30,8 +30,7 @@ set_weights(c::Matching, weights) = Matching(c.graph, weights)
 # constraints interface
 function hard_constraints(c::Matching)
     # edges sharing a vertex cannot be both in the matching
-    edges = vedges(c.graph)
-    return [LocalConstraint(findall(e -> v ∈ e, edges), :noshare) for v in vertices(c.graph)]
+    return [LocalConstraint([i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)], :noshare) for v in vertices(c.graph)]
 end
 
 function is_satisfied(::Type{<:Matching}, spec::LocalConstraint, config)
@@ -58,16 +57,16 @@ Returns true if `config` is a valid matching on `graph`, and `false` if a vertex
 function is_matching(g::SimpleGraph, config)
     @assert ne(g) == length(config)
     edges_mask = zeros(Bool, nv(g))
-    for (e, c) in zip(vedges(g), config)
+    for (e, c) in zip(edges(g), config)
         if !iszero(c)
-            if edges_mask[e[1]]
+            if edges_mask[e.src]
                 return false
             end
-            if edges_mask[e[2]]
+            if edges_mask[e.dst]
                 return false
             end
-            edges_mask[e[1]] = true
-            edges_mask[e[2]] = true
+            edges_mask[e.src] = true
+            edges_mask[e.dst] = true
         end
     end
     return true

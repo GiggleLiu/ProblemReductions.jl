@@ -1,3 +1,8 @@
+struct HyperEdge{T} <: Graphs.AbstractEdge{T}
+    vertices::Vector{T}
+end
+Base.:(==)(a::HyperEdge, b::HyperEdge) = same_edge(a, b)
+
 """
 $TYPEDEF
 
@@ -9,17 +14,26 @@ A hypergraph is a generalization of a graph in which an edge can connect any num
 """
 struct HyperGraph <: Graphs.AbstractGraph{Int}
     n::Int
-    edges::Vector{Vector{Int}}
-    function HyperGraph(n::Int, cliques::Vector{Vector{Int}})
-        @assert all(c->all(b->1<=b<=n, c), cliques) "vertex index out of bound 1-$n, got: $cliques"
+    edges::Vector{HyperEdge{Int}}
+    function HyperGraph(n::Int, cliques::Vector{HyperEdge{Int}})
+        @assert all(c->all(b->1<=b<=n, c.vertices), cliques) "vertex index out of bound 1-$n, got: $cliques"
         new(n, cliques)
     end
 end
+HyperGraph(n::Int, cliques::Vector{Vector{Int}}) = HyperGraph(n, [HyperEdge(c) for c in cliques])
 Base.:(==)(a::HyperGraph, b::HyperGraph) = a.n == b.n && a.edges == b.edges
 Graphs.nv(h::HyperGraph) = h.n
 Graphs.vertices(h::HyperGraph) = 1:nv(h)
 Graphs.ne(h::HyperGraph) = length(h.edges)
 Graphs.edges(h::HyperGraph) = h.edges
+contains(e::HyperEdge, v::Int) = v ∈ e.vertices
+contains(e::Graphs.SimpleEdge, v::Int) = src(e) == v || dst(e) == v
+num_vertices(e::HyperEdge) = length(e.vertices)
+num_vertices(e::Graphs.SimpleEdge) = 2
+same_edge(a::Graphs.SimpleEdge, b::Graphs.SimpleEdge) = (a.src == b.src && a.dst == b.dst) || (a.src == b.dst && a.dst == b.src)
+same_edge(a::HyperEdge, b::HyperEdge) = sort(a.vertices) == sort(b.vertices)
+iterable(e::Graphs.SimpleEdge) = (src(e), dst(e))
+iterable(e::HyperEdge) = e.vertices
 
 """
 $TYPEDEF
@@ -119,6 +133,5 @@ end
 # end
 
 ##### Extra interfaces #####
-vedges(g::AbstractGraph) = [_vec(e) for e in edges(g)]
 _vec(e::Graphs.SimpleEdge) = [src(e), dst(e)]
-_vec(e::AbstractVector) = e
+_vec(e::HyperEdge) = e.vertices

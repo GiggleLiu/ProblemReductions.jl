@@ -28,6 +28,21 @@ The abstract base type of constraint satisfaction problems. `T` is the type of t
 """
 abstract type ConstraintSatisfactionProblem{T} <: AbstractProblem end
 
+"""
+$TYPEDEF
+
+The local constraint of the problem.
+
+### Fields
+- `variables`: the indices of the variables involved in the constraint.
+- `specification`: the specification of the constraint.
+"""
+struct LocalConstraint{ST}
+    variables::Vector{Int}
+    specification::ST
+end
+num_variables(spec::LocalConstraint) = length(spec.variables)
+
 ######## Interfaces for computational problems ##########
 """
     weights(problem::ConstraintSatisfactionProblem) -> Vector
@@ -122,20 +137,41 @@ The lower the energy, the better the configuration.
 function energy end
 
 # energy interface
-function energy(problem::ConstraintSatisfactionProblem{T}, config) where T
-    @assert length(config) == num_variables(problem)
+energy(problem::AbstractProblem, config) = first(energy_multi(problem, [config]))[1]
+struct EnergyMultiConfig{T, PT<:ConstraintSatisfactionProblem{T}, ST, ST2, VT, WT <: AbstractVector{T}}
+    problem::PT
+    configs::VT  # iterator of configurations
+    hard_specs::Vector{LocalConstraint{ST}}
+    energy_terms::Vector{LocalConstraint{ST2}}
+    weights::WT
+end
+
+function energy_multi(problem::ConstraintSatisfactionProblem{T}, configs) where T
+    @assert all(config -> length(config) == num_variables(problem), configs) "All configurations must have the same length as the number of variables, got: $(length(config)) != $(num_variables(problem))"
     hard_specs = hard_constraints(problem)
-    for spec in hard_specs
-        is_satisfied(typeof(problem), spec, config[spec.variables]) || return energy_max(T)
-    end
     terms = energy_terms(problem)
     ws = is_weighted(problem) ? weights(problem) : UnitWeight(length(terms))
-    @assert length(ws) == length(terms) "The length of the weights must be the same as the number of energy terms, got: $(length(ws)) != $(length(terms))"
-    return sum(zip(terms, ws)) do (spec, weight)
-        subconfig = config[spec.variables]
-        local_energy(typeof(problem), spec, subconfig) * weight
-    end
+    return EnergyMultiConfig(problem, configs, hard_specs, terms, ws)
 end
+
+function Base.iterate(emc::EnergyMultiConfig{T}, args...) where T
+    config_spec = iterate(emc.configs, args...)
+    if config_spec === nothing
+        return nothing
+    end
+    config, state = config_spec
+    if !all(spec -> is_satisfied(typeof(emc.problem), spec, _get(config, spec.variables)), emc.hard_specs)
+        return (energy_max(T), config), state
+    end
+    energy = zero(T)
+    for (i, spec) in enumerate(emc.energy_terms)
+        subconfig = _get(config, spec.variables)
+        energy += local_energy(typeof(emc.problem), spec, subconfig) * emc.weights[i]
+    end
+    return (energy, config), state
+end
+_get(config::AbstractVector, indices) = view(config, indices)
+_get(config::Tuple, indices) = Iterators.map(i -> config[i], indices)
 
 """
 $TYPEDSIGNATURES
@@ -166,21 +202,6 @@ Base.size(w::UnitWeight) = (w.n,)
 
 # returns a n-dimensional array.
 configuration_space(p::AbstractProblem, n::Int) = Iterators.product(fill(flavors(p), n)...)
-
-"""
-$TYPEDEF
-
-The local constraint of the problem.
-
-### Fields
-- `variables`: the indices of the variables involved in the constraint.
-- `specification`: the specification of the constraint.
-"""
-struct LocalConstraint{ST}
-    variables::Vector{Int}
-    specification::ST
-end
-num_variables(spec::LocalConstraint) = length(spec.variables)
 
 """
     energy_terms(problem::AbstractProblem) -> Vector{LocalConstraint}

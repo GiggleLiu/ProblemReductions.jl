@@ -62,20 +62,20 @@ end
     is2 = IndependentSet(graph2)
     for (source, target_type) in [
             # please add more tests here
-            circuit => SpinGlass,
-            maxcut => SpinGlass,
+            circuit => SpinGlass{<:SimpleGraph},
+            maxcut => SpinGlass{<:SimpleGraph},
             spinglass => MaxCut,
             vertexcovering => SetCovering,
             sat => Coloring{3},
             spinglass => MaxCut,
-            qubo => SpinGlass,
+            qubo => SpinGlass{<:SimpleGraph},
             spinglass => QUBO,
             sat => KSatisfiability,
             ksat => Satisfiability,
-            sat => IndependentSet,
-            sat => DominatingSet,
+            sat => IndependentSet{<:SimpleGraph},
+            sat => DominatingSet{<:SimpleGraph},
             is => SetPacking,
-            is2 => SetPacking
+            is2 => SetPacking,
         ]
         @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve

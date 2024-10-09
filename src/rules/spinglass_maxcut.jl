@@ -40,22 +40,16 @@ target_problem(res::ReductionSpinGlassToMaxCut) = res.maxcut
 
 # modification
 function reduceto(::Type{MaxCut}, sg::SpinGlass{<:SimpleGraph})
-    edgs = vedges(sg.graph)
-    @assert all(c->length(c) <= 2, edgs) "Invalid HyperGraph" 
+    edgs = edges(sg.graph)
     n = nv(sg.graph)
-    need_ancilla = any(c->length(c) <= 1, edgs) || any(!iszero, sg.h)
+    need_ancilla = any(c->num_vertices(c) <= 1, edgs) || any(!iszero, sg.h)
     g = SimpleGraph(need_ancilla ? n+1 : n) # the last two vertices are the source and sink,designed for onsite terms
     anc = need_ancilla ? n+1 : 0
     wt = eltype(sg.J)[]
     # add interaction terms
     for (w, c) in zip(sg.J, edgs)
-        if length(c) == 2  # simple edge
-            add_edge!(g, c[1], c[2])
-            push!(wt, w)
-        else # onsite term
-            add_edge!(g, c[1], anc)
-            push!(wt, w)  # assume ancilla having spin up
-        end
+        add_edge!(g, c)
+        push!(wt, w)
     end
     # add onsite terms
     for (i, h) in enumerate(sg.h)

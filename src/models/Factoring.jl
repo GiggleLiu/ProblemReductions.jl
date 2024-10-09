@@ -20,11 +20,13 @@ flavors(::Type{Factoring}) = [0, 1]
 problem_size(f::Factoring) = (; num_bits_first=f.m, num_bits_second=f.n)
 
 # utilities
-function energy(f::Factoring, config)
-    @assert length(config) == num_variables(f)
-    input1 = BitStr(config[1:f.m]).buf
-    input2 = BitStr(config[f.m+1:f.m+f.n]).buf
-    return input1 * input2 == f.input ? 0 : 1
+function energy_multi(f::Factoring, configs)
+    @assert all(config->length(config) == num_variables(f), configs)
+    return Iterators.map(configs) do config
+        input1 = BitStr(config[1:f.m]).buf
+        input2 = BitStr(config[f.m+1:f.m+f.n]).buf
+        return (input1 * input2 == f.input ? 0 : 1, config)
+    end
 end
 
 pack_bits(bits) = sum(i->isone(bits[i]) ? 2^(i-1) : 0, 1:length(bits))

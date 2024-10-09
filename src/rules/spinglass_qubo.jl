@@ -35,11 +35,11 @@ target_problem(res::ReductionSpinGlassToQUBO) = res.qubo
 
 function reduceto(::Type{<:QUBO}, sg::SpinGlass{<:SimpleGraph})
     matrix = zeros(eltype(sg.J), nv(sg.graph), nv(sg.graph))
-    for (w, c) in zip(sg.J, vedges(sg.graph))
-        matrix[c[1], c[2]] += w
-        matrix[c[2], c[1]] += w
-        matrix[c[1], c[1]] -= w
-        matrix[c[2], c[2]] -= w
+    for (w, c) in zip(sg.J, edges(sg.graph))
+        matrix[c.src, c.dst] += w
+        matrix[c.dst, c.src] += w
+        matrix[c.src, c.src] -= w
+        matrix[c.dst, c.dst] -= w
     end
     for (i, h) in enumerate(sg.h)
         matrix[i, i] -= h

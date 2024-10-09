@@ -35,10 +35,10 @@ target = target_problem(reduction_result)
 # Note that the output of `implement_reduction_path` is a [`AbstractReductionResult`](@ref), which contains the target problem and reduction information. So we 
 # need to extract the target problem by [`target_problem`](@ref) function.
 
-import GenericTensorNetworks # import Ising machine solver
+import GenericTensorNetworks, Graphs # import Ising machine solver
 gtn_problem = GenericTensorNetworks.SpinGlass(
                   ProblemReductions.nv(target.graph),
-                  vcat(ProblemReductions.vedges(target.graph), [[i] for i=1:ProblemReductions.nv(target.graph)]),
+                  vcat(ProblemReductions._vec.(edges(target.graph)), [[i] for i=1:Graphs.nv(target.graph)]),
                   ProblemReductions.weights(target)
                 )
 result = GenericTensorNetworks.solve(

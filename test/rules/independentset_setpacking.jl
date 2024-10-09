@@ -2,7 +2,7 @@ using Test, ProblemReductions, Graphs
 
 @testset "independentset_setpacking" begin
     function verify(IS)
-        reduction_results = reduceto(SetPacking, IS)
+        reduction_results = reduceto(SetPacking{<:SimpleGraph}, IS)
         SP = reduction_results |> target_problem
         sol_SP = findbest(SP, BruteForce())
         s1 = Set(findbest(IS, BruteForce()))
