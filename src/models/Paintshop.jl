@@ -22,6 +22,7 @@ end
 variables(gp::PaintShop) = unique(gp.sequence)
 flavors(::Type{<:PaintShop}) = [0, 1]
 problem_size(c::PaintShop) = (; sequence_length=length(c.sequence))
+Base.:(==)(a::PaintShop, b::PaintShop) = a.sequence == b.sequence && a.isfirst == b.isfirst
 
 # constraints interface
 function energy_terms(c::PaintShop)

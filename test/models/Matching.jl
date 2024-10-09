@@ -18,6 +18,7 @@ using ProblemReductions: is_matching
     add_edge!(g2, 2, 4)
     add_edge!(g2, 3, 4)
     m2 = Matching(g2, [1, 0, 0, 1])
+    @test set_weights(m2, [1, 1, 0, 0]) == Matching(g2, [1, 1, 0, 0])
     @test variables(m2) == [1, 2, 3, 4]
     @test num_variables(m2) == 4
     @test flavors(m2) == [0, 1]

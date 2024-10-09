@@ -8,6 +8,20 @@ using ProblemReductions: HyperEdge
     @test nv(hg) == 5
     @test edges(hg) == [HyperEdge([1, 2]), HyperEdge([2, 3, 4])]
     @test vertices(hg) == 1:5
+    he = HyperEdge([2, 3, 4])
+    @test ProblemReductions.num_vertices(he) == 3
+    @test he == HyperEdge([2, 3, 4])
+    @test ProblemReductions.contains(he, 2)
+    @test !ProblemReductions.contains(he, 5)
+    J = [1, 1]
+    ProblemReductions._add_edge_weight!(hg, he, J, 5)
+    @test edges(hg) == [HyperEdge([1, 2]), HyperEdge([2, 3, 4])]
+    @test J == [1, 6]
+    @test has_edge(hg, he)
+    he = HyperEdge([2, 3, 5])
+    ProblemReductions._add_edge_weight!(hg, he, J, 5)
+    @test edges(hg) == [HyperEdge([1, 2]), HyperEdge([2, 3, 4]), HyperEdge([2, 3, 5])]
+    @test J == [1, 6, 5]
 end
 
 @testset "unit-disk graph" begin

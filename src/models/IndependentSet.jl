@@ -16,7 +16,7 @@ struct IndependentSet{GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: Constraint
         return new{typeof(graph), T, typeof(weights)}(graph, weights)
     end
 end
-Base.:(==)(a::IndependentSet, b::IndependentSet) = ( a.graph == b.graph )
+Base.:(==)(a::IndependentSet, b::IndependentSet) = a.graph == b.graph && a.weights == b.weights
 
 # Variables Interface
 variables(gp::IndependentSet) = [1:nv(gp.graph)...]

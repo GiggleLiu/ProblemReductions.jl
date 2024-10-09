@@ -21,6 +21,7 @@ using ProblemReductions:  is_maximal_independent_set
     add_edge!(g, 3, 4)
     add_edge!(g, 2, 3)
     mis2 = MaximalIS(g)
+    @test set_weights(mis2, [1, 2, 1, 2]) == MaximalIS(g,[1, 2, 1, 2])
     @test mis2 isa MaximalIS
     @test variables(mis2) == [1, 2, 3, 4]
     @test num_variables(mis2) == 4

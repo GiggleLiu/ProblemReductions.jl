@@ -39,7 +39,7 @@ Base.:(==)(a::ReductionSpinGlassToMaxCut, b::ReductionSpinGlassToMaxCut) = a.max
 target_problem(res::ReductionSpinGlassToMaxCut) = res.maxcut
 
 # modification
-function reduceto(::Type{MaxCut}, sg::SpinGlass{<:SimpleGraph})
+function reduceto(::Type{<:MaxCut}, sg::SpinGlass{<:SimpleGraph})
     edgs = edges(sg.graph)
     n = nv(sg.graph)
     need_ancilla = any(c->num_vertices(c) <= 1, edgs) || any(!iszero, sg.h)
@@ -48,14 +48,12 @@ function reduceto(::Type{MaxCut}, sg::SpinGlass{<:SimpleGraph})
     wt = eltype(sg.J)[]
     # add interaction terms
     for (w, c) in zip(sg.J, edgs)
-        add_edge!(g, c)
-        push!(wt, w)
+        _add_edge_weight!(g, c, wt, w)
     end
     # add onsite terms
     for (i, h) in enumerate(sg.h)
         if !iszero(h)
-            add_edge!(g, i, anc)
-            push!(wt, h)
+            _add_edge_weight!(g, Graphs.SimpleEdge(i, anc), wt, h)
         end
     end
     return ReductionSpinGlassToMaxCut(MaxCut(g, wt), anc)

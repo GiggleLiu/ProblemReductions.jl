@@ -13,6 +13,7 @@ using Test, ProblemReductions, Graphs
     add_edge!(g, 3, 4)
     add_edge!(g, 4, 1)
     c = Coloring{3}(g, UnitWeight(nv(g)))
+    @test set_weights(c, [1, 2, 2, 1]) == Coloring{3}(g, [1, 2, 2, 1])
     c2 = Coloring{3}(g)
     @test c2 == c
     @test c.graph == g && c.weights isa UnitWeight

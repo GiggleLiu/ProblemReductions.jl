@@ -34,6 +34,7 @@ same_edge(a::Graphs.SimpleEdge, b::Graphs.SimpleEdge) = (a.src == b.src && a.dst
 same_edge(a::HyperEdge, b::HyperEdge) = sort(a.vertices) == sort(b.vertices)
 iterable(e::Graphs.SimpleEdge) = (src(e), dst(e))
 iterable(e::HyperEdge) = e.vertices
+Graphs.has_edge(h::HyperGraph, e::HyperEdge) = any(x->same_edge(x, e), edges(h))
 
 """
 $TYPEDEF
@@ -135,3 +136,29 @@ end
 ##### Extra interfaces #####
 _vec(e::Graphs.SimpleEdge) = [src(e), dst(e)]
 _vec(e::HyperEdge) = e.vertices
+
+# TODO: make it more efficient
+# add an edge to a graph with a given weight
+function _add_edge_weight!(g::SimpleGraph, edg::Graphs.SimpleEdge{Int}, J, weight)
+    has_edge(g, edg) && for (i, e) in enumerate(edges(g))
+        if same_edge(e, edg)
+            J[i] += weight
+            return
+        end
+    end
+    add_edge!(g, edg)
+    # fix the edge index
+    for (i, e) in enumerate(edges(g))
+        if same_edge(edg, e)
+            insert!(J, i, weight)
+        end
+    end
+end
+function _add_edge_weight!(g::HyperGraph, c::HyperEdge{Int}, J, weight)
+    if has_edge(g, c)  # if the edge already exists, add the weight to the existing edge
+        J[findfirst(x->same_edge(x, c), edges(g))] += weight
+        return
+    end
+    push!(g.edges, c)
+    push!(J, weight)
+end

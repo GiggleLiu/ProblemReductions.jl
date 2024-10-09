@@ -32,4 +32,11 @@ end
     @test reduceto(MaxCut, sg) == ReductionSpinGlassToMaxCut(MaxCut(g1, [1, 3, 1, 4]),0)
     @test findbest(sg, BruteForce()) == [[1, 1, -1, 1], [1, -1, -1, 1], [-1, 1, 1, -1], [-1, -1, 1, -1]] # in lexicographic order
     @test findbest(res.maxcut, BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
+
+    gadget = spinglass_gadget(Val{:⊻}())
+    res = reduceto(MaxCut, gadget.problem)
+    best_maxcut = findbest(res.maxcut, BruteForce())
+    @test length(best_maxcut) == 8
+    best = unique(extract_solution.(Ref(res), best_maxcut))
+    @test sort(best) == sort(findbest(gadget.problem, BruteForce()))
 end

@@ -200,9 +200,6 @@ end
 Base.getindex(::UnitWeight, i) = 1
 Base.size(w::UnitWeight) = (w.n,)
 
-# returns a n-dimensional array.
-configuration_space(p::AbstractProblem, n::Int) = Iterators.product(fill(flavors(p), n)...)
-
 """
     energy_terms(problem::AbstractProblem) -> Vector{LocalConstraint}
 

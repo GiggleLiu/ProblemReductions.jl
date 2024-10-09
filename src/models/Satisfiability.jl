@@ -126,7 +126,7 @@ function Satisfiability(cnf::CNF{S}, weights::AbstractVector=UnitWeight(length(c
 end
 clauses(c::Satisfiability) = c.cnf.clauses
 variables(c::Satisfiability) = c.variables
-Base.:(==)(x::Satisfiability, y::Satisfiability) = x.cnf == y.cnf
+Base.:(==)(x::Satisfiability, y::Satisfiability) = x.cnf == y.cnf && x.weights == y.weights && x.variables == y.variables
 
 weights(c::Satisfiability) = c.weights
 set_weights(c::Satisfiability, weights::AbstractVector) = Satisfiability(c.variables, c.cnf, weights)

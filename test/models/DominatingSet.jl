@@ -16,6 +16,7 @@ using Test, ProblemReductions, Graphs
     
     # construct corresponding DominatingSet problems
     DS_01 = DominatingSet(g01)
+    @test set_weights(DS_01, [1, 2, 2, 1, 1]) == DominatingSet(g01, [1, 2, 2, 1, 1])
     DS_02 = DominatingSet(g02)
     @test DS_01 == DS_02
 

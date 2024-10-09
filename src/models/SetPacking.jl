@@ -20,7 +20,7 @@ struct SetPacking{ET, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem
         return new{ET, T, typeof(weights)}(elements, sets, weights)
     end
 end
-Base.:(==)(a::SetPacking, b::SetPacking) = ( a.sets == b.sets )
+Base.:(==)(a::SetPacking, b::SetPacking) = ( a.sets == b.sets && a.weights == b.weights && a.elements == b.elements)
 problem_size(c::SetPacking) = (; num_elements = length(c.elements), num_sets = length(c.sets))
 
 # Variables Interface

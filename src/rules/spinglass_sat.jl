@@ -218,32 +218,8 @@ function add_onsite!(sg::SpinGlass, v::Int, weight)
 end
 
 function add_coupling!(sg::SpinGlass, edg::Graphs.SimpleEdge{Int}, weight)
-    # add a clique, first check if the edge already exists
-    for (k, c) in enumerate(edges(sg.graph))
-        if same_edge(c, edg)
-            sg.J[k] += weight
-            return sg
-        end
-    end
     _add_edge_weight!(sg.graph, edg, sg.J, weight)
     return sg
-end
-
-# TODO: make it more efficient
-# add an edge to a graph with a given weight
-function _add_edge_weight!(g::SimpleGraph, edg::Graphs.SimpleEdge{Int}, J, weight)
-    add_edge!(g, edg)
-    # fix the edge index
-    for (i, e) in enumerate(edges(g))
-        if same_edge(edg, e)
-            insert!(J, i, weight)
-        end
-    end
-end
-function _add_edge!(g::HyperGraph, c::Vector{Int}, J, weight)
-    @assert all(b->1<=b<=nv(g), c) "vertex index out of bound 1-$(nv(g)), got: $c"
-    push!(g.edges, c)
-    push!(J, weight)
 end
 
 function compose_multiplier(m::Int, n::Int)

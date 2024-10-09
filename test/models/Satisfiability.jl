@@ -10,6 +10,7 @@ using ProblemReductions: KSatisfiability,clauses
 
     cnf_test = CNF([clause1, clause2])
     sat_test = Satisfiability(cnf_test)
+    @test set_weights(sat_test, [1, 2]) == Satisfiability(CNF([clause1, clause2]), [1, 2])
     
     @test sat_test isa Satisfiability
     @test clauses(sat_test) == cnf_test.clauses

@@ -7,6 +7,7 @@ using Test, ProblemReductions
 
     # construct corresponding SetPacking problems
     SP_01 = SetPacking(sets01)
+    @test set_weights(SP_01, [1, 2, 2, 1, 1]) == SetPacking([[1, 2, 5], [1, 3], [2, 4], [3, 6], [2, 3, 6]], [1, 2, 2, 1, 1])
     SP_02 = SetPacking(sets02)
     @test !(SP_01 == SP_02)
     @test SP_01 == SetPacking([[1, 2, 5], [1, 3], [2, 4], [3, 6], [2, 3, 6]])

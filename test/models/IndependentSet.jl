@@ -18,6 +18,7 @@ using Test, ProblemReductions, Graphs
 
     # construct corresponding IndependentSet problems
     IS_01 = IndependentSet(g01)
+    @test set_weights(IS_01, [1, 2, 2, 1]) == IndependentSet(g01, [1, 2, 2, 1])
     IS_02 = IndependentSet(g02)
     IS_03 = IndependentSet(g03)
     @test IS_01 == IS_02
