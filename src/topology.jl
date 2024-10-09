@@ -1,3 +1,8 @@
+struct HyperEdge{T} <: Graphs.AbstractEdge{T}
+    vertices::Vector{T}
+end
+Base.:(==)(a::HyperEdge, b::HyperEdge) = same_edge(a, b)
+
 """
 $TYPEDEF
 
@@ -9,17 +14,27 @@ A hypergraph is a generalization of a graph in which an edge can connect any num
 """
 struct HyperGraph <: Graphs.AbstractGraph{Int}
     n::Int
-    edges::Vector{Vector{Int}}
-    function HyperGraph(n::Int, cliques::Vector{Vector{Int}})
-        @assert all(c->all(b->1<=b<=n, c), cliques) "vertex index out of bound 1-$n, got: $cliques"
+    edges::Vector{HyperEdge{Int}}
+    function HyperGraph(n::Int, cliques::Vector{HyperEdge{Int}})
+        @assert all(c->all(b->1<=b<=n, c.vertices), cliques) "vertex index out of bound 1-$n, got: $cliques"
         new(n, cliques)
     end
 end
+HyperGraph(n::Int, cliques::Vector{Vector{Int}}) = HyperGraph(n, [HyperEdge(c) for c in cliques])
 Base.:(==)(a::HyperGraph, b::HyperGraph) = a.n == b.n && a.edges == b.edges
 Graphs.nv(h::HyperGraph) = h.n
 Graphs.vertices(h::HyperGraph) = 1:nv(h)
 Graphs.ne(h::HyperGraph) = length(h.edges)
 Graphs.edges(h::HyperGraph) = h.edges
+contains(e::HyperEdge, v::Int) = v ∈ e.vertices
+contains(e::Graphs.SimpleEdge, v::Int) = src(e) == v || dst(e) == v
+num_vertices(e::HyperEdge) = length(e.vertices)
+num_vertices(e::Graphs.SimpleEdge) = 2
+same_edge(a::Graphs.SimpleEdge, b::Graphs.SimpleEdge) = (a.src == b.src && a.dst == b.dst) || (a.src == b.dst && a.dst == b.src)
+same_edge(a::HyperEdge, b::HyperEdge) = sort(a.vertices) == sort(b.vertices)
+iterable(e::Graphs.SimpleEdge) = (src(e), dst(e))
+iterable(e::HyperEdge) = e.vertices
+Graphs.has_edge(h::HyperGraph, e::HyperEdge) = any(x->same_edge(x, e), edges(h))
 
 """
 $TYPEDEF
@@ -119,6 +134,31 @@ end
 # end
 
 ##### Extra interfaces #####
-vedges(g::AbstractGraph) = [_vec(e) for e in edges(g)]
 _vec(e::Graphs.SimpleEdge) = [src(e), dst(e)]
-_vec(e::AbstractVector) = e
+_vec(e::HyperEdge) = e.vertices
+
+# TODO: make it more efficient
+# add an edge to a graph with a given weight
+function _add_edge_weight!(g::SimpleGraph, edg::Graphs.SimpleEdge{Int}, J, weight)
+    has_edge(g, edg) && for (i, e) in enumerate(edges(g))
+        if same_edge(e, edg)
+            J[i] += weight
+            return
+        end
+    end
+    add_edge!(g, edg)
+    # fix the edge index
+    for (i, e) in enumerate(edges(g))
+        if same_edge(edg, e)
+            insert!(J, i, weight)
+        end
+    end
+end
+function _add_edge_weight!(g::HyperGraph, c::HyperEdge{Int}, J, weight)
+    if has_edge(g, c)  # if the edge already exists, add the weight to the existing edge
+        J[findfirst(x->same_edge(x, c), edges(g))] += weight
+        return
+    end
+    push!(g.edges, c)
+    push!(J, weight)
+end

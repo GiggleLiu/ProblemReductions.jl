@@ -2,23 +2,70 @@
     AbstractProblem
 
 The abstract base type of computational problems.
+
+### Required interfaces
+- [`variables`](@ref), the degrees of freedoms in the computational problem.
+- [`flavors`](@ref), the flavors (domain) of a degree of freedom.
+- [`energy`](@ref), energy the energy (the lower the better) of the input configuration.
+- [`problem_size`](@ref), the size of the computational problem. e.g. for a graph, it could be `(n_vertices=?, n_edges=?)`.
+
+### Optional interfaces
+- [`num_variables`](@ref), the number of variables in the computational problem.
+- [`num_flavors`](@ref), the number of flavors (domain) of a degree of freedom.
+- [`findbest`](@ref), find the best configurations of the input problem.
 """
 abstract type AbstractProblem end
 
+"""
+    ConstraintSatisfactionProblem{T} <: AbstractProblem
+
+The abstract base type of constraint satisfaction problems. `T` is the type of the local energy of the constraints.
+
+### Required interfaces
+- [`energy_terms`](@ref), the specification of the energy terms, it is associated with weights.
+- [`hard_constraints`](@ref), the specification of the hard constraints. Once the hard constraints are violated, the energy goes to infinity.
+- [`local_energy`](@ref), the local energy for the constraints.
+"""
+abstract type ConstraintSatisfactionProblem{T} <: AbstractProblem end
+
+"""
+$TYPEDEF
+
+The local constraint of the problem.
+
+### Fields
+- `variables`: the indices of the variables involved in the constraint.
+- `specification`: the specification of the constraint.
+"""
+struct LocalConstraint{ST}
+    variables::Vector{Int}
+    specification::ST
+end
+num_variables(spec::LocalConstraint) = length(spec.variables)
+
 ######## Interfaces for computational problems ##########
 """
-    parameters(problem::AbstractProblem) -> Vector
+    weights(problem::ConstraintSatisfactionProblem) -> Vector
 
-The parameters of the computational problem.
+The weights of the constraints in the problem.
 """
-function parameters end
+function weights end
 
 """
-    set_parameters(problem::AbstractProblem, parameters) -> AbstractProblem
+    set_weights(problem::ConstraintSatisfactionProblem, weights) -> ConstraintSatisfactionProblem
 
-Change the parameters for the `problem` and return a new problem instance.
+Change the weights for the `problem` and return a new problem instance.
 """
-function set_parameters end
+function set_weights end
+
+"""
+    is_weighted(problem::ConstraintSatisfactionProblem) -> Bool
+
+Check if the problem is weighted. Returns `true` if the problem has non-unit weights.
+"""
+function is_weighted(problem::ConstraintSatisfactionProblem)
+    hasmethod(weights, Tuple{typeof(problem)}) && !(weights(problem) isa UnitWeight)
+end
 
 """
     problem_size(problem::AbstractProblem) -> NamedTuple
@@ -43,11 +90,11 @@ The number of variables in the computational problem.
 num_variables(c::AbstractProblem) = length(variables(c))
 
 """
-    parameter_type(problem::AbstractProblem) -> Type
+    weight_type(problem::AbstractProblem) -> Type
 
-The data type of the parameters in the computational problem.
+The data type of the weights in the computational problem.
 """
-parameter_type(gp::AbstractProblem) = eltype(parameters(gp))
+weight_type(gp::AbstractProblem) = eltype(weights(gp))
 
 """
     flavors(::Type{<:AbstractProblem}) -> Vector
@@ -82,12 +129,49 @@ Returns the number of flavors (domain) of a degree of freedom.
 num_flavors(::GT) where GT<:AbstractProblem = length(flavors(GT))
 
 """
-    evaluate(problem::AbstractProblem, config) -> Real
+    energy(problem::AbstractProblem, config) -> Real
 
-Evaluate the energy of the `problem` given the configuration `config`.
+Energy of the `problem` given the configuration `config`.
 The lower the energy, the better the configuration.
 """
-function evaluate end
+function energy end
+
+# energy interface
+energy(problem::AbstractProblem, config) = first(energy_multi(problem, [config]))[1]
+struct EnergyMultiConfig{T, PT<:ConstraintSatisfactionProblem{T}, ST, ST2, VT, WT <: AbstractVector{T}}
+    problem::PT
+    configs::VT  # iterator of configurations
+    hard_specs::Vector{LocalConstraint{ST}}
+    energy_terms::Vector{LocalConstraint{ST2}}
+    weights::WT
+end
+
+function energy_multi(problem::ConstraintSatisfactionProblem{T}, configs) where T
+    @assert all(config -> length(config) == num_variables(problem), configs) "All configurations must have the same length as the number of variables, got: $(length(config)) != $(num_variables(problem))"
+    hard_specs = hard_constraints(problem)
+    terms = energy_terms(problem)
+    ws = is_weighted(problem) ? weights(problem) : UnitWeight(length(terms))
+    return EnergyMultiConfig(problem, configs, hard_specs, terms, ws)
+end
+
+function Base.iterate(emc::EnergyMultiConfig{T}, args...) where T
+    config_spec = iterate(emc.configs, args...)
+    if config_spec === nothing
+        return nothing
+    end
+    config, state = config_spec
+    if !all(spec -> is_satisfied(typeof(emc.problem), spec, _get(config, spec.variables)), emc.hard_specs)
+        return (energy_max(T), config), state
+    end
+    energy = zero(T)
+    for (i, spec) in enumerate(emc.energy_terms)
+        subconfig = _get(config, spec.variables)
+        energy += local_energy(typeof(emc.problem), spec, subconfig) * emc.weights[i]
+    end
+    return (energy, config), state
+end
+_get(config::AbstractVector, indices) = view(config, indices)
+_get(config::Tuple, indices) = Iterators.map(i -> config[i], indices)
 
 """
 $TYPEDSIGNATURES
@@ -105,12 +189,49 @@ Find the best configurations of the `problem` using the `method`.
 """
 function findbest end
 
+"""
+    UnitWeight <: AbstractVector{Int}
+
+The unit weight vector of length `n`.
+"""
 struct UnitWeight <: AbstractVector{Int}
     n::Int
 end
 Base.getindex(::UnitWeight, i) = 1
 Base.size(w::UnitWeight) = (w.n,)
 
+"""
+    energy_terms(problem::AbstractProblem) -> Vector{LocalConstraint}
+
+The energy terms of the problem. Each term is associated with weights.
+"""
+function energy_terms end
+
+"""
+    hard_constraints(problem::AbstractProblem) -> Vector{LocalConstraint}
+
+The hard constraints of the problem. Once the hard constraints are violated, the energy goes to infinity.
+"""
+function hard_constraints end
+
+macro nohard_constraints(problem)
+    esc(quote
+        function $ProblemReductions.hard_constraints(problem::$(problem))
+            return LocalConstraint{Nothing}[]
+        end
+    end)
+end
+
+"""
+    local_energy(::Type{<:ConstraintSatisfactionProblem{T}}, constraint::LocalConstraint, config) -> T
+
+The local energy of the `constraint` given the configuration `config`.
+"""
+function local_energy end
+
+# the maximum energy for the local energy function, this is used to avoid overflow of integer energy
+energy_max(::Type{T}) where T = typemax(T)
+energy_max(::Type{T}) where T<:Integer = round(T, sqrt(typemax(T)))
 
 include("SpinGlass.jl")
 include("Circuit.jl")

@@ -9,12 +9,12 @@ Positional arguments
 * `graph` is the problem graph.
 * `weights` are associated with the vertices of the `graph`.
 """
-struct MaximalIS{WT<:Union{UnitWeight, Vector}} <: AbstractProblem
+struct MaximalIS{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::SimpleGraph
     weights::WT
-    function MaximalIS(g::SimpleGraph, weights::Union{UnitWeight, Vector}=UnitWeight(nv(g)))
+    function MaximalIS(g::SimpleGraph, weights::AbstractVector{T}=UnitWeight(nv(g))) where {T}
         @assert weights isa UnitWeight || length(weights) == nv(g)
-        new{typeof(weights)}(g, weights)
+        new{T, typeof(weights)}(g, weights)
     end
 end
 Base.:(==)(a::MaximalIS, b::MaximalIS) = a.graph == b.graph && a.weights == b.weights
@@ -26,20 +26,24 @@ flavors(::Type{<:MaximalIS}) = [0, 1]
 problem_size(c::MaximalIS) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
-parameters(c::MaximalIS) = c.weights
-set_parameters(c::MaximalIS, weights) = MaximalIS(c.graph, weights)
+weights(c::MaximalIS) = c.weights
+set_weights(c::MaximalIS, weights) = MaximalIS(c.graph, weights)
 
-
-"""
-    evaluate(c::MaximalIS, config)
-    Return the weights of the vertices that are not in the maximal independent set.
-"""
-function evaluate(c::MaximalIS, config)
-    @assert length(config) == nv(c.graph)
-    if !is_maximal_independent_set(c.graph, config)
-        return Inf
-    end
-    return sum(i -> config[i]*c.weights[i], 1:nv(c.graph))
+function hard_constraints(c::MaximalIS)
+    return [LocalConstraint(vcat(v, neighbors(c.graph, v)), :maximal_independent) for v in vertices(c.graph)]
+end
+function is_satisfied(::Type{<:MaximalIS}, spec::LocalConstraint, config)
+    @assert length(config) == num_variables(spec)
+    nselect = count(!iszero, config)
+    return !(nselect == 0 || (nselect > 1 && !iszero(first(config))))
+end
+# constraints interface
+function energy_terms(c::MaximalIS)
+    return [LocalConstraint([v], :vertex) for v in vertices(c.graph)]
+end
+function local_energy(::Type{<:MaximalIS{T}}, spec::LocalConstraint, config) where {T}
+    @assert length(config) == num_variables(spec)
+    return T(-first(config))
 end
 
 """

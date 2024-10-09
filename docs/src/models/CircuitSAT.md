@@ -26,13 +26,13 @@ variables(sat)
 flavors(sat)
 ```
 
-The circuit can be evaluated with the [`evaluate`](@ref) function:
+The circuit can be evaluated with the [`energy`](@ref) function:
 ```@repl CircuitSAT
-evaluate(sat, [true, false, true, true, false, false, true])
+energy(sat, [true, false, true, true, false, false, true])
 ```
 The return value is 0 if the assignment satisfies the circuit, otherwise, it is the number of unsatisfied clauses.
 !!! note
-    [`evaluate`](@ref) funciton returns lower values for satisfiable assignments.
+    [`energy`](@ref) funciton returns lower values for satisfiable assignments.
 
 To find all satisfying assignments, use the [`findbest`](@ref) function:
 ```@repl CircuitSAT

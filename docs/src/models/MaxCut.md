@@ -18,8 +18,8 @@ maxcut = MaxCut(g,[1,2,3]) # specify the weights of the edges
 
 Here the graph is a simple graph with 3 vertices and 3 edges. The weights of the edges are `[1,2,3]`.
 
-Required functions and optional functions: [`set_parameters`](@ref), [`num_variables`](@ref) are implemented for this model.
+Required functions and optional functions: [`set_weights`](@ref), [`num_variables`](@ref) are implemented for this model.
 ```@repl MaxCut
-mc = set_parameters(maxcut, [2,1,3]) # set the weights and get a new instance
+mc = set_weights(maxcut, [2,1,3]) # set the weights and get a new instance
 num_variables(maxcut) # return the number of vertices
 ```

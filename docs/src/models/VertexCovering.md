@@ -16,13 +16,13 @@ weights = [1, 3, 1, 4]
 VC= VertexCovering(graph, weights)
 ```
 
-The required functions, `variables`, `evaluate`, and optional functions: `set_parameters` are implemented for the vertex covering problem.
+The required functions, `variables`, `energy`, and optional functions: `set_weights` are implemented for the vertex covering problem.
 ```@repl VertexCovering
 variables(VC)  # degrees of freedom
-evaluate(VC, [1, 0, 0, 1]) # Negative sample
-evaluate(VC, [0, 1, 1, 0]) # Positive sample
+energy(VC, [1, 0, 0, 1]) # Negative sample
+energy(VC, [0, 1, 1, 0]) # Positive sample
 findbest(VC, BruteForce())  # solve the problem with brute force
-VC02 = set_parameters(VC, [1, 2, 3, 4])  # set the weights of the subsets
+VC02 = set_weights(VC, [1, 2, 3, 4])  # set the weights of the subsets
 ```
 !!! note
-    The `evaluate` function returns the cost of a configuration. If the configuration is not a vertex cover, it returns a large number.
+    The `energy` function returns the cost of a configuration. If the configuration is not a vertex cover, it returns a large number.

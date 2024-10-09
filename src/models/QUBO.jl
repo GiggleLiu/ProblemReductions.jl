@@ -10,7 +10,7 @@ where `x_i \\in \\{0, 1\\}`.
 ### Arguments
 - `matrix::AbstractMatrix`: the matrix Q of the QUBO problem.
 """
-struct QUBO{T <: Real} <: AbstractProblem
+struct QUBO{T <: Real} <: ConstraintSatisfactionProblem{T}
     matrix::Matrix{T}
     function QUBO(matrix::Matrix{T}) where T
         @assert size(matrix, 1) == size(matrix, 2)
@@ -35,8 +35,27 @@ variables(c::QUBO) = collect(1:size(c.matrix, 1))
 flavors(::Type{<:QUBO}) = [0, 1]
 problem_size(c::QUBO) = (; num_variables=size(c.matrix, 1))
 
-function evaluate(c::QUBO, config)
-    @assert length(config) == num_variables(c)
-    @assert all(x -> x in (0, 1), config)
-    return transpose(config) * c.matrix * config
+function weights(c::QUBO)
+    return vcat(
+        [c.matrix[i, j] + c.matrix[j, i] for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
+        [c.matrix[i, i] for i in variables(c) if c.matrix[i, i] != 0]
+    )
+end
+
+# constraints interface
+function energy_terms(c::QUBO)
+    vcat(
+        [LocalConstraint([i, j], :offdiagonal) for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
+        [LocalConstraint([i], :diagonal) for i in variables(c) if c.matrix[i, i] != 0]
+    )
+end
+@nohard_constraints QUBO
+function local_energy(::Type{<:QUBO}, spec::LocalConstraint, config)
+    @assert length(config) == num_variables(spec)
+    if spec.specification == :offdiagonal
+        a, b = config
+        return a * b
+    else
+        return first(config)
+    end
 end

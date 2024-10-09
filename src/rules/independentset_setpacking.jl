@@ -19,8 +19,8 @@ function reduceto(::Type{<:SetPacking}, s::IndependentSet)
         push!(vertices_list, v)
         push!(subset_collection, Vector{Int}())
     end
-    for (i, v_set) in enumerate(vedges(s.graph))
-        for v in v_set
+    for (i, v_set) in enumerate(edges(s.graph))
+        for v in iterable(v_set)
             push!(subset_collection[findfirst(==(v), vertices_list)], i)
         end
     end

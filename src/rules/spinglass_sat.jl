@@ -15,7 +15,7 @@ struct ReductionCircuitToSpinGlass{GT, T} <: AbstractReductionResult
 end
 target_problem(res::ReductionCircuitToSpinGlass) = res.spinglass
 
-function reduceto(::Type{<:SpinGlass}, sat::CircuitSAT)
+function reduceto(::Type{<:SpinGlass{<:SimpleGraph}}, sat::CircuitSAT)
     sg, all_variables = circuit2spinglass(sat.circuit)
     return ReductionCircuitToSpinGlass(num_variables(sat), sg, Int[findfirst(==(v), all_variables) for v in sat.symbols])
 end
@@ -32,7 +32,7 @@ function circuit2spinglass(c::Circuit)
     end
     unique!(all_variables)
     indexof(v) = findfirst(==(v), all_variables)
-    sg = SpinGlass(HyperGraph(length(all_variables), Vector{Int}[]), Int[])
+    sg = SpinGlass(SimpleGraph(length(all_variables)), Int[], zeros(Int, length(all_variables)))
     for (m, variables) in modules
         add_sg!(sg, m, indexof.(variables))
     end
@@ -165,7 +165,7 @@ function expr_to_spinglass_gadget(expr::BooleanExpr)
         vmap[v] = gensym("spin")
         push!(all_variables, vmap[v])
     end
-    sg = SpinGlass(HyperGraph(length(all_variables), Vector{Int}[]), Int[])
+    sg = SpinGlass(SimpleGraph(length(all_variables)), Int[], zeros(Int, length(all_variables)))
     indexof(v) = Int(findfirst(==(v), all_variables))
     for (m, variables) in modules
         add_sg!(sg, m, indexof.(variables))
@@ -192,39 +192,34 @@ The array multiplier gadget.
 - constraints: 2 * c_{i,j} + s_{i,j} = p_i q_j + c_{i-1,j} + s_{i+1,j-1}
 """
 function spinglass_gadget(::Val{:arraymul})
-    sg = SpinGlass(HyperGraph(7, Vector{Int}[]), Int[])
+    sg = SpinGlass(SimpleGraph(7), Int[], zeros(Int, 7))
     add_sg!(sg, spinglass_gadget(Val(:∧)).problem, [1, 2, 3])
-    for (clique, weight) in [[6, 7] => 2, [6, 3]=>-2, [6, 4]=>-2, [6, 5]=>-2,
-                    [7, 3]=>-1, [7, 4]=>-1, [7, 5]=>-1,
-                    [3, 4]=>1, [3, 5]=>1, [4, 5]=>1]
-        add_clique!(sg, clique, weight)
+    for (clique, weight) in [(6, 7) => 2, (6, 3) => -2, (6, 4) => -2, (6, 5) => -2,
+                    (7, 3) => -1, (7, 4) => -1, (7, 5) => -1,
+                    (3, 4) => 1, (3, 5) => 1, (4, 5) => 1]
+        add_coupling!(sg, Graphs.SimpleEdge(clique...), weight)
     end
     return LogicGadget(sg, [1, 2, 4, 5], [6, 7])
 end
 
-function add_sg!(sg::SpinGlass, g::SpinGlass, vmap::Vector{Int})
+function add_sg!(sg::SpinGlass{<:SimpleGraph}, g::SpinGlass{<:SimpleGraph}, vmap::Vector{Int})
     @assert length(vmap) == num_variables(g) "length of vmap must be equal to the number of vertices $(num_variables(g)), got: $(length(vmap))"
-    mapped_edges = [map(x->vmap[x], clique) for clique in edges(g.graph)]
-    for (clique, weight) in zip(mapped_edges, g.weights)
-        add_clique!(sg, clique, weight)
+    for (edg, weight) in zip(edges(g.graph), g.J)
+        add_coupling!(sg, Graphs.SimpleEdge(vmap[edg.src], vmap[edg.dst]), weight)
+    end
+    for (v, h) in zip(vmap, g.h)
+        add_onsite!(sg, v, h)
     end
     return sg
 end
-function add_clique!(sg::SpinGlass, clique::Vector{Int}, weight)
-    for (k, c) in enumerate(edges(sg.graph))
-        if sort(_vec(c)) == sort(clique)
-            sg.weights[k] += weight
-            return sg
-        end
-    end
-    _add_edge!(sg.graph, clique)
-    push!(sg.weights, weight)
+function add_onsite!(sg::SpinGlass, v::Int, weight)
+    sg.h[v] += weight
     return sg
 end
-_add_edge!(g::SimpleGraph, c::Vector{Int}) = add_edge!(g, c...)
-function _add_edge!(g::HyperGraph, c::Vector{Int})
-    @assert all(b->1<=b<=nv(g), c) "vertex index out of bound 1-$(nv(g)), got: $c"
-    push!(g.edges, c)
+
+function add_coupling!(sg::SpinGlass, edg::Graphs.SimpleEdge{Int}, weight)
+    _add_edge_weight!(sg.graph, edg, sg.J, weight)
+    return sg
 end
 
 function compose_multiplier(m::Int, n::Int)
@@ -258,7 +253,7 @@ function compose_multiplier(m::Int, n::Int)
             spre = s
         end
     end
-    sg = SpinGlass(SimpleGraph(N), Vector{Int}[], zeros(Int, N))
+    sg = SpinGlass(SimpleGraph(N), Int[], zeros(Int, N))
     for (m, pins) in modules
         add_sg!(sg, m, pins)
     end
@@ -268,7 +263,7 @@ end
 function set_input!(ga::LogicGadget, inputs::Vector{Int})
     @assert length(inputs) == length(ga.inputs)
     for (k, v) in zip(ga.inputs, inputs)
-        add_clique!(ga.problem, [k], v == 1 ? 1 : -1)  # 1 for down, 0 for up
+        add_onsite!(ga.problem, k, v == 1 ? 1 : -1)  # 1 for down, 0 for up
     end
     return ga
 end

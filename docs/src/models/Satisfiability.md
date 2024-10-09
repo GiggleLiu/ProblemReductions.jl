@@ -22,12 +22,12 @@ cnf_test = CNF([clause1, clause2])
 sat_test = Satisfiability(cnf_test)
 ```
 
-Besides, the required functions, [`variables`](@ref), [`flavors`](@ref), and [`evaluate`](@ref), and optional functions, [`findbest`](@ref), are implemented for the Satisfiability problem.
+Besides, the required functions, [`variables`](@ref), [`flavors`](@ref), and [`energy`](@ref), and optional functions, [`findbest`](@ref), are implemented for the Satisfiability problem.
 ```@repl Satisfiability
 variables(sat_test)  # degrees of freedom
 flavors(sat_test)  # flavors of the literals
-evaluate(sat_test, [1, 1, 1, 1]) # Positive sample
-evaluate(sat_test, [0, 0, 1, 0]) # Negative sample
+energy(sat_test, [1, 1, 1, 1]) # Positive sample
+energy(sat_test, [0, 0, 1, 0]) # Negative sample
 findbest(sat_test, BruteForce())  # solve the problem with brute force
 ```
 

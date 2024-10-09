@@ -16,13 +16,14 @@ end
     include("vertexcovering_setcovering.jl")
 end
 
-@testset "sat_coloring.jl" begin
+@testset "sat_coloring" begin
     include("sat_coloring.jl")
 end
 
-@testset "factoring_sat.jl" begin
+@testset "factoring_sat" begin
     include("factoring_sat.jl")
 end
+
 @testset "sat_3sat" begin
     include("sat_3sat.jl")
 end
@@ -51,31 +52,30 @@ end
     end)
     graph = smallgraph(:petersen)
     maxcut = MaxCut(graph)
-    spinglass = SpinGlass(graph, [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1])
+    spinglass = SpinGlass(graph, [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1], zeros(Int, nv(graph)))
     vertexcovering = VertexCovering(graph, [1,2,1,2,1,2,1,2,1,2])
     sat = Satisfiability(CNF([CNFClause([BoolVar(:a), BoolVar(:b)])]))
     ksat = KSatisfiability{3}( CNF([CNFClause([BoolVar(:a), BoolVar(:b), BoolVar(:c)])]) )
     graph2 = HyperGraph(3, [[1, 2], [1], [2,3], [2]])
-    spinglass2 = SpinGlass(graph2, [1, 2, 1, -1])
     qubo = QUBO([0 1 -2; 1 0 -2; -2 -2 6])
     is = IndependentSet(graph)
     is2 = IndependentSet(graph2)
     for (source, target_type) in [
             # please add more tests here
-            circuit => SpinGlass,
-            maxcut => SpinGlass,
+            circuit => SpinGlass{<:SimpleGraph},
+            maxcut => SpinGlass{<:SimpleGraph},
             spinglass => MaxCut,
             vertexcovering => SetCovering,
             sat => Coloring{3},
-            spinglass2 => MaxCut,
-            qubo => SpinGlass,
-            spinglass2 => QUBO,
+            spinglass => MaxCut,
+            qubo => SpinGlass{<:SimpleGraph},
+            spinglass => QUBO,
             sat => KSatisfiability,
             ksat => Satisfiability,
-            sat => IndependentSet,
-            sat => DominatingSet,
+            sat => IndependentSet{<:SimpleGraph},
+            sat => DominatingSet{<:SimpleGraph},
             is => SetPacking,
-            is2 => SetPacking
+            is2 => SetPacking,
         ]
         @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve
@@ -94,5 +94,4 @@ end
         @test best_source_extracted_single ⊆ best_source
         @test Set(best_source_extracted_multiple) == Set(best_source)
     end
-
 end

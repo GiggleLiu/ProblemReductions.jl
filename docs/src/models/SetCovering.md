@@ -13,14 +13,14 @@ setcovering = SetCovering(subsets, weights)
 ```
 Use 2-dimensional vector to represent the subsets.
 
-The required functions, `variables`, `evaluate`, and optional functions:`set_parameters` are implemented for the set covering problem.
+The required functions, `variables`, `energy`, and optional functions:`set_weights` are implemented for the set covering problem.
 ```@repl SetCovering
 variables(setcovering)  # degrees of freedom
-evaluate(setcovering, [1, 0, 1])  # cost of a configuration
-evaluate(setcovering, [0, 1, 1]) 
-sc = set_parameters(setcovering, [1, 2, 3])  # set the weights of the subsets
+energy(setcovering, [1, 0, 1])  # cost of a configuration
+energy(setcovering, [0, 1, 1]) 
+sc = set_weights(setcovering, [1, 2, 3])  # set the weights of the subsets
 ```
 !!! note
-    The `evaluate` function returns the cost of a configuration. If the configuration is not a set cover, it returns a large number.
+    The `energy` function returns the cost of a configuration. If the configuration is not a set cover, it returns a large number.
 
 

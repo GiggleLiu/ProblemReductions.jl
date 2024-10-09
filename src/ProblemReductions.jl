@@ -5,12 +5,13 @@ using DocStringExtensions
 using PrettyTables
 using BitBasis
 using MLStyle
+using InteractiveUtils: subtypes
 
 export @bit_str
 export TruthTable
 export HyperGraph, UnitDiskGraph, GridGraph, PlanarGraph, SimpleGraph
 export @bv_str, StaticElementVector, StaticBitVector, statictrues, staticfalses, onehotv
-export num_variables, num_flavors, variables, flavors, parameters, set_parameters, evaluate, parameter_type, problem_size, configuration_space_size
+export num_variables, num_flavors, variables, flavors, weights, set_weights, is_weighted, energy, weight_type, problem_size, configuration_space_size, constraints
 export UnitWeight
 
 # models
@@ -26,12 +27,12 @@ export SetPacking, is_set_packing
 export DominatingSet
 export QUBO
 export Factoring
-export Matching
+export Matching, is_matching
 export MaximalIS
 export PaintShop
 
 # rules
-export target_problem, AbstractProblem, AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduce_size
+export target_problem, AbstractProblem, ConstraintSatisfactionProblem, AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduce_size
 export LogicGadget, truth_table
 export ReductionSATTo3SAT
 export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering, ReductionSatToColoring,
@@ -52,5 +53,6 @@ include("models/models.jl")
 include("rules/rules.jl")
 include("bruteforce.jl")
 include("reduction_path.jl")
+include("deprecated.jl")
 
 end

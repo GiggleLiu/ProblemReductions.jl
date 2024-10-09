@@ -16,6 +16,7 @@ using Test, ProblemReductions, Graphs
     
     # construct corresponding DominatingSet problems
     DS_01 = DominatingSet(g01)
+    @test set_weights(DS_01, [1, 2, 2, 1, 1]) == DominatingSet(g01, [1, 2, 2, 1, 1])
     DS_02 = DominatingSet(g02)
     @test DS_01 == DS_02
 
@@ -25,14 +26,14 @@ using Test, ProblemReductions, Graphs
     @test flavors(DominatingSet) == [0, 1]
     @test problem_size(DS_01) == (; num_vertices = 5, num_edges = 4)
 
-    # evaluate
+    # energy
     # Positive examples
-    @test evaluate(DS_01, [1, 0, 1, 0, 1]) == 3
-    @test evaluate(DS_01, [0, 1, 0, 1, 0]) == 2
-    @test evaluate(DS_01, [1, 1, 1, 1, 0]) == 4
+    @test energy(DS_01, [1, 0, 1, 0, 1]) == 3
+    @test energy(DS_01, [0, 1, 0, 1, 0]) == 2
+    @test energy(DS_01, [1, 1, 1, 1, 0]) == 4
     # Negative examples
-    @test evaluate(DS_01, [0, 1, 1, 0, 0]) == 5
-    @test evaluate(DS_01, [1, 0, 0, 0, 1]) == 5
+    @test energy(DS_01, [0, 1, 1, 0, 0]) > 1000
+    @test energy(DS_01, [1, 0, 0, 0, 1]) > 1000
     # findbest function
     @test findbest(DS_01, BruteForce()) == [[1, 0, 0, 1, 0], [0, 1, 0, 1, 0], [0, 1, 0, 0, 1]]
 end

@@ -18,6 +18,7 @@ using Test, ProblemReductions, Graphs
 
     # construct corresponding IndependentSet problems
     IS_01 = IndependentSet(g01)
+    @test set_weights(IS_01, [1, 2, 2, 1]) == IndependentSet(g01, [1, 2, 2, 1])
     IS_02 = IndependentSet(g02)
     IS_03 = IndependentSet(g03)
     @test IS_01 == IS_02
@@ -29,12 +30,12 @@ using Test, ProblemReductions, Graphs
     @test num_variables(IS_01) == 4
     @test flavors(IndependentSet) == [0, 1]
 
-    # evaluate
+    # energy
     # Positive examples
-    @test evaluate(IS_01, [1, 0, 0, 1]) == -2
-    @test evaluate(IS_01, [0, 1, 0, 1]) == -2
+    @test energy(IS_01, [1, 0, 0, 1]) == -2
+    @test energy(IS_01, [0, 1, 0, 1]) == -2
     # a Negative example
-    @test evaluate(IS_01, [0, 1, 1, 0]) == 0
+    @test energy(IS_01, [0, 1, 1, 0]) > 1000
 
     # test findbest function
     @test findbest(IS_01, BruteForce()) == [[1, 0, 0, 1], [0, 1, 0, 1]] # "1" is superior to "0"

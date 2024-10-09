@@ -2,7 +2,7 @@ using Test, ProblemReductions, Graphs
 
 @testset "sat_dominatingset" begin
     function verify(sat)
-        reduction_results = reduceto(DominatingSet, sat)
+        reduction_results = reduceto(DominatingSet{<:SimpleGraph}, sat)
         DS_tmp = reduction_results |> target_problem
         sol_DS = findbest(DS_tmp, BruteForce())
         s1 = Set(findbest(sat, BruteForce()))
@@ -12,7 +12,7 @@ using Test, ProblemReductions, Graphs
     end
 
     function verify_unsatisfiable(sat)
-        reduction_results = reduceto(DominatingSet, sat)
+        reduction_results = reduceto(DominatingSet{<:SimpleGraph}, sat)
         DS_tmp = reduction_results |> target_problem
         sol_DS = findbest(DS_tmp, BruteForce())
         s2 = Set( unique( extract_solution.(Ref(reduction_results), sol_DS) ) )

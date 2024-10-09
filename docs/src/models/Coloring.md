@@ -14,13 +14,13 @@ coloring = Coloring{3}(g)
 ```
 We create a petersen graph and take 3 colors here to initialize a Coloring Problem. 
 
-Functions [`variables`](@ref), [`flavors`](@ref), [`num_flavors`](@ref), [`parameters`](@ref) and [`set_parameters`](@ref) are implemented for `Coloring` model. 
+Functions [`variables`](@ref), [`flavors`](@ref), [`num_flavors`](@ref), [`weights`](@ref) and [`set_weights`](@ref) are implemented for `Coloring` model. 
 ```@repl Coloring
 variables(coloring)
 flavors(coloring)
 ```
 
-Also, [`evaluate`](@ref) and [`is_vertex_coloring`](@ref) is also implemented.
+Also, [`energy`](@ref) and [`is_vertex_coloring`](@ref) is also implemented.
 ```@repl Coloring
 is_vertex_coloring(coloring.graph,[1,2,3,1,3,2,1,2,3,1]) #random assignment
 ```

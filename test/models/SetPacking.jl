@@ -7,6 +7,7 @@ using Test, ProblemReductions
 
     # construct corresponding SetPacking problems
     SP_01 = SetPacking(sets01)
+    @test set_weights(SP_01, [1, 2, 2, 1, 1]) == SetPacking([[1, 2, 5], [1, 3], [2, 4], [3, 6], [2, 3, 6]], [1, 2, 2, 1, 1])
     SP_02 = SetPacking(sets02)
     @test !(SP_01 == SP_02)
     @test SP_01 == SetPacking([[1, 2, 5], [1, 3], [2, 4], [3, 6], [2, 3, 6]])
@@ -18,15 +19,15 @@ using Test, ProblemReductions
     @test num_variables(SP_01) == 5
     @test flavors(SetPacking) == [0, 1]
 
-    # evaluate
+    # energy
     # a Positive examples
     cfg01 = [1, 0, 0, 1, 0]
-    @test evaluate(SP_01, cfg01) == -2
+    @test energy(SP_01, cfg01) == -2
     is_set_packing(SP_01.sets, cfg01) == true
 
     # a Negative example
     cfg02 = [1, 0, 1, 1, 0]
-    @test evaluate(SP_01, cfg02) == 0
+    @test energy(SP_01, cfg02) > 1000
     is_set_packing(SP_01.sets, cfg02) == false
 
     # test findbest function

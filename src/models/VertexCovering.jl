@@ -8,12 +8,12 @@ Positional arguments
 * `graph` is a graph object.
 * `weights` are associated with the vertices of the `graph`, default to `UnitWeight(nv(graph))`.
 """
-struct VertexCovering{WT<:AbstractVector} <: AbstractProblem
+struct VertexCovering{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::SimpleGraph{Int64}
     weights::WT
-    function VertexCovering(graph::SimpleGraph{Int64}, weights::AbstractVector=UnitWeight(nv(graph)))
+    function VertexCovering(graph::SimpleGraph{Int64}, weights::AbstractVector{T}=UnitWeight(nv(graph))) where {T}
         @assert length(weights) == nv(graph) "length of weights must be equal to the number of vertices $(nv(graph)), got: $(length(weights))"
-        new{typeof(weights)}(graph, weights)
+        new{T, typeof(weights)}(graph, weights)
     end
 end
 Base.:(==)(a::VertexCovering, b::VertexCovering) = a.graph == b.graph && a.weights == b.weights
@@ -25,22 +25,23 @@ flavors(::Type{<:VertexCovering}) = [0, 1] # whether the vertex is selected (1) 
 problem_size(c::VertexCovering) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 #weights interface 
-parameters(c::VertexCovering) = c.weights
-set_parameters(c::VertexCovering, weights) = VertexCovering(c.graph, weights)
+weights(c::VertexCovering) = c.weights
+set_weights(c::VertexCovering, weights) = VertexCovering(c.graph, weights)
 
-"""
-    evaluate(c::VertexCovering, config)
-return the weights of edge that is not covered but return typemax(eltype(weights)) if the edge is not covered.
-`config` is a vector of boolean numbers.
-"""
-function evaluate(c::VertexCovering, config)
-    @assert length(config) == nv(c.graph)
-    vertex_covering_energy(c.graph, c.weights, config)
+# constraints interface
+function hard_constraints(c::VertexCovering)
+    return [LocalConstraint(_vec(e), :cover) for e in edges(c.graph)]
 end
-
-function vertex_covering_energy(g::SimpleGraph, weights::AbstractVector, config)
-    !is_vertex_covering(g, config) && return typemax(eltype(weights))
-    return sum(weights[i] * config[i] for i in 1:length(config))
+function is_satisfied(::Type{<:VertexCovering}, spec::LocalConstraint, config)
+    @assert length(config) == num_variables(spec)
+    return any(!iszero, config)
+end
+function energy_terms(c::VertexCovering)
+    return [LocalConstraint([v], :vertex) for v in vertices(c.graph)]
+end
+function local_energy(::Type{<:VertexCovering{T}}, spec::LocalConstraint, config) where T
+    @assert length(config) == num_variables(spec)
+    return T(first(config))
 end
 
 """

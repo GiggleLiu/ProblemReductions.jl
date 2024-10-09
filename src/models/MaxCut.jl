@@ -10,12 +10,12 @@ Positional arguments
 * `graph` is the problem graph.
 * `weights` are associated with the edges of the `graph`. We have ensure that the `weights` are in the same order as the edges in `edges(graph)`.
 """
-struct MaxCut{WT<:AbstractVector} <: AbstractProblem
+struct MaxCut{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::SimpleGraph{Int}
     weights::WT
-    function MaxCut(g::SimpleGraph,weights::AbstractVector=UnitWeight(ne(g))) 
+    function MaxCut(g::SimpleGraph,weights::AbstractVector{T}=UnitWeight(ne(g))) where {T}
         @assert length(weights) == ne(g) "got $(length(weights)) weights, but $(ne(g)) are required"
-        new{typeof(weights)}(g, weights)
+        new{T, typeof(weights)}(g, weights)
     end
 end
 Base.:(==)(a::MaxCut, b::MaxCut) = a.graph == b.graph && a.weights == b.weights
@@ -27,20 +27,19 @@ flavors(::Type{<:MaxCut}) = [0, 1] #choose it or not
 problem_size(c::MaxCut) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
                             
 # weights interface
-parameters(c::MaxCut) = [[c.weights[i] for i=1:ne(c.graph)]...]
-set_parameters(c::MaxCut, weights) = MaxCut(c.graph, weights[1:ne(c.graph)])
+weights(c::MaxCut) = c.weights
+set_weights(c::MaxCut, weights) = MaxCut(c.graph, weights)
 
-
-
-"""
-    evaluate(c::MaxCut, config)
-Compute the cut weights for the vertex configuration `config` (an iterator). The energy is the 
-sum of the weights of the edges that are cut.
-"""
-function evaluate(c::MaxCut, config)
-    @assert length(config) == nv(c.graph)
-    -cut_size(vedges(c.graph), config; weights=c.weights)
+# constraints interface
+function energy_terms(c::MaxCut)
+    return [LocalConstraint(_vec(e), :cut) for e in edges(c.graph)]
 end
+function local_energy(::Type{<:MaxCut{T}}, spec::LocalConstraint, config) where {T}
+    @assert length(config) == num_variables(spec)
+    a, b = config
+    return (a != b) ? -one(T) : zero(T)
+end
+@nohard_constraints MaxCut
 
 function cut_size(terms, config; weights=UnitWeight(length(terms)))
     size = zero(promote_type(eltype(weights)))

@@ -15,11 +15,11 @@ add_edge!(graph, 2, 3)
 IS = IndependentSet(graph)
 ```
 
-Besides, the required functions, [`variables`](@ref), [`flavors`](@ref), and [`evaluate`](@ref), and optional functions, [`findbest`](@ref), are implemented for the Independent Set problem.
+Besides, the required functions, [`variables`](@ref), [`flavors`](@ref), and [`energy`](@ref), and optional functions, [`findbest`](@ref), are implemented for the Independent Set problem.
 ```@repl IndependentSet
 variables(IS)  # degrees of freedom
 flavors(IS)  # flavors of the vertices
-evaluate(IS, [1, 0, 0, 1]) # Positive sample: -(size) of an independent set
-evaluate(IS, [0, 1, 1, 0]) # Negative sample: 0
+energy(IS, [1, 0, 0, 1]) # Positive sample: -(size) of an independent set
+energy(IS, [0, 1, 1, 0]) # Negative sample: 0
 findbest(IS, BruteForce())  # solve the problem with brute force
 ```

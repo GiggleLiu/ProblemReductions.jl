@@ -19,10 +19,9 @@ We can firstly define a [`IndependentSet`] (@ref) problem over a simple graph wi
 ```@repl independentset_setpacking
 using ProblemReductions, Graphs
 graph = SimpleGraph(4)
-add_edge!(graph, 1, 2) 
-add_edge!(graph, 1, 3)
-add_edge!(graph, 3, 4)
-add_edge!(graph, 2, 3)
+for (i, j) in [(1, 2), (1, 3), (3, 4), (2, 3)]
+    add_edge!(graph, i, j)
+end
 IS = IndependentSet(graph)
 ```
 Then the reduction [`ReductionIndependentSetToSetPacking`] (@ref) can be easily constructed by the [`reduceto`](@ref) function.

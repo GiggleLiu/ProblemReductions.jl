@@ -10,6 +10,7 @@ using ProblemReductions: KSatisfiability,clauses
 
     cnf_test = CNF([clause1, clause2])
     sat_test = Satisfiability(cnf_test)
+    @test set_weights(sat_test, [1, 2]) == Satisfiability(CNF([clause1, clause2]), [1, 2])
     
     @test sat_test isa Satisfiability
     @test clauses(sat_test) == cnf_test.clauses
@@ -23,12 +24,12 @@ using ProblemReductions: KSatisfiability,clauses
     cfg = [1, 1, 1, 1]
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(sat_test.cnf, assignment) == true
-    @test evaluate(sat_test, cfg) == 0
+    @test energy(sat_test, cfg) == 0
 
     cfg = [0, 0, 1, 0]
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(sat_test.cnf, assignment) == false
-    @test evaluate(sat_test, cfg) == 1
+    @test energy(sat_test, cfg) == 1
 
     res = findbest(sat_test, BruteForce())
     @test length(res) == 14
@@ -43,5 +44,5 @@ using ProblemReductions: KSatisfiability,clauses
     cfg = [0, 1, 0, 1]
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(ksat_test.cnf, assignment) == true
-    @test evaluate(ksat_test, cfg) == 0
+    @test energy(ksat_test, cfg) == 0
 end

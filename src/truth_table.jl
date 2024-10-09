@@ -51,7 +51,7 @@ function infer_logic(configs, inputs::Vector{Int}, outputs::Vector{Int})
     for c in configs
         key = c[inputs]
         if haskey(output, key)
-            @assert output[key] == max(output[key], c[outputs])
+            @assert output[key] == max(output[key], c[outputs]) "Inconsistent logic inference on input $key. Got configs: $configs"
         else
             output[key] = c[outputs]
         end
@@ -60,6 +60,6 @@ function infer_logic(configs, inputs::Vector{Int}, outputs::Vector{Int})
 end
 function dict2table(inputs, outputs, d::Dict{Vector{Int}, Vector{Int}})
     ni, no = length(inputs), length(outputs)
-    @assert length(d) == 2^ni
+    @assert length(d) == 2^ni "length of d must be equal to 2^ni ($(2^ni)), got: $(length(d))"
     return TruthTable(inputs, outputs, [BitStr(d[[readbit(k, i) for i=1:ni]]) for k in 0:length(d)-1])
 end

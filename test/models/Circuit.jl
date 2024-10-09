@@ -22,9 +22,9 @@ end
     a, b, c, d, e = booleans(5)
     expr = (a ∧ b) ∨ (c ∧ ¬e)
     d = Dict(a=>true, b=>true, c=>true, e=>false)
-    @test ProblemReductions.evaluate(a, d)  == true
+    @test ProblemReductions.evaluate_expr(a, d)  == true
     @test d[a] == true
-    @test ProblemReductions.evaluate(expr, d) == true
+    @test ProblemReductions.evaluate_expr(expr, d) == true
 end
 @testset "circuit expr" begin
     ex = quote
@@ -38,15 +38,15 @@ end
         d = x ∨ c
     end
     println(circuit)
-    @test ProblemReductions.evaluate(circuit, Dict(:x => true, :y => false)) == Dict(:x => true, :y => false, :c => false, :d => true)
+    @test ProblemReductions.evaluate_expr(circuit, Dict(:x => true, :y => false)) == Dict(:x => true, :y => false, :c => false, :d => true)
     circuit = @circuit begin
         c = x ∧ y
         d = x ∨ (c ∧ ¬z)
     end
     println(circuit)
-    @test ProblemReductions.evaluate(circuit, Dict(:x => true, :y => false, :z => false)) == Dict(:x => true, :y => false, :z => false, :c => false, :d => true)
+    @test ProblemReductions.evaluate_expr(circuit, Dict(:x => true, :y => false, :z => false)) == Dict(:x => true, :y => false, :z => false, :c => false, :d => true)
     ssa = ProblemReductions.simple_form(circuit)
-    res = ProblemReductions.evaluate(ssa, Dict(:x => true, :y => false, :z => false))
+    res = ProblemReductions.evaluate_expr(ssa, Dict(:x => true, :y => false, :z => false))
     @test res[:x] && !res[:y] && !res[:z] && !res[:c] && res[:d]
 end
 
@@ -61,7 +61,11 @@ end
     @test sat.symbols[[1, 2, 3, 5, 7]] == [:c, :x, :y, :z, :d]
     @test variables(sat) == collect(1:7)
     @test num_variables(sat) == 7
-    @test evaluate(sat, [true, false, false, true, false, true, false]) == 1
-                          # c    x      y      ¬z     z    c ∧ ¬z   d
-    @test evaluate(sat, [false, false, false, true, false, false, false]) == 0
+    @test energy(sat, [true, false, false, true, false, true, false]) == 2
+                       # c    x      y      ¬z     z    c ∧ ¬z   d
+    # c = x ∧ y - 1
+    # m1 = ¬z - 0
+    # m2 = c ∧ m1 - 0
+    # d = x ∨ m2 - 1
+    @test energy(sat, [false, false, false, true, false, false, false]) == 0
 end

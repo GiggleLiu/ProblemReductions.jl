@@ -6,15 +6,15 @@ The reduction result of a general SAT problem to an Independent Set problem.
 ### Fields
 $TYPEDFIELDS
 """
-struct ReductionSATToIndependentSet{T, GT<:AbstractGraph, WT<:AbstractVector} <: AbstractReductionResult
-    target::IndependentSet{GT, WT}  # the target problem
-    literals::Vector{BoolVar{T}}  # the literals in the SAT problem
-    source_variables::Vector{T}  # the variables in the SAT problem
+struct ReductionSATToIndependentSet{S, GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: AbstractReductionResult
+    target::IndependentSet{GT, T, WT}  # the target problem
+    literals::Vector{BoolVar{S}}  # the literals in the SAT problem
+    source_variables::Vector{S}  # the variables in the SAT problem
     num_clauses::Int   # number of clauses in the SAT problem
 end
 target_problem(res::ReductionSATToIndependentSet) = res.target
 
-function reduceto(::Type{<:IndependentSet}, s::AbstractSatisfiabilityProblem)
+function reduceto(::Type{IndependentSet{<:SimpleGraph}}, s::AbstractSatisfiabilityProblem)
     literals = BoolVar{eltype(variables(s))}[]
     g = SimpleGraph(0)
     for c in clauses(s)  # add edges between literals in the same clause

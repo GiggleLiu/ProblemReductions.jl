@@ -20,13 +20,13 @@ The variables are mapped to integers that pointing to the symbols that stored in
 
 The we can convert the circuit to a [`SpinGlass`](@ref) problem using the [`reduceto`](@ref) function.
 ```@repl spinglass_sat
-result = reduceto(SpinGlass, circuitsat)
+result = reduceto(SpinGlass{<:SimpleGraph}, circuitsat)
 ```
 The resulting `result` is a `ReductionCircuitToSpinGlass` instance that contains the spin glass problem.
 
 With the `result` instance, we can define a logic gadget that maps the spin glass variables to the circuit variables.
 ```@repl spinglass_sat
-indexof(x) = findfirst(==(findfirst(==(x), circuitsat.symbols)), result.variables)
+indexof(x) = findfirst(==(x), circuitsat.symbols[sortperm(result.variables)])
 gadget = LogicGadget(result.spinglass, indexof.([:x, :y, :z]), [indexof(:d)])
 tb = truth_table(gadget; variables=circuitsat.symbols[result.variables])
 ```

@@ -4,12 +4,12 @@ $TYPEDEF
 The reduction result of a vertex covering to a set covering problem.
 
 ### Fields
-- `setcovering::SetCovering{ET,WT}`: the set covering problem, where ET is the sets type and WT is the weights type.
+- `setcovering::SetCovering{Int,T,WT}`: the set covering problem, where ET is the sets type and WT is the weights type.
 - `edgelabel`: map each edge to a number in order to identify the edge (otherwise the vector would be cluttering)
 """
-struct ReductionVertexCoveringToSetCovering{ET, WT<:AbstractVector} <: AbstractReductionResult
-    setcovering::SetCovering{ET, WT}
-    edgelabel::Dict{Vector{Int}, Int}
+struct ReductionVertexCoveringToSetCovering{ET, T, WT<:AbstractVector{T}} <: AbstractReductionResult
+    setcovering::SetCovering{Int, T, WT}
+    edgelabel::Dict{ET, Int}
 end
 Base.:(==)(a::ReductionVertexCoveringToSetCovering, b::ReductionVertexCoveringToSetCovering) = a.setcovering == b.setcovering && a.edgelabel == b.edgelabel
 
@@ -21,8 +21,8 @@ function reduceto(::Type{<:SetCovering}, vc::VertexCovering)
 end
 
 function vertexcovering2setcovering(vc::VertexCovering)
-    edgs = vedges(vc.graph)
-    return SetCovering(map(j->findall(e->j ∈ e, edgs), vertices(vc.graph)), vc.weights), Dict(zip(edgs, 1:ne(vc.graph)))
+    edgs = edges(vc.graph)
+    return SetCovering(map(j->[i for (i, e) in enumerate(edgs) if contains(e, j)], vertices(vc.graph)), vc.weights), Dict(zip(edgs, 1:ne(vc.graph)))
 end
 
 function extract_solution(res::ReductionVertexCoveringToSetCovering, sol)

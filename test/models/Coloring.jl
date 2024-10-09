@@ -13,6 +13,7 @@ using Test, ProblemReductions, Graphs
     add_edge!(g, 3, 4)
     add_edge!(g, 4, 1)
     c = Coloring{3}(g, UnitWeight(nv(g)))
+    @test set_weights(c, [1, 2, 2, 1]) == Coloring{3}(g, [1, 2, 2, 1])
     c2 = Coloring{3}(g)
     @test c2 == c
     @test c.graph == g && c.weights isa UnitWeight
@@ -20,12 +21,11 @@ using Test, ProblemReductions, Graphs
     @test problem_size(c) == (; num_vertices=4, num_edges=4)
 
     # weights interface
-    @test parameters(c) == UnitWeight(nv(g))
-    @test set_parameters(c, [1, 2, 2, 1]) == Coloring{3}(g, [1, 2, 2, 1])
+    @test ProblemReductions.weights(c) == UnitWeight(nv(g))
+    @test ProblemReductions.set_weights(c, [1, 2, 2, 1]) == Coloring{3}(g, [1, 2, 2, 1])
 
-    # evaluate,here I found the definition of Config is not clear, so I can't test the evaluate function
-    @test evaluate(c,[0, 1, 2, 0]) == 1
-    @test coloring_energy(ProblemReductions.vedges(c.graph), [1, 3, 2, 5], [0, 1, 2, 0]) == 3
+    # energy,here I found the definition of Config is not clear, so I can't test the energy function
+    @test energy(c,[0, 1, 2, 0]) == 1
     @test is_vertex_coloring(g, [0, 1, 2, 0]) == false
 end
 

@@ -1,4 +1,5 @@
 using Test, ProblemReductions, Graphs
+using Graphs: SimpleEdge
 using ProblemReductions: vertexcovering2setcovering
 
 @testset "VertexCoveing_SetCovering" begin
@@ -14,7 +15,7 @@ using ProblemReductions: vertexcovering2setcovering
     @test reduceto(SetCovering, vc) == ReductionVertexCoveringToSetCovering(sc, edgelabel)
     @test target_problem(reduceto(SetCovering, vc)) == reduceto(SetCovering, vc).setcovering
     @test sc == SetCovering([[1,2],[1,3],[2,3,4],[4]], [1, 3, 1, 4])
-    @test edgelabel == Dict([2, 3] => 3, [1, 3] => 2, [1, 2] => 1, [3, 4] => 4) # in lexicographic order
+    @test edgelabel == Dict(SimpleEdge(2, 3) => 3, SimpleEdge(1, 3) => 2, SimpleEdge(1, 2) => 1, SimpleEdge(3, 4) => 4) # in lexicographic order
     @test findbest(sc, BruteForce()) == [[1,0,1,0]]
     @test findbest(vc, BruteForce()) == [[1,0,1,0]]
     @test findbest(vc, BruteForce()) == findbest(sc, BruteForce())

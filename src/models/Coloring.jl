@@ -9,12 +9,12 @@ Positional arguments
 * `graph` is the problem graph.
 * `weights` are associated with the edges of the `graph`, default to `UnitWeight(ne(graph))`.
 """
-struct Coloring{K, WT<:AbstractVector} <:AbstractProblem
+struct Coloring{K, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::SimpleGraph{Int64}
     weights::WT
-    function Coloring{K}(graph::SimpleGraph{Int64}, weights::AbstractVector=UnitWeight(ne(graph))) where {K}
+    function Coloring{K}(graph::SimpleGraph{Int64}, weights::AbstractVector{T}=UnitWeight(ne(graph))) where {K, T}
         @assert length(weights) == ne(graph) "length of weights must be equal to the number of edges $(ne(graph)), got: $(length(weights))"
-        new{K, typeof(weights)}(graph, weights)
+        new{K, T, typeof(weights)}(graph, weights)
     end
 end
 Base.:(==)(a::Coloring, b::Coloring) = a.graph == b.graph && a.weights == b.weights
@@ -26,22 +26,21 @@ flavors(::Type{<:Coloring{K}}) where K = collect(0:K-1) # colors
 num_flavors(::Type{<:Coloring{K}}) where K = K # number of colors
 
 # weights interface
-parameters(c::Coloring) = c.weights
-set_parameters(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
+weights(c::Coloring) = c.weights
+set_weights(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
 
-# utilities
-"""
-    evaluate(c::Coloring, config)
-
-Compute the energy of the vertex coloring configuration `config`, the energy is the number of violated edges.
-"""
-function evaluate(c::Coloring, config)
-    @assert length(config) == nv(c.graph)
-    coloring_energy(vedges(c.graph), c.weights,config)
+# constraints interface
+@nohard_constraints Coloring
+function energy_terms(c::Coloring)
+    # constraints on edges
+    return [LocalConstraint(_vec(e), :coloring) for e in edges(c.graph)]
 end
 
-coloring_energy(terms::AbstractVector, weights::AbstractVector, config) = sum(ew->(config[ew[1][1]] == config[ew[1][2]]) * ew[2], zip(terms, weights))
-
+function local_energy(::Type{<:Coloring{K, T}}, spec::LocalConstraint, config) where {K, T}
+    @assert length(config) == num_variables(spec)
+    a, b = config
+    return a == b ? one(T) : zero(T)
+end
 
 """
     is_vertex_coloring(graph::SimpleGraph, config)
