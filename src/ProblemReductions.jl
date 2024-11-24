@@ -44,7 +44,7 @@ export ReductionIndependentSetToSetPacking
 export ReductionSATToCircuit
 
 # reduction path
-export ReductionGraph, reduction_graph, reduction_paths, implement_reduction_path, ConcatenatedReduction
+export ReductionGraph, reduction_graph, reduction_paths, ConcatenatedReduction
 
 include("truth_table.jl")
 include("topology.jl")
@@ -54,5 +54,7 @@ include("rules/rules.jl")
 include("bruteforce.jl")
 include("reduction_path.jl")
 include("deprecated.jl")
+
+@deprecate implement_reduction_path(path::ReductionPath, problem::AbstractProblem) reduceto(path, problem)
 
 end

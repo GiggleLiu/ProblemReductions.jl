@@ -74,16 +74,7 @@ function extract_solution(cr::ConcatenatedReduction, sol)
     return sol
 end
 
-"""
-    implement_reduction_path(rg::ReductionGraph, path::ReductionPath, problem::AbstractProblem)
-
-Implement a reduction path on a problem. Returns a [`ConcatenatedReduction`](@ref) instance.
-
-### Arguments
-- `path::ReductionPath`: A sequence of problem types, each element is an [`AbstractProblem`](@ref) instance.
-- `problem::AbstractProblem`: The source problem, the type of which must be the same as the first node in the path.
-"""
-function implement_reduction_path(path::ReductionPath, problem::AbstractProblem)
+function reduceto(path::ReductionPath, problem::AbstractProblem)
     @assert problem isa path.nodes[1] "The problem type must be the same as the first node: $(path.nodes[1]), got: $problem"
     sequence = []
     for method in path.methods
@@ -102,7 +93,7 @@ identity_reduction(::Type{<:AbstractProblem}, source) = IdentityReductionResult(
 Returns a [`ReductionGraph`](@ref) instance from the reduction rules defined with method `reduceto`.
 """
 function reduction_graph()
-    ms = methods(reduceto)
+    ms = filter(m->m.sig.types[2] <: Type{<:AbstractProblem}, methods(reduceto))
     rules = extract_types.(getfield.(ms, :sig))
     nodes = unique!(vcat(concrete_subtypes(AbstractProblem), first.(rules), last.(rules)))
     graph = SimpleDiGraph(length(nodes))
