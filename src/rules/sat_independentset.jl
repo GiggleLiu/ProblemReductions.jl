@@ -32,9 +32,9 @@ function reduceto(::Type{IndependentSet{<:SimpleGraph}}, s::AbstractSatisfiabili
     return ReductionSATToIndependentSet(IndependentSet(g), literals, variables(s), length(clauses(s)))
 end
 
-function extract_solution(res::ReductionSATToIndependentSet, sol)
+function extract_solution(res::ReductionSATToIndependentSet{ST}, sol) where ST
     assignment = falses(length(res.source_variables))
-    covered_literals_name = Vector{Symbol}()
+    covered_literals_name = Vector{ST}()
     for (literal, value) in zip(res.literals, sol)
         iszero(value) && continue
         assignment[findfirst(==(literal.name), res.source_variables)] = !literal.neg

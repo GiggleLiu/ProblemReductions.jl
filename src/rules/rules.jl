@@ -19,14 +19,16 @@ function target_problem end
 target_problem(res::IdentityReductionResult) = res.problem
 
 """
-    reduceto(::Type{TA}, x::AbstractProblem)
+    reduceto(problem_type::Type{<:AbstractProblem}, problem::AbstractProblem) -> AbstractReductionResult
+    reduceto(path::ReductionPath, problem::AbstractProblem) -> ConcatenatedReduction
 
-Reduce the problem `x` to a target problem of type `TA`.
-Returns an instance of `AbstractReductionResult`.
+If the target problem is a single problem type, reduce the problem `problem` to a target problem of type.
+Then the result is an instance of [`AbstractReductionResult`](@ref).
+Otherwise, if the target problem is a reduction path, implement a reduction path on a problem. Then the result is a [`ConcatenatedReduction`](@ref) instance.
 
 ### Arguments
-- `TA`: The target problem type.
-- `x`: The original problem.
+- `problem_type::Type{<:AbstractProblem}` or `path::ReductionPath`: The target problem type or a reduction path.
+- `problem::AbstractProblem`: The original problem.
 """
 function reduceto end
 

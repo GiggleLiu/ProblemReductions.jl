@@ -27,7 +27,7 @@ paths = reduction_paths(g,Factoring,SpinGlass)
 # The input of `reduction_paths` is the reduction graph and the types of source and target problems. And the output 
 # is a nested vector, each element of the outer vector is a path from source to target problem. 
 
-# Then we could use [`implement_reduction_path`](@ref) to obtain the corresponding SpinGlass problem. 
+# Then we could use [`reduceto`](@ref) to obtain the corresponding SpinGlass problem. 
 
 reduction_result = implement_reduction_path(paths[1], factoring)
 target = target_problem(reduction_result)
