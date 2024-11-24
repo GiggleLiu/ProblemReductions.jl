@@ -1,12 +1,20 @@
 using GenericTensorNetworks
 
+# create a random King's subgraph
 graph = random_diagonal_coupled_graph(7, 7, 0.8)
-problem = IndependentSet(graph)  # Independent set problem
-pb = GenericTensorNetwork(problem)  # Convert to tensor network
+# create an independent set problem
+problem = GenericTensorNetworks.IndependentSet(graph)
+# convert to tensor network
+pb = GenericTensorNetwork(problem)
 
-res_size = solve(pb, SizeMax())[]  # MIS size
+# solve the MIS size
+res_size = solve(pb, SizeMax())[]
 
-res_count = solve(pb, CountingMax(2))[]  # Counting of independent sets with largest 2 sizes
+# solve the MIS counting
+res_count = solve(pb, CountingMax(2))[]
 
-res_configs = solve(pb, ConfigsMax(2; tree_storage=true))[]  # The corresponding configurations
+# obtain the MIS configurations
+res_configs = solve(pb, ConfigsMax(2; tree_storage=true))[]
+
+# visualize the landscape
 show_landscape((x, y)->hamming_distance(x, y) <= 2, res_configs; layout_method=:spring)

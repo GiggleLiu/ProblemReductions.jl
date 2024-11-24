@@ -22,7 +22,7 @@ export SetCovering, is_set_covering, set_covering_energy
 export BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, satisfiable, KSatisfiability
 export MaxCut
 export IndependentSet
-export VertexCovering, is_vertex_covering, vertex_covering_energy
+export VertexCovering, is_vertex_covering
 export SetPacking, is_set_packing
 export DominatingSet
 export QUBO
