@@ -6,16 +6,16 @@
 | c = ∧(x, y)
 | d = ∨(x, ∧(c, ¬(z)))</code></pre><p>The circuit can be converted to a <a href="../../ref/#ProblemReductions.CircuitSAT"><code>CircuitSAT</code></a> problem instance:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sat = CircuitSAT(circuit)</code><code class="nohighlight hljs ansi" style="display:block;">CircuitSAT:
 | c = ∧(x, y)
-| ##var#290 = ¬(z)
-| ##var#289 = ∧(c, ##var#290)
-| d = ∨(x, ##var#289)
-Symbols: [:c, :x, :y, Symbol(&quot;##var#290&quot;), :z, Symbol(&quot;##var#289&quot;), :d]</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sat.symbols</code><code class="nohighlight hljs ansi" style="display:block;">7-element Vector{Symbol}:
+| ##var#291 = ¬(z)
+| ##var#290 = ∧(c, ##var#291)
+| d = ∨(x, ##var#290)
+Symbols: [:c, :x, :y, Symbol(&quot;##var#291&quot;), :z, Symbol(&quot;##var#290&quot;), :d]</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sat.symbols</code><code class="nohighlight hljs ansi" style="display:block;">7-element Vector{Symbol}:
  :c
  :x
  :y
- Symbol(&quot;##var#290&quot;)
+ Symbol(&quot;##var#291&quot;)
  :z
- Symbol(&quot;##var#289&quot;)
+ Symbol(&quot;##var#290&quot;)
  :d</code></pre><p>Note that the circuit is converted to the static single assignment (SSA) form, and the symbols are stored in the <code>symbols</code> field. The symbols are variables in the circuit to be assigned to <code>true</code> or <code>false</code>.</p><h2 id="Interfaces"><a class="docs-heading-anchor" href="#Interfaces">Interfaces</a><a id="Interfaces-1"></a><a class="docs-heading-anchor-permalink" href="#Interfaces" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; variables(sat)</code><code class="nohighlight hljs ansi" style="display:block;">7-element Vector{Int64}:
  1
  2
@@ -33,4 +33,4 @@ Symbols: [:c, :x, :y, Symbol(&quot;##var#290&quot;), :z, Symbol(&quot;##var#289&
  [0, 1, 0, 1, 0, 0, 1]
  [0, 1, 0, 0, 1, 0, 1]
  [1, 1, 1, 0, 1, 0, 1]
- [1, 1, 1, 1, 0, 1, 1]</code></pre><p>Here, the <a href="../../ref/#ProblemReductions.BruteForce"><code>BruteForce</code></a> solver is used to find the best assignment.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Home</a><a class="docs-footer-nextpage" href="../Coloring/">Vertex Coloring »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 9 October 2024 16:12">Wednesday 9 October 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ [1, 1, 1, 1, 0, 1, 1]</code></pre><p>Here, the <a href="../../ref/#ProblemReductions.BruteForce"><code>BruteForce</code></a> solver is used to find the best assignment.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Home</a><a class="docs-footer-nextpage" href="../Coloring/">Vertex Coloring »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Sunday 24 November 2024 09:26">Sunday 24 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
