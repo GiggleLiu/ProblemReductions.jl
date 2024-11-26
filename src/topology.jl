@@ -111,22 +111,34 @@ end
 $TYPEDEF
 
 A grid graph is a graph in which the vertices are arranged in a grid and two vertices are connected by an edge if and only if they are adjacent in the grid.
+If the input is a boolean matrix, vertices are arranged in the column major order.
 
 ### Fields
 - `grid::BitMatrix`: a matrix of booleans, where `true` indicates the presence of an edge.
 - `radius::Float64`: the radius of the unit disk
 """
 struct GridGraph <: Graphs.AbstractGraph{Int}
-    grid::BitMatrix
+    size::Tuple{Int, Int}
+    coordinates::Vector{Tuple{Int, Int}}
     radius::Float64
 end
+function GridGraph(matrix::AbstractMatrix{Bool}, radius)
+    return GridGraph(size(matrix), vec(getfield.(findall(matrix), :I)), Float64(radius))
+end
 Base.:(==)(a::GridGraph, b::GridGraph) = a.grid == b.grid && a.radius == b.radius
-Graphs.nv(g::GridGraph) = sum(g.grid)
+Graphs.nv(g::GridGraph) = length(g.coordinates)
 Graphs.vertices(g::GridGraph) = 1:nv(g)
 Graphs.ne(g::GridGraph) = length(Graphs.edges(g))
 function Graphs.edges(g::GridGraph)
-    udg = UnitDiskGraph([Float64.(x.I) for x in findall(g.grid)], g.radius)
+    udg = UnitDiskGraph(map(x->Float64.(x), g.coordinates), g.radius)
     return Graphs.edges(udg)
+end
+function Graphs.neighbors(g::GridGraph, i::Int)
+    [j for j in 1:nv(g) if i != j && distance(g.coordinates[i], g.coordinates[j]) <= g.radius]
+end
+distance(n1, n2) = sqrt(sum(abs2, n1 .- n2))
+function Graphs.induced_subgraph(g::GridGraph, vlist::AbstractVector{<:Integer})
+    return GridGraph(g.size, g.coordinates[vlist], g.radius), vlist
 end
 
 # not implemented

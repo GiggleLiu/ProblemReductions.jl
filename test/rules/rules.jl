@@ -84,6 +84,7 @@ end
         # reduce and solve
         result = reduceto(target_type, source)
         target = target_problem(result)
+        @test target isa target_type
         best_target = findbest(target, BruteForce())
 
         # extract the solution
