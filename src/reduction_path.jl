@@ -129,7 +129,10 @@ end
 function extract_types(::Type{Tuple{typeof(reduceto), TA, TB}}) where {TA, TB}
     return TB => extract_type_type(TA)
 end
-extract_type_type(t::UnionAll) = t.body.parameters[1].ub
+function extract_type_type(t::UnionAll)
+    @assert isdefined(t.body.parameters[1], :ub) "Illegal type signature as the first argument of `reduceto`, got $t. Note the `where` syntax is not supported yet."
+    t.body.parameters[1].ub
+end
 extract_type_type(::Type{<:Type{T}}) where {T} = T
 function extract_types(u::UnionAll)
     return extract_types(u.body, u.var)
