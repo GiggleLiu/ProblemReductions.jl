@@ -22,6 +22,7 @@ target_problem(res::IdentityReductionResult) = res.problem
     reduceto(problem_type::Type{<:AbstractProblem}, problem::AbstractProblem) -> AbstractReductionResult
     reduceto(path::ReductionPath, problem::AbstractProblem) -> ConcatenatedReduction
 
+Reduce the problem `problem` to a target problem.
 If the target problem is a single problem type, reduce the problem `problem` to a target problem of type.
 Then the result is an instance of [`AbstractReductionResult`](@ref).
 Otherwise, if the target problem is a reduction path, implement a reduction path on a problem. Then the result is a [`ConcatenatedReduction`](@ref) instance.

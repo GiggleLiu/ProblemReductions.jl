@@ -14,7 +14,7 @@ test:
 coverage:
 	$(JL) -e 'using Pkg; Pkg.test(; coverage=true)'
 
-serve: fig
+serve:
 	$(JL) -e 'using Pkg; Pkg.activate("docs"); using LiveServer; servedocs(;skip_dirs=["docs/src/assets", "docs/src/generated"], literate_dir="examples")'
 
 fig:
