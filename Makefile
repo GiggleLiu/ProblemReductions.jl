@@ -14,8 +14,15 @@ test:
 coverage:
 	$(JL) -e 'using Pkg; Pkg.test(; coverage=true)'
 
-serve:
+serve: fig
 	$(JL) -e 'using Pkg; Pkg.activate("docs"); using LiveServer; servedocs(;skip_dirs=["docs/src/assets", "docs/src/generated"], literate_dir="examples")'
+
+fig:
+	for entry in "docs/src/assets/"*.typ; do \
+		echo compiling $$entry to $${entry%.typ}.pdf; \
+		typst compile $$entry $${entry%.typ}.pdf; \
+		pdf2svg $${entry%.typ}.pdf $${entry%.typ}.svg; \
+	done
 
 clean:
 	rm -rf docs/build

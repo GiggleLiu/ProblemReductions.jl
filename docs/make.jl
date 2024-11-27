@@ -46,7 +46,6 @@ makedocs(;
         "Examples" => [
             "generated/Ising.md",
         ],
-        "Interfaces" => ["models.md", "topology.md", "rules.md"],
         "Reference" => "ref.md",
     ],
 )
