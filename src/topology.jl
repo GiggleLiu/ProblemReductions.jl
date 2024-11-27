@@ -42,13 +42,12 @@ $TYPEDEF
 A unit disk graph is a graph in which the vertices are points in a plane and two vertices are connected by an edge if and only if the Euclidean distance between them is at most a given radius.
 
 ### Fields
-- `n::Int`: the number of vertices
 - `locations::Vector{NTuple{D, T}}`: the locations of the vertices
-- `radius::T`: the radius of the unit disk
+- `radius::Float64`: the radius of the unit disk
 """
 struct UnitDiskGraph{D, T} <: Graphs.AbstractGraph{Int}
     locations::Vector{NTuple{D, T}}
-    radius::T
+    radius::Float64
 end
 Base.:(==)(a::UnitDiskGraph, b::UnitDiskGraph) = a.locations == b.locations && a.radius == b.radius
 Graphs.nv(g::UnitDiskGraph) = length(g.locations)
@@ -71,9 +70,7 @@ end
 function all_edges(g::UnitDiskGraph)
     edges = Graphs.SimpleEdge{Int}[]
     for i in 1:nv(g), j in i+1:nv(g)
-        if sum(abs2, g.locations[i] .- g.locations[j]) ≤ g.radius^2
-            push!(edges, Graphs.SimpleEdge(i, j))
-        end
+        has_edge(g, i, j) && push!(edges, Graphs.SimpleEdge(i, j))
     end
     return edges
 end
@@ -95,7 +92,7 @@ Base.eltype(::Type{Graphs.SimpleGraphs.SimpleEdgeIter{UnitDiskGraph{D,T}}}) wher
         end
 
         # return the next edge if it exists
-        if sum(abs2, g.locations[i] .- g.locations[j]) ≤ g.radius^2
+        if has_edge(g, i, j)
             e = Graphs.SimpleEdge(i, j)
             state = (i, j + 1)
             return e, state
@@ -107,43 +104,26 @@ Base.eltype(::Type{Graphs.SimpleGraphs.SimpleEdgeIter{UnitDiskGraph{D,T}}}) wher
     return nothing
 end
 
-"""
-$TYPEDEF
-
-A grid graph is a graph in which the vertices are arranged in a grid and two vertices are connected by an edge if and only if they are adjacent in the grid.
-If the input is a boolean matrix, vertices are arranged in the column major order.
-
-### Fields
-- `grid::BitMatrix`: a matrix of booleans, where `true` indicates the presence of an edge.
-- `radius::Float64`: the radius of the unit disk
-"""
-struct GridGraph <: Graphs.AbstractGraph{Int}
-    size::Tuple{Int, Int}
-    coordinates::Vector{Tuple{Int, Int}}
-    radius::Float64
+function Graphs.induced_subgraph(g::UnitDiskGraph, vlist::AbstractVector{<:Integer})
+    return UnitDiskGraph(g.locations[vlist], g.radius), vlist
 end
+
+function Graphs.neighbors(g::UnitDiskGraph, i::Int)
+    [j for j in 1:nv(g) if i != j && has_edge(g, i, j)]
+end
+
+"""
+GridGraph is a unit disk graph with integer coordinates.
+"""
+const GridGraph{D} = UnitDiskGraph{D, Int}
 function GridGraph(matrix::AbstractMatrix{Bool}, radius)
-    return GridGraph(size(matrix), vec(getfield.(findall(matrix), :I)), Float64(radius))
+    return UnitDiskGraph(vec(getfield.(findall(matrix), :I)), Float64(radius))
 end
-Base.:(==)(a::GridGraph, b::GridGraph) = a.grid == b.grid && a.radius == b.radius
-Graphs.nv(g::GridGraph) = length(g.coordinates)
-Graphs.vertices(g::GridGraph) = 1:nv(g)
-Graphs.ne(g::GridGraph) = length(Graphs.edges(g))
-function Graphs.edges(g::GridGraph)
-    udg = UnitDiskGraph(map(x->Float64.(x), g.coordinates), g.radius)
-    return Graphs.edges(udg)
-end
-function Graphs.neighbors(g::GridGraph, i::Int)
-    [j for j in 1:nv(g) if i != j && distance(g.coordinates[i], g.coordinates[j]) <= g.radius]
-end
-distance(n1, n2) = sqrt(sum(abs2, n1 .- n2))
-function Graphs.induced_subgraph(g::GridGraph, vlist::AbstractVector{<:Integer})
-    return GridGraph(g.size, g.coordinates[vlist], g.radius), vlist
+function GridGraph(locations::AbstractVector{NTuple{D, Int}}, radius::Float64) where {D}
+    return UnitDiskGraph(locations, radius)
 end
 
-# not implemented
-# struct PlanarGraph <: Graphs.AbstractGraph{Int}
-# end
+# TODO: implement the planar graph
 
 ##### Extra interfaces #####
 _vec(e::Graphs.SimpleEdge) = [src(e), dst(e)]
