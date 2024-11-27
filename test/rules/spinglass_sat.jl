@@ -82,8 +82,8 @@ end
         d = x ∨ (c ∧ ¬z)
     end
     sg, vars = ProblemReductions.circuit2spinglass(circuit)
-    indexof(x) = findfirst(==(x), vars)
-    gadget = LogicGadget(sg, indexof.([:x, :y, :z]), [indexof(:d)])
+    indexof1(x) = findfirst(==(x), vars)
+    gadget = LogicGadget(sg, indexof1.([:x, :y, :z]), [indexof1(:d)])
     tb = truth_table(gadget; variables=vars)
     @test tb.values == vec([(x & y & (1-z)) | x for x in [0, 1], y in [0, 1], z in [0, 1]])
     res = reduceto(SpinGlass{<:SimpleGraph}, CircuitSAT(circuit))
@@ -95,8 +95,8 @@ end
     end
     circuitsat = CircuitSAT(circuit)
     result = reduceto(SpinGlass{<:SimpleGraph}, circuitsat)
-    indexof(x) = findfirst(==(x), circuitsat.symbols[sortperm(result.variables)])
-    gadget = LogicGadget(result.spinglass, indexof.([:x, :y, :z]), [indexof(:d)])
+    indexof2(x) = findfirst(==(x), circuitsat.symbols[sortperm(result.variables)])
+    gadget = LogicGadget(result.spinglass, indexof2.([:x, :y, :z]), [indexof2(:d)])
     tb = truth_table(gadget; variables=circuitsat.symbols[result.variables])
     @test tb.values == vec([((1 - (x & y)) & (1-z)) | x for x in [0, 1], y in [0, 1], z in [0, 1]])
 end
