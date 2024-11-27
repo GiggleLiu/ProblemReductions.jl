@@ -56,10 +56,9 @@ The required interfaces are:
     while for the max cut problem, they are the edges.
 - [`flavors`](@ref): A vector of integers as the flavors (or domain) of a degree of freedom.
     e.g. for the maximum independent set problems, the flavors are [0, 1], where 0 means the vertex is not in the set and 1 means the vertex is in the set.
-
 - [`weights`](@ref): Energies associated with constraints.
-
 - [`energy`](@ref): Energy of a given configuration.
+- [`problem_size`](@ref): The size of the problem, which is the number of variables.
 
 Optional functions include:
 - [`num_variables`](@ref): The number of variables in the problem.
@@ -95,21 +94,17 @@ A problem reduction rule is a function that reduces a problem to another problem
 - [`reduceto`](@ref): Reduce the source problem to a target problem of a specific type. Returns an [`AbstractReductionResult`](@ref) instance, which contains the target problem.
 - [`target_problem`](@ref): Return the target problem of the reduction result.
 - [`extract_solution`](@ref): Extract the solution to the target problem back to the original problem.
-- [`extract_multiple_solutions`](@ref): Extract a set of solutions to the target problem back to the original problem.
-
-!!! note
-    In some problems, some of the solutions to the target problem:
-
-    - may correspond to mutilple solutions to the original problem, such as "SAT -> Dominating Set". If this is the case, the [`extract_solution`](@ref) will randomly pick one of the effective solutions; 
-    - or may not correspond to a solution to the original problem, such as "SAT -> Circuit SAT". If this is the case, the [`extract_solution`](@ref) will return `nothing`.
-    This is the motivation of desigining the [`extract_multiple_solutions`](@ref) interface.
 
 Optional functions include:
+- [`extract_multiple_solutions`](@ref): Extract a set of solutions to the target problem back to the original problem. You may want to implement this when you want to make extracting multiple solutions faster.
 - [`reduce_size`](@ref): Infer the size of the target problem from the source problem size.
 
-The following code shows the reduction graph of the problems that induced by the reduction rules defined in ProblemReductions:
+The [`reduction_graph`](@ref) function returns the reduction graph of the problems that induced by the reduction rules defined in ProblemReductions:
 ```@repl reduction_graph
 ProblemReductions.reduction_graph().graph
 ```
 The number of rules is the same as the number of edges in the output graph.
 Both the problem set, and the reduction rules are designed to be extensible, so that users can easily add new problems and reductions to the package.
+
+It is worth noting that *the reduction graph changes whenever there is a new `reduceto` function is added, regardless it is in this package or by users*.
+This is because the reduction graph checks all method tables of the `reduceto` function, and will automatically add new nodes and edges when a new problem type or reduction method is added.
