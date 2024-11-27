@@ -40,4 +40,19 @@ end
     @test SimpleEdge(2, 3) in edges(gg)
     @test collect(edges(gg)) == [SimpleEdge(1, 2), SimpleEdge(2, 3)]
     @test vertices(gg) == 1:3
+
+    grid = GridGraph([(2, 3), (2, 4), (5, 5)], 1.2)
+    g = SimpleGraph(grid)
+    @test ne(g) == 1
+    @test vertices(grid) == vertices(g)
+    @test neighbors(grid, 2) == neighbors(g, 2)
+
+    grid = GridGraph([(2, 3), (2, 4), (5, 5)], 4.0)
+    g = SimpleGraph(grid)
+    @test ne(g) == 3
+    @test vertices(grid) == vertices(g)
+    @test neighbors(grid, 2) == neighbors(g, 2)
+
+    ig, _ = induced_subgraph(grid, [1, 2])
+    @test ne(ig) == 1
 end
