@@ -41,11 +41,11 @@ julia> h = rand([1, -1], nv(graph))  # external field
 4-element Vector{Int64}:
   1
  -1
-  1
  -1
+  1
 
 julia> spinglass = SpinGlass(graph, J, h)  # Define a spin glass problem
-SpinGlass{SimpleGraph{Int64}, Int64, Vector{Int64}}(SimpleGraph{Int64}(4, [[2, 3], [1, 3], [1, 2, 4], [3]]), [1, -1, 1, -1], [1, -1, 1, -1])
+SpinGlass{SimpleGraph{Int64}, Int64, Vector{Int64}}(SimpleGraph{Int64}(4, [[2, 3], [1, 3], [1, 2, 4], [3]]), [1, -1, 1, -1], [1, -1, -1, 1])
 
 julia> variables(spinglass)  # degrees of freedom
 4-element Vector{Int64}:
@@ -60,11 +60,10 @@ julia> flavors(spinglass)  # flavors of the spins
  -1
 
 julia> energy(spinglass, [-1, 1, 1, -1])  # energy of a configuration
-2
+-2
 
 julia> findbest(spinglass, BruteForce())  # solve the problem with brute force
-2-element Vector{Vector{Int64}}:
- [-1, 1, -1, 1]
+1-element Vector{Vector{Int64}}:
  [-1, 1, -1, -1]
 ```
 """

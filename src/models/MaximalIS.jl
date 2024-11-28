@@ -24,7 +24,7 @@ julia> problem = MaximalIS(graph)
 MaximalIS{Int64, UnitWeight}(SimpleGraph{Int64}(5, [[2, 3, 4], [1, 3], [1, 2, 4], [1, 3]]), [1, 1, 1, 1])
 
 julia> variables(problem)  # degrees of freedom
-5-element Vector{Int64}:
+4-element Vector{Int64}:
  1
  2
  3

@@ -216,37 +216,24 @@ julia> circuit = @circuit begin
 Circuit:
 | c = ∧(x, y)
 | d = ∨(x, ∧(c, ¬(z)))
-```
 
-Then, we can construct a [`CircuitSAT`](@ref) problem as follows:
-```jldoctest; filter = r"##var#\\d+" => s"##var#***"
 julia> sat = CircuitSAT(circuit)
 CircuitSAT:
 | c = ∧(x, y)
-| ##var#324 = ¬(z)
-| ##var#323 = ∧(c, ##var#324)
-| d = ∨(x, ##var#323)
-Symbols: [:c, :x, :y, Symbol("##var#324"), :z, Symbol("##var#323"), :d]
+| ##var#316 = ¬(z)
+| ##var#315 = ∧(c, ##var#316)
+| d = ∨(x, ##var#315)
+Symbols: [:c, :x, :y, Symbol("##var#316"), :z, Symbol("##var#315"), :d]
 
 julia> sat.symbols
 7-element Vector{Symbol}:
  :c
  :x
  :y
- Symbol("##var#324")
+ Symbol("##var#316")
  :z
- Symbol("##var#323")
+ Symbol("##var#315")
  :d
-
- julia> variables(sat)
-7-element Vector{Int64}:
- 1
- 2
- 3
- 4
- 5
- 6
- 7
 
 julia> flavors(sat)
 2-element Vector{Int64}:

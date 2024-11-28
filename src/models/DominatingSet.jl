@@ -16,6 +16,7 @@ In the following example, we define a dominating set problem on a path graph wit
 To define a `DominatingSet` problem, we need to specify the graph and possibily the weights associated with vertices.
 The weights are set as unit by default in the current version and might be generalized to arbitrary positive weights in the following development.
 ```jldoctest
+julia> using ProblemReductions, Graphs
 
 julia> graph = path_graph(5)
 {5, 4} undirected simple Int64 graph
