@@ -50,7 +50,7 @@ julia> findbest(DS, BruteForce())  # solve the problem with brute force
  [0, 1, 0, 0, 1]
 ```
 """
-struct DominatingSet{GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
+struct DominatingSet{GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: GraphProblem{T}
     graph::GT
     weights::WT
     function DominatingSet(graph::AbstractGraph, weights::AbstractVector{T}=UnitWeight(nv(graph))) where {T}

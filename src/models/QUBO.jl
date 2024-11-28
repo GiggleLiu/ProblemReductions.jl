@@ -62,7 +62,7 @@ julia> findbest(QUBO02, BruteForce())
  [0, 0, 0]
 ```
 """
-struct QUBO{T <: Real} <: ConstraintSatisfactionProblem{T}
+struct QUBO{T <: Real} <: GraphProblem{T}
     matrix::Matrix{T}
     function QUBO(matrix::Matrix{T}) where T
         @assert size(matrix, 1) == size(matrix, 2)

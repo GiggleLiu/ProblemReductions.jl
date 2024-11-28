@@ -43,6 +43,13 @@ struct LocalConstraint{ST}
 end
 num_variables(spec::LocalConstraint) = length(spec.variables)
 
+"""
+    GraphProblem{T} <: ConstraintSatisfactionProblem{T}
+
+The abstract base type of graph problems. 
+"""
+abstract type GraphProblem{T} <: ConstraintSatisfactionProblem{T} end
+
 ######## Interfaces for computational problems ##########
 """
     weights(problem::ConstraintSatisfactionProblem) -> Vector

@@ -40,7 +40,7 @@ julia> findbest(problem, BruteForce())
  [0, 1, 1]
 ```
 """
-struct PaintShop{LT} <: ConstraintSatisfactionProblem{Int}
+struct PaintShop{LT} <: GraphProblem{Int}
     sequence::Vector{LT}
     isfirst::Vector{Bool}
     function PaintShop(sequence::AbstractVector{T}) where T

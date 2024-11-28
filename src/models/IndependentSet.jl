@@ -48,7 +48,7 @@ julia> findbest(IS, BruteForce())  # solve the problem with brute force
  [0, 1, 0, 1]
 ```
 """
-struct IndependentSet{GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
+struct IndependentSet{GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: GraphProblem{T}
     graph::GT
     weights::WT
     function IndependentSet(graph::AbstractGraph, weights::AbstractVector{T}=UnitWeight(nv(graph))) where {T}

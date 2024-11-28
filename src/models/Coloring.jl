@@ -44,7 +44,7 @@ julia> is_vertex_coloring(coloring.graph,[1,2,3,1,3,2,1,2,3,1]) #random assignme
 false
 ```
 """
-struct Coloring{K, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
+struct Coloring{K, T, WT<:AbstractVector{T}} <: GraphProblem{T}
     graph::SimpleGraph{Int64}
     weights::WT
     function Coloring{K}(graph::SimpleGraph{Int64}, weights::AbstractVector{T}=UnitWeight(ne(graph))) where {K, T}
