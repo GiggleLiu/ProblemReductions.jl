@@ -27,12 +27,10 @@ makedocs(;
     doctest = ("doctest=true" in ARGS),
     pages=[
         "Home" => "index.md",
-        "Rules" => [
-            "rules/spinglass_sat.md",
-            "rules/independentset_setpacking.md"
-        ],
         "Examples" => [
             "generated/Ising.md",
+            "rules/spinglass_sat.md",
+            "rules/independentset_setpacking.md"
         ],
         "Problems zoo" => "models.md",
         "Reference" => "ref.md",

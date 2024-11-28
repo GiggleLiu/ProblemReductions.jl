@@ -128,16 +128,17 @@ julia> bv1, bv2, bv3 = BoolVar.(["x", "y", "z"])
  z
 
 julia> clause1 = CNFClause([bv1, bv2, bv3])
-x ∨ y ∨ ¬z
+x ∨ y ∨ z
 
 julia> clause2 = CNFClause([BoolVar("w"), bv1, BoolVar("x", true)])
 w ∨ x ∨ ¬x
 
 julia> cnf_test = CNF([clause1, clause2])
-(x ∨ y ∨ ¬z) ∧ (w ∨ x ∨ ¬x)
+(x ∨ y ∨ z) ∧ (w ∨ x ∨ ¬x)
 
 julia> sat_test = Satisfiability(cnf_test)
-Satisfiability{String, Int64, UnitWeight}(["x", "y", "z", "w"], [1, 1], (x ∨ y ∨ ¬z) ∧ (w ∨ x ∨ ¬x))
+Satisfiability{String, Int64, UnitWeight}(["x", "y", "z", "w"], [1, 1], (x ∨ y ∨ z) ∧ (w ∨ x ∨ ¬x))
+```
 """
 struct Satisfiability{S, T, WT<:AbstractArray{T}} <:AbstractSatisfiabilityProblem{S, T}
     variables::Vector{S}
