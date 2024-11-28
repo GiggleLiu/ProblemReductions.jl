@@ -206,7 +206,7 @@ Fields
 Example
 -------------------------------
 A circuit can be defined with the @circuit macro as follows:
-```jldoctest
+```jldoctest; filter = r"##var#\\d+" => s"##var#***"
 julia> using ProblemReductions
 
 julia> circuit = @circuit begin
@@ -220,19 +220,19 @@ Circuit:
 julia> sat = CircuitSAT(circuit)
 CircuitSAT:
 | c = ∧(x, y)
-| ##var#316 = ¬(z)
-| ##var#315 = ∧(c, ##var#316)
-| d = ∨(x, ##var#315)
-Symbols: [:c, :x, :y, Symbol("##var#316"), :z, Symbol("##var#315"), :d]
+| ##var#354 = ¬(z)
+| ##var#353 = ∧(c, ##var#354)
+| d = ∨(x, ##var#353)
+Symbols: [:c, :x, :y, Symbol("##var#354"), :z, Symbol("##var#353"), :d]
 
 julia> sat.symbols
 7-element Vector{Symbol}:
  :c
  :x
  :y
- Symbol("##var#316")
+ Symbol("##var#354")
  :z
- Symbol("##var#315")
+ Symbol("##var#353")
  :d
 
 julia> flavors(sat)

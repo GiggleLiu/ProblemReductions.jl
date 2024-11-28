@@ -32,7 +32,7 @@ julia> flavors(maxcut) # return the flavors of the vertices
  0
  1
 
- julia> energy(maxcut, [0,1,0]) # return the energy of the configuration
+julia> energy(maxcut, [0,1,0]) # return the energy of the configuration
 -4
 
 julia> findbest(maxcut, BruteForce()) # find the best configuration
