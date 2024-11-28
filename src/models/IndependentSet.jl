@@ -2,12 +2,51 @@
 $(TYPEDEF)
     IndependentSet(graph::AbstractGraph, weights::AbstractVector=UnitWeight(nv(graph))) -> IndependentSet
 
-Represents the [independent set problem](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/IndependentSet/) in graph theory.
+Independent Set is a subset of vertices in a undirected graph such that all the vertices in the set are not connected by edges (or called not adjacent).
+The maximum IndependentSet problem is to find the independent set with maximum number of vertices, which is a NP-complete problem.
 
-Positional arguments
+Fields
 -------------------------------
 - `graph::AbstractGraph`: The problem graph.
 - `weights::AbstractVector`: Weights associated with the vertices of the `graph`. Defaults to `UnitWeight(nv(graph))`.
+
+Example
+-------------------------------
+In the following example, we define an independent set problem on a graph with four vertices.
+To define an `IndependentSet` problem, we need to specify the graph and possibily the weights associated with vertices.
+The weights are set as unit by default in the current version and might be generalized to arbitrary positive weights.
+```jldoctest
+julia> using ProblemReductions, Graphs
+
+julia> graph = SimpleGraph(Graphs.SimpleEdge.([(1, 2), (1, 3), (3, 4), (2, 3)]))
+{4, 4} undirected simple Int64 graph
+
+julia> IS = IndependentSet(graph)
+IndependentSet{SimpleGraph{Int64}, Int64, UnitWeight}(SimpleGraph{Int64}(4, [[2, 3], [1, 3], [1, 2, 4], [3]]), [1, 1, 1, 1])
+
+julia> variables(IS)  # degrees of freedom
+4-element Vector{Int64}:
+ 1
+ 2
+ 3
+ 4
+
+julia> flavors(IS)  # flavors of the vertices
+2-element Vector{Int64}:
+ 0
+ 1
+
+julia> energy(IS, [1, 0, 0, 1]) # Positive sample: -(size) of an independent set
+-2
+
+julia> energy(IS, [0, 1, 1, 0]) # Negative sample: 0
+3037000500
+
+julia> findbest(IS, BruteForce())  # solve the problem with brute force
+2-element Vector{Vector{Int64}}:
+ [1, 0, 0, 1]
+ [0, 1, 0, 1]
+```
 """
 struct IndependentSet{GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::GT

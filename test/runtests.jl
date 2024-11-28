@@ -27,4 +27,4 @@ end
 end
 
 DocMeta.setdocmeta!(ProblemReductions, :DocTestSetup, :(using ProblemReductions); recursive=true)
-Documenter.doctest(ProblemReductions; manual=false)
+Documenter.doctest(ProblemReductions; manual=false, fix=false)

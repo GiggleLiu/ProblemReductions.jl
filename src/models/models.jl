@@ -147,7 +147,7 @@ struct EnergyMultiConfig{T, PT<:ConstraintSatisfactionProblem{T}, ST, ST2, VT, W
 end
 
 function energy_multi(problem::ConstraintSatisfactionProblem{T}, configs) where T
-    @assert all(config -> length(config) == num_variables(problem), configs) "All configurations must have the same length as the number of variables, got: $(length(config)) != $(num_variables(problem))"
+    @assert all(config -> length(config) == num_variables(problem), configs) "All configurations must have the same length as the number of variables, got: $(length.(configs)), which should be $(num_variables(problem))"
     hard_specs = hard_constraints(problem)
     terms = energy_terms(problem)
     ws = is_weighted(problem) ? weights(problem) : UnitWeight(length(terms))
