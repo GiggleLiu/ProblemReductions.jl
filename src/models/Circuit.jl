@@ -198,9 +198,75 @@ $TYPEDEF
 
 Circuit satisfiability problem, where the goal is to find an assignment that satisfies the circuit.
 
-### Fields
+Fields
+-------------------------------
 - `circuit::Circuit`: The circuit expression in simplified form.
 - `symbols::Vector{Symbol}`: The variables in the circuit.
+
+Example
+-------------------------------
+A circuit can be defined with the @circuit macro as follows:
+```jldoctest
+julia> using ProblemReductions
+
+julia> circuit = @circuit begin
+           c = x ∧ y
+           d = x ∨ (c ∧ ¬z)
+       end
+Circuit:
+| c = ∧(x, y)
+| d = ∨(x, ∧(c, ¬(z)))
+```
+
+Then, we can construct a [`CircuitSAT`](@ref) problem as follows:
+```jldoctest; filter = r"##var#\\d+" => s"##var#***"
+julia> sat = CircuitSAT(circuit)
+CircuitSAT:
+| c = ∧(x, y)
+| ##var#324 = ¬(z)
+| ##var#323 = ∧(c, ##var#324)
+| d = ∨(x, ##var#323)
+Symbols: [:c, :x, :y, Symbol("##var#324"), :z, Symbol("##var#323"), :d]
+
+julia> sat.symbols
+7-element Vector{Symbol}:
+ :c
+ :x
+ :y
+ Symbol("##var#324")
+ :z
+ Symbol("##var#323")
+ :d
+
+ julia> variables(sat)
+7-element Vector{Int64}:
+ 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+
+julia> flavors(sat)
+2-element Vector{Int64}:
+ 0
+ 1
+
+julia> energy(sat, [true, false, true, true, false, false, true])
+3
+
+julia> findbest(sat, BruteForce())
+8-element Vector{Vector{Int64}}:
+ [0, 0, 0, 1, 0, 0, 0]
+ [0, 0, 1, 1, 0, 0, 0]
+ [0, 0, 0, 0, 1, 0, 0]
+ [0, 0, 1, 0, 1, 0, 0]
+ [0, 1, 0, 1, 0, 0, 1]
+ [0, 1, 0, 0, 1, 0, 1]
+ [1, 1, 1, 0, 1, 0, 1]
+ [1, 1, 1, 1, 0, 1, 1]
+```
 """
 struct CircuitSAT{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     circuit::Circuit

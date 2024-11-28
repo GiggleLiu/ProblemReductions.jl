@@ -5,8 +5,8 @@ The [Vertex matching](https://queracomputing.github.io/GenericTensorNetworks.jl/
 
 Positional arguments
 -------------------------------
-* `graph` is the problem graph.
-* `weights` are associated with the edges of the `graph`.
+- `graph` is the problem graph.
+- `weights` are associated with the edges of the `graph`.
 """
 struct Matching{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::SimpleGraph{Int}

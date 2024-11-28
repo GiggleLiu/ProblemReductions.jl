@@ -101,10 +101,12 @@ Optional functions include:
 
 The [`reduction_graph`](@ref) function returns the reduction graph of the problems that induced by the reduction rules defined in ProblemReductions:
 ```@repl reduction_graph
-ProblemReductions.reduction_graph().graph
+rgraph = ProblemReductions.reduction_graph()
+rgraph.graph
+rgraph.nodes
 ```
 The number of rules is the same as the number of edges in the output graph.
 Both the problem set, and the reduction rules are designed to be extensible, so that users can easily add new problems and reductions to the package.
 
-It is worth noting that *the reduction graph changes whenever there is a new `reduceto` function is added, regardless it is in this package or by users*.
+It is worth noting that _the reduction graph changes whenever there is a new `reduceto` function is added, regardless it is in this package or by users_.
 This is because the reduction graph checks all method tables of the `reduceto` function, and will automatically add new nodes and edges when a new problem type or reduction method is added.

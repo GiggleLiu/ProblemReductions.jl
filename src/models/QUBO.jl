@@ -9,6 +9,58 @@ where `x_i \\in \\{0, 1\\}`.
 
 ### Arguments
 - `matrix::AbstractMatrix`: the matrix Q of the QUBO problem.
+
+```jldoctest
+julia> using ProblemReductions, Graphs
+       # Matrix method
+
+julia> Q = [1. 0 0; 0 1 0; 0 0 1]
+3×3 Matrix{Float64}:
+ 1.0  0.0  0.0
+ 0.0  1.0  0.0
+ 0.0  0.0  1.0
+
+julia> QUBO01 = QUBO(Q)
+       # Graph method
+QUBO{Float64}([1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0])
+
+julia> graph = SimpleGraph(3)
+{3, 0} undirected simple Int64 graph
+
+julia> QUBO02 = QUBO(graph, Float64[], [1., 1., 1.])
+QUBO{Float64}([1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0])
+
+julia> variables(QUBO01)  # degrees of freedom
+3-element Vector{Int64}:
+ 1
+ 2
+ 3
+
+julia> variables(QUBO02)
+3-element Vector{Int64}:
+ 1
+ 2
+ 3
+
+julia> flavors(QUBO01)  # flavors of the vertices
+2-element Vector{Int64}:
+ 0
+ 1
+
+julia> energy(QUBO01, [0, 1, 0])
+1.0
+
+julia> energy(QUBO02, [0, 1, 0])
+1.0
+
+julia> findbest(QUBO01, BruteForce())  # solve the problem with brute force
+1-element Vector{Vector{Int64}}:
+ [0, 0, 0]
+
+julia> findbest(QUBO02, BruteForce())
+1-element Vector{Vector{Int64}}:
+ [0, 0, 0]
+```
 """
 struct QUBO{T <: Real} <: ConstraintSatisfactionProblem{T}
     matrix::Matrix{T}

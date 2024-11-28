@@ -6,9 +6,43 @@ The goal is to find a subset of sets that covers all the elements with the minim
 
 Positional arguments
 -------------------------------
-* `elements` is a vector of elements in the universe.
-* `sets` is a vector of vectors, a collection of subsets of universe , each set is associated with a weight specified in `weights`.
-* `weights` are associated with sets.
+- `elements` is a vector of elements in the universe.
+- `sets` is a vector of vectors, a collection of subsets of universe , each set is associated with a weight specified in `weights`.
+- `weights` are associated with sets.
+
+```jldoctest
+julia> using ProblemReductions
+
+julia> subsets = [[1, 2, 3], [2, 4], [1, 4]]
+3-element Vector{Vector{Int64}}:
+ [1, 2, 3]
+ [2, 4]
+ [1, 4]
+
+julia> weights = [1, 2, 3]
+3-element Vector{Int64}:
+ 1
+ 2
+ 3
+
+julia> setcovering = SetCovering(subsets, weights)
+SetCovering{Int64, Int64, Vector{Int64}}([1, 2, 3, 4], [[1, 2, 3], [2, 4], [1, 4]], [1, 2, 3])
+
+julia> variables(setcovering)  # degrees of freedom
+3-element Vector{Int64}:
+ 1
+ 2
+ 3
+
+julia> energy(setcovering, [1, 0, 1])  # cost of a configuration
+4
+
+julia> energy(setcovering, [0, 1, 1])
+3037000500
+
+julia> sc = set_weights(setcovering, [1, 2, 3])  # set the weights of the subsets
+SetCovering{Int64, Int64, Vector{Int64}}([1, 2, 3, 4], [[1, 2, 3], [2, 4], [1, 4]], [1, 2, 3])
+```
 """
 struct SetCovering{ET, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     elements::Vector{ET}

@@ -1,6 +1,7 @@
 using ProblemReductions
 using Documenter
 using Literate
+using DocThemeIndigo
 
 # Literate
 for each in readdir(pkgdir(ProblemReductions, "examples"))
@@ -12,6 +13,7 @@ for each in readdir(pkgdir(ProblemReductions, "examples"))
 end
 
 DocMeta.setdocmeta!(ProblemReductions, :DocTestSetup, :(using ProblemReductions); recursive=true)
+indigo = DocThemeIndigo.install(ProblemReductions)
 
 makedocs(;
     modules=[ProblemReductions],
@@ -20,7 +22,7 @@ makedocs(;
     format=Documenter.HTML(;
         canonical="https://GiggleLiu.github.io/ProblemReductions.jl",
         edit_link="main",
-        assets=String[],
+        assets=String[indigo],
     ),
     doctest = ("doctest=true" in ARGS),
     pages=[

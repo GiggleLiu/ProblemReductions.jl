@@ -1,12 +1,44 @@
 """
 $TYPEDEF
 
-The [binary paint shop problem](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/PaintShop/).
+The binary paint shop problem is defined as follows:
+we are given a ``2m`` length sequence containing ``m`` cars, where each car appears twice.
+Each car need to be colored red in one occurrence, and blue in the other.
+We need to choose which occurrence for each car to color with which color — the goal is to minimize the number of times we need to change the current color.
 
-Positional arguments
+Fields
 -------------------------------
-* `sequence` is a vector of symbols, each symbol is associated with a color.
-* `isfirst` is a vector of boolean numbers, indicating whether the symbol is the first appearance in the sequence.
+- `sequence` is a vector of symbols, each symbol is associated with a color.
+- `isfirst` is a vector of boolean numbers, indicating whether the symbol is the first appearance in the sequence.
+
+Example
+-------------------------------
+In the following example, we define a paint shop problem with 6 cars.
+```jldoctest
+julia> using ProblemReductions
+
+julia> problem = PaintShop(["a","b","a","c","c","b"])
+PaintShop{String}(["a", "b", "a", "c", "c", "b"], Bool[1, 1, 0, 1, 0, 0])
+
+julia> variables(problem)
+3-element Vector{String}:
+ "a"
+ "b"
+ "c"
+
+julia> flavors(problem)
+2-element Vector{Int64}:
+ 0
+ 1
+
+julia> energy(problem, [0, 1, 0])
+4
+
+julia> findbest(problem, BruteForce())
+2-element Vector{Vector{Int64}}:
+ [1, 0, 0]
+ [0, 1, 1]
+```
 """
 struct PaintShop{LT} <: ConstraintSatisfactionProblem{Int}
     sequence::Vector{LT}
@@ -31,11 +63,11 @@ function energy_terms(c::PaintShop)
     return [LocalConstraint([findfirst(==(c.sequence[i]), vars), findfirst(==(c.sequence[i+1]), vars)], (c.isfirst[i], c.isfirst[i+1])) for i=1:length(c.sequence)-1]
 end
 
-function local_energy(::Type{<:PaintShop{T}}, spec::LocalConstraint, config) where {T}
+function local_energy(::Type{<:PaintShop}, spec::LocalConstraint, config)
     @assert length(config) == num_variables(spec)
     isfirst1, isfirst2 = spec.specification
     c1, c2 = config
-    return (c1 == c2) == (isfirst1 == isfirst2) ? zero(T) : one(T)
+    return (c1 == c2) == (isfirst1 == isfirst2) ? 0 : 1
 end
 
 @nohard_constraints PaintShop
