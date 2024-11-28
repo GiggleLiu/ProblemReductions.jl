@@ -23,21 +23,21 @@ Fields
 
 Example
 -------------------------------
-In the following example, we define a spin glass problem on a 4-vertex graph with random coupling strengths and external fields.
+In the following example, we define a spin glass problem on a 4-vertex graph with given coupling strengths on edges and external fields on vertices.
 ```jldoctest
 julia> using ProblemReductions, ProblemReductions.Graphs
 
 julia> graph = SimpleGraph(Graphs.SimpleEdge.([(1, 2), (1, 3), (3, 4), (2, 3)]))
 {4, 4} undirected simple Int64 graph
 
-julia> J = rand([1, -1], ne(graph))  # coupling strength
+julia> J = [1, -1, 1, -1]  # coupling strength
 4-element Vector{Int64}:
   1
  -1
   1
  -1
 
-julia> h = rand([1, -1], nv(graph))  # external field
+julia> h = [1, -1, -1, 1]  # external field
 4-element Vector{Int64}:
   1
  -1
