@@ -10,6 +10,9 @@ Positional arguments
 - `sets` is a vector of vectors, a collection of subsets of universe , each set is associated with a weight specified in `weights`.
 - `weights` are associated with sets.
 
+Example
+-------------------------------
+In the following example, we solve a Set Covering problem with 3 subsets and weights `[1,2,3]`.
 ```jldoctest
 julia> using ProblemReductions
 
