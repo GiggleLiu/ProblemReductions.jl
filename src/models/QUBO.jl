@@ -5,7 +5,7 @@ The quadratic unconstrained binary optimization.
 ```math
 E = \\sum_{i,j} Q_{ij} x_i x_j
 ```
-where `x_i \\in \\{0, 1\\}`.
+where ``x_i \\in \\{0, 1\\}``.
 
 ### Arguments
 - `matrix::AbstractMatrix`: the matrix Q of the QUBO problem.

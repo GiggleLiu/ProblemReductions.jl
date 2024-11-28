@@ -27,20 +27,6 @@ makedocs(;
     doctest = ("doctest=true" in ARGS),
     pages=[
         "Home" => "index.md",
-        "Models" => [
-            "models/CircuitSAT.md",
-            "models/Coloring.md",
-            "models/Factoring.md",
-            "models/MaxCut.md",
-            "models/SetCovering.md",
-            "models/SpinGlass.md",
-            "models/Satisfiability.md",         
-            "models/QUBO.md",        
-            "models/SetPacking.md",          
-            "models/DominatingSet.md",        
-            "models/IndependentSet.md",
-            "models/VertexCovering.md"          
-        ],
         "Rules" => [
             "rules/spinglass_sat.md",
             "rules/independentset_setpacking.md"
@@ -48,6 +34,7 @@ makedocs(;
         "Examples" => [
             "generated/Ising.md",
         ],
+        "Problems zoo" => "models.md",
         "Reference" => "ref.md",
     ],
 )

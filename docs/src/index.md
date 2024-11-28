@@ -71,7 +71,7 @@ The following code lists all problems defined in ProblemReductions:
 ```@repl reduction_graph
 ProblemReductions.concrete_subtypes(AbstractProblem)
 ```
-
+Please check [Problems zoo](@ref) for more details.
 
 ### Graph Topology
 
