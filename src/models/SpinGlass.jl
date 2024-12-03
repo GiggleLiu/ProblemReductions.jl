@@ -67,7 +67,7 @@ julia> findbest(spinglass, BruteForce())  # solve the problem with brute force
  [-1, 1, -1, -1]
 ```
 """
-struct SpinGlass{GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: GraphProblem{T}
+struct SpinGlass{GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::GT
     J::WT
     h::Vector{T}

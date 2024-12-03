@@ -56,7 +56,7 @@ julia> findbest(SP, BruteForce())  # solve the problem with brute force
  [0, 0, 1, 1, 0]
 ```
 """
-struct SetPacking{ET, T, WT<:AbstractVector{T}} <: GraphProblem{T}
+struct SetPacking{ET, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     elements::Vector{ET}
     sets::Vector{Vector{ET}}
     weights::WT

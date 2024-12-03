@@ -97,7 +97,7 @@ function variables(cnf::CNF{T}) where T
     unique([var.name for clause in cnf.clauses for var in clause.vars])
 end
 
-abstract type AbstractSatisfiabilityProblem{S, T} <: GraphProblem{T} end
+abstract type AbstractSatisfiabilityProblem{S, T} <: ConstraintSatisfactionProblem{T} end
 
 """
 $TYPEDEF

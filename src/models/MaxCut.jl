@@ -41,7 +41,7 @@ julia> findbest(maxcut, BruteForce()) # find the best configuration
  [0, 0, 1]
 ```
 """
-struct MaxCut{T, WT<:AbstractVector{T}} <: GraphProblem{T}
+struct MaxCut{T, WT<:AbstractVector{T}} <:ConstraintSatisfactionProblem{T}
     graph::SimpleGraph{Int}
     weights::WT
     function MaxCut(g::SimpleGraph,weights::AbstractVector{T}=UnitWeight(ne(g))) where {T}

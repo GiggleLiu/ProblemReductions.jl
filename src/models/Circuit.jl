@@ -202,7 +202,7 @@ Circuit satisfiability problem, where the goal is to find an assignment that sat
 - `circuit::Circuit`: The circuit expression in simplified form.
 - `symbols::Vector{Symbol}`: The variables in the circuit.
 """
-struct CircuitSAT{T, WT<:AbstractVector{T}} <: GraphProblem{T}
+struct CircuitSAT{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     circuit::Circuit
     symbols::Vector{Symbol}
     weights::WT

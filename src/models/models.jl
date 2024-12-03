@@ -43,13 +43,6 @@ struct LocalConstraint{ST}
 end
 num_variables(spec::LocalConstraint) = length(spec.variables)
 
-"""
-    GraphProblem{T} <: ConstraintSatisfactionProblem{T}
-
-The abstract base type of graph problems. 
-"""
-abstract type GraphProblem{T} <: ConstraintSatisfactionProblem{T} end
-
 ######## Interfaces for computational problems ##########
 """
     weights(problem::ConstraintSatisfactionProblem) -> Vector
@@ -207,6 +200,16 @@ end
 Base.getindex(::UnitWeight, i) = 1
 Base.size(w::UnitWeight) = (w.n,)
 
+"""
+    UnitWeight <: AbstractVector{Int}
+
+The unit weight vector of length `n`.
+"""
+struct ZeroWeight <: AbstractVector{Int}
+    n::Int
+end
+Base.getindex(::ZeroWeight, i) = 0
+Base.size(w::ZeroWeight) = (w.n,)
 """
     energy_terms(problem::AbstractProblem) -> Vector{LocalConstraint}
 

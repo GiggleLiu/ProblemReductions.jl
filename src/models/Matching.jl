@@ -8,7 +8,7 @@ Positional arguments
 - `graph` is the problem graph.
 - `weights` are associated with the edges of the `graph`.
 """
-struct Matching{T, WT<:AbstractVector{T}} <: GraphProblem{T}
+struct Matching{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::SimpleGraph{Int}
     weights::WT
     function Matching(g::SimpleGraph, weights::AbstractVector{T}=UnitWeight(ne(g))) where {T}

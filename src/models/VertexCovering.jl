@@ -50,7 +50,7 @@ julia> VC02 = set_weights(VC, [1, 2, 3, 4])  # set the weights of the subsets
 VertexCovering{Int64, Vector{Int64}}(SimpleGraph{Int64}(5, [[2, 3, 4], [1, 3], [1, 2, 4], [1, 3]]), [1, 2, 3, 4])
 ```
 """
-struct VertexCovering{T, WT<:AbstractVector{T}} <: GraphProblem{T}
+struct VertexCovering{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::SimpleGraph{Int64}
     weights::WT
     function VertexCovering(graph::SimpleGraph{Int64}, weights::AbstractVector{T}=UnitWeight(nv(graph))) where {T}

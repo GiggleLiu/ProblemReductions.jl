@@ -43,7 +43,7 @@ julia> findbest(problem, BruteForce())
  [0, 1, 0, 1]
 ```
 """
-struct MaximalIS{T, WT<:AbstractVector{T}} <: GraphProblem{T}
+struct MaximalIS{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     graph::SimpleGraph
     weights::WT
     function MaximalIS(g::SimpleGraph, weights::AbstractVector{T}=UnitWeight(nv(g))) where {T}

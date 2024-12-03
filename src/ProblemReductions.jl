@@ -10,9 +10,9 @@ using InteractiveUtils: subtypes
 export @bit_str
 export TruthTable
 export HyperGraph, UnitDiskGraph, GridGraph, PlanarGraph, SimpleGraph
-export @bv_str, StaticElementVector, StaticBitVector, statictrues, staticfalses, onehotv
+export @bv_str, StaticElementVector, StaticBitVector, statictrues, staticfalses, onehotv, hamming_distance
 export num_variables, num_flavors, variables, flavors, weights, set_weights, is_weighted, energy, weight_type, problem_size, configuration_space_size, constraints
-export UnitWeight
+export UnitWeight,ZeroWeight
 
 # models
 export BooleanExpr, Circuit, Assignment, simple_form, CircuitSAT, @circuit, booleans, ¬, ∨, ∧, ⊻, is_literal, is_cnf, is_dnf
@@ -32,7 +32,7 @@ export MaximalIS
 export PaintShop
 
 # rules
-export target_problem, AbstractProblem, ConstraintSatisfactionProblem, GraphProblem, AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduce_size
+export target_problem, AbstractProblem, ConstraintSatisfactionProblem, AbstractSatisfiabilityProblem, AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduce_size
 export LogicGadget, truth_table
 export ReductionSATTo3SAT
 export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering, ReductionSatToColoring,

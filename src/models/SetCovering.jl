@@ -44,7 +44,7 @@ julia> sc = set_weights(setcovering, [1, 2, 3])  # set the weights of the subset
 SetCovering{Int64, Int64, Vector{Int64}}([1, 2, 3, 4], [[1, 2, 3], [2, 4], [1, 4]], [1, 2, 3])
 ```
 """
-struct SetCovering{ET, T, WT<:AbstractVector{T}} <: GraphProblem{T}
+struct SetCovering{ET, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
     elements::Vector{ET}
     sets::Vector{Vector{ET}}
     weights::WT
