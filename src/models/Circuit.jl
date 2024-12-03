@@ -198,7 +198,8 @@ $TYPEDEF
 
 Circuit satisfiability problem, where the goal is to find an assignment that satisfies the circuit.
 
-### Fields
+Fields
+-------------------------------
 - `circuit::Circuit`: The circuit expression in simplified form.
 - `symbols::Vector{Symbol}`: The variables in the circuit.
 
@@ -207,6 +208,7 @@ Example
 A circuit can be defined with the @circuit macro as follows:
 ```jldoctest; filter = r"##var#\\d+" => s"##var#***"
 julia> using ProblemReductions
+
 julia> circuit = @circuit begin
            c = x ∧ y
            d = x ∨ (c ∧ ¬z)
@@ -214,6 +216,7 @@ julia> circuit = @circuit begin
 Circuit:
 | c = ∧(x, y)
 | d = ∨(x, ∧(c, ¬(z)))
+
 julia> sat = CircuitSAT(circuit)
 CircuitSAT:
 | c = ∧(x, y)
@@ -221,6 +224,7 @@ CircuitSAT:
 | ##var#353 = ∧(c, ##var#354)
 | d = ∨(x, ##var#353)
 Symbols: [:c, :x, :y, Symbol("##var#354"), :z, Symbol("##var#353"), :d]
+
 julia> sat.symbols
 7-element Vector{Symbol}:
  :c
@@ -230,10 +234,12 @@ julia> sat.symbols
  :z
  Symbol("##var#353")
  :d
+
 julia> flavors(sat)
 2-element Vector{Int64}:
  0
  1
+ 
 julia> energy(sat, [true, false, true, true, false, false, true])
 3
 julia> findbest(sat, BruteForce())
