@@ -7,6 +7,8 @@ using BitBasis
 using MLStyle
 using InteractiveUtils: subtypes
 
+using Printf
+
 export @bit_str
 export TruthTable
 export HyperGraph, UnitDiskGraph, GridGraph, PlanarGraph, SimpleGraph
@@ -29,7 +31,8 @@ export QUBO
 export Factoring
 export Matching, is_matching
 export MaximalIS
-export PaintShop
+export PaintShop,num_paint_shop_color_switch, paint_shop_coloring_from_config, paint_shop_from_pairs
+export OpenPitMining, is_valid_mining, print_mining
 
 # rules
 export target_problem, AbstractProblem, ConstraintSatisfactionProblem, AbstractSatisfiabilityProblem, AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduce_size
