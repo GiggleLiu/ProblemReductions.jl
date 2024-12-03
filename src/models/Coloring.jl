@@ -61,7 +61,7 @@ flavors(::Type{<:Coloring{K}}) where K = collect(0:K-1) # colors
 num_flavors(::Type{<:Coloring{K}}) where K = K # number of colors
 
 # weights interface
-weights(c::Coloring{K}) where K = c.weights
+weights(c::Coloring) = c.weights
 set_weights(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
 
 # constraints interface
