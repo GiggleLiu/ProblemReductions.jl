@@ -239,9 +239,10 @@ julia> flavors(sat)
 2-element Vector{Int64}:
  0
  1
- 
+
 julia> energy(sat, [true, false, true, true, false, false, true])
 3
+
 julia> findbest(sat, BruteForce())
 8-element Vector{Vector{Int64}}:
  [0, 0, 0, 1, 0, 0, 0]
