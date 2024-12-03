@@ -50,11 +50,23 @@ struct PaintShop{LT} <: ConstraintSatisfactionProblem{Int}
         new{eltype(sequence)}(sequence, isfirst)
     end
 end
+function paint_shop_from_pairs(pairs::AbstractVector{Tuple{Int,Int}})
+    n = length(pairs)
+    @assert sort!(vcat(collect.(pairs)...)) == collect(1:2n)
+    sequence = zeros(Int, 2*n)
+    @inbounds for i=1:n
+        sequence[pairs[i]] .= i
+    end
+    return PaintShop(sequence)
+end
 
 variables(gp::PaintShop) = unique(gp.sequence)
 flavors(::Type{<:PaintShop}) = [0, 1]
 problem_size(c::PaintShop) = (; sequence_length=length(c.sequence))
 Base.:(==)(a::PaintShop, b::PaintShop) = a.sequence == b.sequence && a.isfirst == b.isfirst
+
+# weights interface
+set_weights(c::PaintShop, weights) = c # constant UnitWeight
 
 # constraints interface
 function energy_terms(c::PaintShop)
@@ -71,6 +83,15 @@ function local_energy(::Type{<:PaintShop}, spec::LocalConstraint, config)
 end
 
 @nohard_constraints PaintShop
+
+"""
+    num_paint_shop_color_switch(sequence::AbstractVector, coloring)
+
+Returns the number of color switches.
+"""
+function num_paint_shop_color_switch(sequence::AbstractVector, coloring)
+    return count(i->coloring[i] != coloring[i+1], 1:length(sequence)-1)
+end
 
 """
     paint_shop_coloring_from_config(p::PaintShop, config)

@@ -201,6 +201,16 @@ Base.getindex(::UnitWeight, i) = 1
 Base.size(w::UnitWeight) = (w.n,)
 
 """
+    UnitWeight <: AbstractVector{Int}
+
+The unit weight vector of length `n`.
+"""
+struct ZeroWeight <: AbstractVector{Int}
+    n::Int
+end
+Base.getindex(::ZeroWeight, i) = 0
+Base.size(w::ZeroWeight) = (w.n,)
+"""
     energy_terms(problem::AbstractProblem) -> Vector{LocalConstraint}
 
 The energy terms of the problem. Each term is associated with weights.
@@ -248,3 +258,4 @@ include("Factoring.jl")
 include("Matching.jl")
 include("MaximalIS.jl")
 include("Paintshop.jl")
+include("OpenPitMining.jl")
