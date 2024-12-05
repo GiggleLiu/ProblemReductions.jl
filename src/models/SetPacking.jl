@@ -30,13 +30,8 @@ julia> sets = [[1, 2, 5], [1, 3], [2, 4], [3, 6], [2, 3, 6]]
 julia> SP = SetPacking(sets)
 SetPacking{Int64, Int64, UnitWeight}([1, 2, 5, 3, 4, 6], [[1, 2, 5], [1, 3], [2, 4], [3, 6], [2, 3, 6]], [1, 1, 1, 1, 1])
 
-julia> variables(SP)  # degrees of freedom
-5-element Vector{Int64}:
- 1
- 2
- 3
- 4
- 5
+julia> num_variables(SP)  # degrees of freedom
+5
 
 julia> flavors(SP)  # flavors of the subsets
 2-element Vector{Int64}:
@@ -69,7 +64,7 @@ Base.:(==)(a::SetPacking, b::SetPacking) = ( a.sets == b.sets && a.weights == b.
 problem_size(c::SetPacking) = (; num_elements = length(c.elements), num_sets = length(c.sets))
 
 # Variables Interface
-variables(c::SetPacking) = [1:length(c.sets)...]
+num_variables(c::SetPacking) = length(c.sets)
 flavors(::Type{<:SetPacking}) = [0, 1]
 
 weights(c::SetPacking) = c.weights

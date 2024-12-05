@@ -25,12 +25,7 @@ julia> DS = DominatingSet(graph)
 DominatingSet{SimpleGraph{Int64}, Int64, UnitWeight}(SimpleGraph{Int64}(4, [[2], [1, 3], [2, 4], [3, 5], [4]]), [1, 1, 1, 1, 1])
 
 julia> variables(DS)  # degrees of freedom
-5-element Vector{Int64}:
- 1
- 2
- 3
- 4
- 5
+1:5
 
 julia> flavors(DS)  # flavors of the vertices
 2-element Vector{Int64}:
@@ -60,7 +55,7 @@ end
 Base.:(==)(a::DominatingSet, b::DominatingSet) = ( a.graph == b.graph )
 
 # Variables Interface
-variables(gp::DominatingSet) = [1:nv(gp.graph)...]
+num_variables(gp::DominatingSet) = nv(gp.graph)
 flavors(::Type{<:DominatingSet}) = [0, 1]
 problem_size(c::DominatingSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 

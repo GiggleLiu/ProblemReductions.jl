@@ -278,7 +278,7 @@ end
 Base.show(io::IO, ::MIME"text/plain", x::CircuitSAT) = show(io, x)
 
 # variables interface
-variables(c::CircuitSAT) = collect(1:length(c.symbols))
+num_variables(c::CircuitSAT) = length(c.symbols)
 flavors(::Type{<:CircuitSAT}) = [0, 1]
 problem_size(c::CircuitSAT) = (; num_exprs=length(c.circuit.exprs), num_variables=length(c.symbols))
 

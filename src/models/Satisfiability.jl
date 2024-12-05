@@ -28,7 +28,7 @@ function Base.show(io::IO, b::CNFClause)
 end
 Base.:(==)(x::CNFClause, y::CNFClause) = x.vars == y.vars
 Base.length(x::CNFClause) = length(x.vars)
-variables(clause::CNFClause) = unique([var.name for var in clause.vars])
+symbols(clause::CNFClause) = unique([var.name for var in clause.vars])
 
 """
     CNF{T}
@@ -93,7 +93,7 @@ macro bools(syms::Symbol...)
     esc(Expr(:block, [:($s = $BoolVar($(QuoteNode(s)))) for s in syms]..., nothing))
 end
 
-function variables(cnf::CNF{T}) where T
+function symbols(cnf::CNF{T}) where T
     unique([var.name for clause in cnf.clauses for var in clause.vars])
 end
 
@@ -150,10 +150,10 @@ struct Satisfiability{S, T, WT<:AbstractArray{T}} <:AbstractSatisfiabilityProble
     end
 end
 function Satisfiability(cnf::CNF{S}, weights::AbstractVector=UnitWeight(length(cnf.clauses))) where {S}
-    Satisfiability(variables(cnf), cnf, weights)
+    Satisfiability(symbols(cnf), cnf, weights)
 end
 clauses(c::Satisfiability) = c.cnf.clauses
-variables(c::Satisfiability) = c.variables
+num_variables(c::Satisfiability) = length(c.variables)
 Base.:(==)(x::Satisfiability, y::Satisfiability) = x.cnf == y.cnf && x.weights == y.weights && x.variables == y.variables
 
 weights(c::Satisfiability) = c.weights
@@ -178,14 +178,14 @@ struct KSatisfiability{K, S, T, WT<:AbstractArray{T}} <:AbstractSatisfiabilityPr
     end
 end
 function KSatisfiability{K}(cnf::CNF{S}, weights::WT=UnitWeight(length(cnf.clauses))) where {K, S, WT<:AbstractVector}
-    KSatisfiability{K}(variables(cnf), cnf, weights)
+    KSatisfiability{K}(symbols(cnf), cnf, weights)
 end
 Base.:(==)(x::KSatisfiability, y::KSatisfiability) = x.cnf == y.cnf
 is_kSAT(cnf::CNF, k::Int) = all(c -> k == length(c.vars), cnf.clauses)
 clauses(c::KSatisfiability) = c.cnf.clauses
-variables(c::KSatisfiability) = c.variables
+num_variables(c::KSatisfiability) = length(c.variables)
 
-problem_size(c::AbstractSatisfiabilityProblem) = (; num_claues = length(clauses(c)), num_variables = length(variables(c)))
+problem_size(c::AbstractSatisfiabilityProblem) = (; num_claues = length(clauses(c)), num_variables = num_variables(c))
 flavors(::Type{<:AbstractSatisfiabilityProblem}) = [0, 1]  # false, true
 
 weights(c::KSatisfiability) = c.weights
@@ -193,9 +193,9 @@ set_weights(c::KSatisfiability, weights::Vector{WT}) where {WT} = KSatisfiabilit
 
 # constraints interface
 function energy_terms(c::AbstractSatisfiabilityProblem)
-    vars = variables(c)
+    vars = symbols(c)
     return map(clauses(c)) do cl
-        idx = [findfirst(==(v), vars) for v in variables(cl)]
+        idx = [findfirst(==(v), vars) for v in symbols(cl)]
         LocalConstraint(idx, vars[idx] => cl)
     end
 end

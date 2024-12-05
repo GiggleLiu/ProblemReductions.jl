@@ -52,7 +52,6 @@ end
 Base.:(==)(a::MaxCut, b::MaxCut) = a.graph == b.graph && a.weights == b.weights
 
 # varibles interface 
-variables(gp::MaxCut) = [1:nv(gp.graph)...]
 num_variables(gp::MaxCut) = nv(gp.graph)
 flavors(::Type{<:MaxCut}) = [0, 1] #choose it or not
 problem_size(c::MaxCut) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))

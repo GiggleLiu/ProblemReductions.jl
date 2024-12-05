@@ -23,12 +23,8 @@ julia> graph = SimpleGraph(Graphs.SimpleEdge.([(1, 2), (1, 3), (3, 4), (2, 3), (
 julia> problem = MaximalIS(graph)
 MaximalIS{Int64, UnitWeight}(SimpleGraph{Int64}(5, [[2, 3, 4], [1, 3], [1, 2, 4], [1, 3]]), [1, 1, 1, 1])
 
-julia> variables(problem)  # degrees of freedom
-4-element Vector{Int64}:
- 1
- 2
- 3
- 4
+julia> num_variables(problem)  # degrees of freedom
+4
 
 julia> flavors(problem)
 2-element Vector{Int64}:
@@ -54,7 +50,6 @@ end
 Base.:(==)(a::MaximalIS, b::MaximalIS) = a.graph == b.graph && a.weights == b.weights
 
 # variables interface
-variables(gp::MaximalIS) = [1:nv(gp.graph)...]
 num_variables(gp::MaximalIS) = nv(gp.graph)
 flavors(::Type{<:MaximalIS}) = [0, 1]
 problem_size(c::MaximalIS) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))

@@ -25,3 +25,13 @@ using ProblemReductions, Test, Graphs
         @test cfg[3] == cfg[1] & cfg[2]
     end
 end
+
+
+@testset "energyterms - spinglass" begin
+    g01 = smallgraph(:diamond)
+    sg = SpinGlass(g01, [1, -2, -2, 1, 2], [1, 1, -2, -2])
+    terms = ProblemReductions.local_energy_terms(sg)
+    for cfg in [[-1, 1, 1, -1], [1, -1, -1, 1]]
+        @test ProblemReductions.energy_eval_byid(terms, (1 .- cfg) .÷ 2 .+ 1) == ProblemReductions.energy(sg, cfg)
+    end
+end

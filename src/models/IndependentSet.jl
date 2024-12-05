@@ -24,12 +24,8 @@ julia> graph = SimpleGraph(Graphs.SimpleEdge.([(1, 2), (1, 3), (3, 4), (2, 3)]))
 julia> IS = IndependentSet(graph)
 IndependentSet{SimpleGraph{Int64}, Int64, UnitWeight}(SimpleGraph{Int64}(4, [[2, 3], [1, 3], [1, 2, 4], [3]]), [1, 1, 1, 1])
 
-julia> variables(IS)  # degrees of freedom
-4-element Vector{Int64}:
- 1
- 2
- 3
- 4
+julia> num_variables(IS)  # degrees of freedom
+4
 
 julia> flavors(IS)  # flavors of the vertices
 2-element Vector{Int64}:
@@ -58,7 +54,7 @@ end
 Base.:(==)(a::IndependentSet, b::IndependentSet) = a.graph == b.graph && a.weights == b.weights
 
 # Variables Interface
-variables(gp::IndependentSet) = [1:nv(gp.graph)...]
+num_variables(gp::IndependentSet) = nv(gp.graph)
 flavors(::Type{<:IndependentSet}) = [0, 1]
 problem_size(c::IndependentSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 

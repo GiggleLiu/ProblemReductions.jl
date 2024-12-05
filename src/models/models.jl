@@ -80,14 +80,14 @@ function problem_size end
 The degrees of freedoms in the computational problem. e.g. for the maximum independent set problems, they are the indices of vertices: 1, 2, 3...,
 while for the max cut problem, they are the edges.
 """
-function variables end
+variables(c::AbstractProblem) = 1:num_variables(c)
 
 """
     num_variables(problem::AbstractProblem) -> Int
 
 The number of variables in the computational problem.
 """
-num_variables(c::AbstractProblem) = length(variables(c))
+function num_variables end
 
 """
     weight_type(problem::AbstractProblem) -> Type
@@ -152,6 +152,68 @@ function energy_multi(problem::ConstraintSatisfactionProblem{T}, configs) where 
     terms = energy_terms(problem)
     ws = is_weighted(problem) ? weights(problem) : UnitWeight(length(terms))
     return EnergyMultiConfig(problem, configs, hard_specs, terms, ws)
+end
+
+struct EnergyTerm{LT, F, T}
+    variables::Vector{LT}
+    flavors::Vector{F}
+    strides::Vector{Int}
+    energies::Vector{T}
+end
+function Base.show(io::IO, term::EnergyTerm)
+    println(io, """EnergyTerm""")
+    entries = []
+    sizes = repeat([length(term.flavors)], length(term.variables))
+    for (idx, energy) in zip(CartesianIndices(Tuple(sizes)), term.energies)
+        push!(entries, [getindex.(Ref(term.flavors), idx.I)..., energy])
+    end
+	pretty_table(io, transpose(hcat(entries...)); header=[string.(term.variables)..., "energy"])
+	return nothing
+end
+Base.show(io::IO, ::MIME"text/plain", term::EnergyTerm) = show(io, term)
+
+function local_energy_terms(problem::ConstraintSatisfactionProblem{T}) where T
+    vars = variables(problem)
+    flvs = flavors(problem)
+    nflv = length(flvs)
+    terms = EnergyTerm{eltype(vars), eltype(flvs), T}[]
+    for constraint in hard_constraints(problem)
+        sizes = [nflv for _ in constraint.variables]
+        energies = map(CartesianIndices(Tuple(sizes))) do idx
+            is_satisfied(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)) ? zero(T) : energy_max(T)
+        end
+        strides = [nflv^i for i in 0:length(constraint.variables)-1]
+        push!(terms, EnergyTerm(constraint.variables, flvs, strides, vec(energies)))
+    end
+    for (i, constraint) in enumerate(energy_terms(problem))
+        sizes = [nflv for _ in constraint.variables]
+        energies = map(CartesianIndices(Tuple(sizes))) do idx
+            local_energy(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)) * weights(problem)[i]
+        end
+        strides = [nflv^i for i in 0:length(constraint.variables)-1]
+        push!(terms, EnergyTerm(constraint.variables, flvs, strides, vec(energies)))
+    end
+    return terms
+end
+
+function energy_eval(terms::AbstractVector{EnergyTerm{LT, F, T}}, config) where {LT, F, T}
+    energy = zero(T)
+    for (i, term) in enumerate(terms)
+        subconfig = _get(config, term.variables)
+        k = LinearIndices(Tuple(term.sizes))[[findfirst(==(c), term.flavors) for c in subconfig]...]
+        energy += term.energies[k]
+    end
+    return energy
+end
+
+function energy_eval_byid(terms::AbstractVector{EnergyTerm{LT, F, T}}, config_id) where {LT, F, T}
+    sum(terms) do term
+        k = 1
+        for (stride, var) in zip(term.strides, term.variables)
+            k += stride * (config_id[var]-1)
+        end
+        term.energies[k]
+    end
 end
 
 function Base.iterate(emc::EnergyMultiConfig{T}, args...) where T

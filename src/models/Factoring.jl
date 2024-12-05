@@ -41,7 +41,7 @@ struct Factoring <: AbstractProblem
 end
 
 # variables interface
-variables(f::Factoring) = collect(1:f.m+f.n)
+num_variables(f::Factoring) = f.m+f.n
 flavors(::Type{Factoring}) = [0, 1]
 problem_size(f::Factoring) = (; num_bits_first=f.m, num_bits_second=f.n)
 

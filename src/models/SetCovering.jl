@@ -31,11 +31,8 @@ julia> weights = [1, 2, 3]
 julia> setcovering = SetCovering(subsets, weights)
 SetCovering{Int64, Int64, Vector{Int64}}([1, 2, 3, 4], [[1, 2, 3], [2, 4], [1, 4]], [1, 2, 3])
 
-julia> variables(setcovering)  # degrees of freedom
-3-element Vector{Int64}:
- 1
- 2
- 3
+julia> num_variables(setcovering)  # degrees of freedom
+3
 
 julia> energy(setcovering, [1, 0, 1])  # cost of a configuration
 4
@@ -65,7 +62,7 @@ Defined as the number of sets.
 problem_size(c::SetCovering) = (; num_sets=length(c.sets), num_elements=length(c.elements))
 
 # variables interface
-variables(gp::SetCovering) = [1:length(gp.sets)...]
+num_variables(gp::SetCovering) = length(gp.sets)
 flavors(::Type{<:SetCovering}) = [0, 1] # whether the set is selected (1) or not (0)
 
 # weights interface
