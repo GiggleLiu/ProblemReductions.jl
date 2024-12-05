@@ -196,16 +196,6 @@ function local_energy_terms(problem::ConstraintSatisfactionProblem{T}) where T
     return terms
 end
 
-function energy_eval(terms::AbstractVector{EnergyTerm{LT, F, T}}, config) where {LT, F, T}
-    energy = zero(T)
-    for (i, term) in enumerate(terms)
-        subconfig = _get(config, term.variables)
-        k = LinearIndices(Tuple(term.sizes))[[findfirst(==(c), term.flavors) for c in subconfig]...]
-        energy += term.energies[k]
-    end
-    return energy
-end
-
 function energy_eval_byid(terms::AbstractVector{EnergyTerm{LT, F, T}}, config_id) where {LT, F, T}
     sum(terms) do term
         k = 1

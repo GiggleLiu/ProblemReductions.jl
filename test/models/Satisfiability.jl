@@ -17,7 +17,7 @@ using ProblemReductions: KSatisfiability,clauses
     
     @test is_kSAT(sat_test.cnf, 3)
     vars = ["x", "y", "z", "w"]
-    @test variables(sat_test) == vars
+    @test ProblemReductions.symbols(sat_test) == vars
     @test num_variables(sat_test) == 4
     @test problem_size(sat_test) == (; num_claues = 2, num_variables = 4)
 
@@ -38,7 +38,7 @@ using ProblemReductions: KSatisfiability,clauses
     ksat_test = KSatisfiability{3}(cnf_test)
     @test clauses(ksat_test) == cnf_test.clauses
     @test ksat_test isa KSatisfiability
-    @test variables(ksat_test) == vars
+    @test ProblemReductions.symbols(ksat_test) == vars
     @test num_variables(ksat_test) == 4
 
     cfg = [0, 1, 0, 1]

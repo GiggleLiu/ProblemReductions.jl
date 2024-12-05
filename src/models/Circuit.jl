@@ -119,12 +119,6 @@ function print_statements(io::IO, exprs)
 end
 Base.show(io::IO, ::MIME"text/plain", x::Circuit) = show(io, x)
 
-function symbols(expr)
-    vars = Symbol[]
-    extract_symbols!(expr, vars)
-    return unique!(vars)
-end
-
 function extract_symbols!(c::Circuit, vars::Vector{Symbol})
     for ex in c.exprs
         extract_symbols!(ex, vars)
@@ -302,4 +296,10 @@ function local_energy(::Type{<:CircuitSAT{T}}, spec::LocalConstraint, config) wh
         dict[o] != evaluate_expr(ex.expr, dict) && return 1  # this is the loss!
     end
     return 0
+end
+
+function symbols(expr::Union{Assignment, BooleanExpr, Circuit})
+    vars = Symbol[]
+    extract_symbols!(expr, vars)
+    return unique!(vars)
 end

@@ -154,6 +154,7 @@ function Satisfiability(cnf::CNF{S}, weights::AbstractVector=UnitWeight(length(c
 end
 clauses(c::Satisfiability) = c.cnf.clauses
 num_variables(c::Satisfiability) = length(c.variables)
+symbols(c::Satisfiability) = c.variables
 Base.:(==)(x::Satisfiability, y::Satisfiability) = x.cnf == y.cnf && x.weights == y.weights && x.variables == y.variables
 
 weights(c::Satisfiability) = c.weights
@@ -184,6 +185,7 @@ Base.:(==)(x::KSatisfiability, y::KSatisfiability) = x.cnf == y.cnf
 is_kSAT(cnf::CNF, k::Int) = all(c -> k == length(c.vars), cnf.clauses)
 clauses(c::KSatisfiability) = c.cnf.clauses
 num_variables(c::KSatisfiability) = length(c.variables)
+symbols(c::KSatisfiability) = c.variables
 
 problem_size(c::AbstractSatisfiabilityProblem) = (; num_claues = length(clauses(c)), num_variables = num_variables(c))
 flavors(::Type{<:AbstractSatisfiabilityProblem}) = [0, 1]  # false, true
