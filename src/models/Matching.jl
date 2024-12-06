@@ -18,7 +18,7 @@ struct Matching{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
 end
 Base.:(==)(a::Matching, b::Matching) = a.graph == b.graph && a.weights == b.weights
 
-flavors(::Type{<:Matching}) = [0, 1]
+flavors(::Type{<:Matching}) = (0, 1)
 num_variables(gp::Matching) = ne(gp.graph)
 problem_size(c::Matching) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 

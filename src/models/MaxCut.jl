@@ -28,9 +28,7 @@ julia> num_variables(maxcut) # return the number of vertices
 3
 
 julia> flavors(maxcut) # return the flavors of the vertices
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(maxcut, [0,1,0]) # return the energy of the configuration
 -4
@@ -53,7 +51,7 @@ Base.:(==)(a::MaxCut, b::MaxCut) = a.graph == b.graph && a.weights == b.weights
 
 # varibles interface 
 num_variables(gp::MaxCut) = nv(gp.graph)
-flavors(::Type{<:MaxCut}) = [0, 1] #choose it or not
+flavors(::Type{<:MaxCut}) = (0, 1) #choose it or not
 problem_size(c::MaxCut) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
                             
 # weights interface

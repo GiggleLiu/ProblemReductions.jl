@@ -6,35 +6,23 @@ A brute force method to find the best configuration of a problem.
 struct BruteForce end
 
 function findbest(problem::AbstractProblem, ::BruteForce; atol=eps(Float64), rtol=eps(Float64))
-    best_size = Inf
-    best_configs = Vector{Int}[]
-    configs = Iterators.product([flavors(problem) for i in 1:num_variables(problem)]...)
-    for (size, config) in energy_multi(problem, configs)
-        if isapprox(size, best_size; atol, rtol)
-            push!(best_configs, collect(config))
-        elseif size < best_size[1]
-            best_size = Float64(size)
-            empty!(best_configs)
-            push!(best_configs, collect(config))
-        end
-    end
+    flvs = flavors(problem)
+    best_configs = Vector{eltype(flvs)}[]
+    configs = Iterators.product([flvs for i in 1:num_variables(problem)]...)
+    energies = energy_multi(problem, configs)
+    _findbest!(best_configs, configs, energies, atol, rtol)
     return best_configs
 end
 
-function findbest2(problem::AbstractProblem, ::BruteForce; atol=eps(Float64), rtol=eps(Float64))
-    best_size = Inf
-    best_configs = Vector{Int}[]
-    configs = Iterators.product([1:num_flavors(problem) for i in 1:num_variables(problem)]...)
-    terms = local_energy_terms(problem)
-    for config in configs
-        size = energy_eval_byid(terms, config)
-        if isapprox(size, best_size; atol, rtol)
+function _findbest!(best_configs, configs, energies, atol, rtol)
+    best_energy = Inf
+    for (config, energy) in zip(configs, energies)
+        if isapprox(energy, best_energy; atol, rtol)
             push!(best_configs, collect(config))
-        elseif size < best_size[1]
-            best_size = Float64(size)
+        elseif energy < best_energy
+            best_energy = energy
             empty!(best_configs)
             push!(best_configs, collect(config))
         end
     end
-    return best_configs
 end

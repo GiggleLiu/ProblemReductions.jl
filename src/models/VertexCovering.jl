@@ -33,10 +33,10 @@ julia> num_variables(VC)  # degrees of freedom
 4
 
 julia> energy(VC, [1, 0, 0, 1]) # Negative sample
-3037000500
+3037000505
 
 julia> energy(VC, [0, 1, 1, 0]) # Positive sample
-3037000500
+3037000504
 
 julia> findbest(VC, BruteForce())  # solve the problem with brute force
 1-element Vector{Vector{Int64}}:
@@ -58,7 +58,7 @@ Base.:(==)(a::VertexCovering, b::VertexCovering) = a.graph == b.graph && a.weigh
 
 # variables interface
 num_variables(gp::VertexCovering) = nv(gp.graph)
-flavors(::Type{<:VertexCovering}) = [0, 1] # whether the vertex is selected (1) or not (0)
+flavors(::Type{<:VertexCovering}) = (0, 1) # whether the vertex is selected (1) or not (0)
 problem_size(c::VertexCovering) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 #weights interface 

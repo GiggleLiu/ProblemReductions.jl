@@ -24,9 +24,7 @@ julia> num_variables(problem)
 3
 
 julia> flavors(problem)
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(problem, [0, 1, 0])
 4
@@ -50,7 +48,7 @@ end
 
 num_variables(gp::PaintShop) = length(gp.sequence) ÷ 2
 symbols(gp::PaintShop) = unique(gp.sequence)
-flavors(::Type{<:PaintShop}) = [0, 1]
+flavors(::Type{<:PaintShop}) = (0, 1)
 problem_size(c::PaintShop) = (; sequence_length=length(c.sequence))
 Base.:(==)(a::PaintShop, b::PaintShop) = a.sequence == b.sequence && a.isfirst == b.isfirst
 

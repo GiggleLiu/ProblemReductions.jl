@@ -28,9 +28,7 @@ julia> variables(DS)  # degrees of freedom
 1:5
 
 julia> flavors(DS)  # flavors of the vertices
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(DS, [0, 1, 0, 1, 0]) # Positive sample: (size) of a dominating set
 2
@@ -56,7 +54,7 @@ Base.:(==)(a::DominatingSet, b::DominatingSet) = ( a.graph == b.graph )
 
 # Variables Interface
 num_variables(gp::DominatingSet) = nv(gp.graph)
-flavors(::Type{<:DominatingSet}) = [0, 1]
+flavors(::Type{<:DominatingSet}) = (0, 1)
 problem_size(c::DominatingSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # Weights Interface

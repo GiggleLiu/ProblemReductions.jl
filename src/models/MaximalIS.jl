@@ -27,12 +27,10 @@ julia> num_variables(problem)  # degrees of freedom
 4
 
 julia> flavors(problem)
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(problem, [0, 1, 0, 0])  # unlike the independent set, this configuration is not a valid solution
-3037000500
+3037000499
 
 julia> findbest(problem, BruteForce())
 1-element Vector{Vector{Int64}}:
@@ -51,7 +49,7 @@ Base.:(==)(a::MaximalIS, b::MaximalIS) = a.graph == b.graph && a.weights == b.we
 
 # variables interface
 num_variables(gp::MaximalIS) = nv(gp.graph)
-flavors(::Type{<:MaximalIS}) = [0, 1]
+flavors(::Type{<:MaximalIS}) = (0, 1)
 problem_size(c::MaximalIS) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface

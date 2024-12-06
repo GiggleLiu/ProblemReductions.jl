@@ -51,9 +51,7 @@ julia> num_variables(spinglass)  # degrees of freedom
 4
 
 julia> flavors(spinglass)  # flavors of the spins
-2-element Vector{Int64}:
-  1
- -1
+(1, -1)
 
 julia> energy(spinglass, [-1, 1, 1, -1])  # energy of a configuration
 -2
@@ -82,7 +80,7 @@ end
 
 # variables interface
 num_variables(gp::SpinGlass) = nv(gp.graph)
-flavors(::Type{<:SpinGlass}) = [1, -1]
+flavors(::Type{<:SpinGlass}) = (1, -1)
 problem_size(c::SpinGlass) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface

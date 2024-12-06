@@ -137,26 +137,25 @@ The lower the energy, the better the configuration.
 function energy end
 
 # energy interface
-energy(problem::AbstractProblem, config) = first(energy_multi(problem, [config]))[1]
-struct EnergyMultiConfig{T, PT<:ConstraintSatisfactionProblem{T}, ST, ST2, VT, WT <: AbstractVector{T}}
-    problem::PT
-    configs::VT  # iterator of configurations
-    hard_specs::Vector{LocalConstraint{ST}}
-    energy_terms::Vector{LocalConstraint{ST2}}
-    weights::WT
-end
-
+energy(problem::AbstractProblem, config) = first(energy_multi(problem, (config,)))
 function energy_multi(problem::ConstraintSatisfactionProblem{T}, configs) where T
-    @assert all(config -> length(config) == num_variables(problem), configs) "All configurations must have the same length as the number of variables, got: $(length.(configs)), which should be $(num_variables(problem))"
-    hard_specs = hard_constraints(problem)
-    terms = energy_terms(problem)
-    ws = is_weighted(problem) ? weights(problem) : UnitWeight(length(terms))
-    return EnergyMultiConfig(problem, configs, hard_specs, terms, ws)
+    terms = local_energy_terms(problem)
+    return Iterators.map(configs) do config
+        energy_eval_byid(terms, config_to_id(problem, config))
+    end
+end
+function config_to_id(problem::AbstractProblem, config)
+    flvs = flavors(problem)
+    map(c -> findfirst(==(c), flvs), config)
+end
+function id_to_config(problem::AbstractProblem, id)
+    flvs = flavors(problem)
+    map(i -> flvs[i], id)
 end
 
-struct EnergyTerm{LT, F, T}
+struct EnergyTerm{LT, N, F, T}
     variables::Vector{LT}
-    flavors::Vector{F}
+    flavors::NTuple{N, F}
     strides::Vector{Int}
     energies::Vector{T}
 end
@@ -176,7 +175,7 @@ function local_energy_terms(problem::ConstraintSatisfactionProblem{T}) where T
     vars = variables(problem)
     flvs = flavors(problem)
     nflv = length(flvs)
-    terms = EnergyTerm{eltype(vars), eltype(flvs), T}[]
+    terms = EnergyTerm{eltype(vars), length(flvs), eltype(flvs), T}[]
     for constraint in hard_constraints(problem)
         sizes = [nflv for _ in constraint.variables]
         energies = map(CartesianIndices(Tuple(sizes))) do idx
@@ -187,8 +186,9 @@ function local_energy_terms(problem::ConstraintSatisfactionProblem{T}) where T
     end
     for (i, constraint) in enumerate(energy_terms(problem))
         sizes = [nflv for _ in constraint.variables]
+        ws = is_weighted(problem) ? weights(problem) : UnitWeight(length(terms))
         energies = map(CartesianIndices(Tuple(sizes))) do idx
-            local_energy(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)) * weights(problem)[i]
+            local_energy(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)) * ws[i]
         end
         strides = [nflv^i for i in 0:length(constraint.variables)-1]
         push!(terms, EnergyTerm(constraint.variables, flvs, strides, vec(energies)))
@@ -196,7 +196,7 @@ function local_energy_terms(problem::ConstraintSatisfactionProblem{T}) where T
     return terms
 end
 
-function energy_eval_byid(terms::AbstractVector{EnergyTerm{LT, F, T}}, config_id) where {LT, F, T}
+Base.@propagate_inbounds function energy_eval_byid(terms::AbstractVector{EnergyTerm{LT, N, F, T}}, config_id) where {LT, N, F, T}
     sum(terms) do term
         k = 1
         for (stride, var) in zip(term.strides, term.variables)
@@ -205,25 +205,6 @@ function energy_eval_byid(terms::AbstractVector{EnergyTerm{LT, F, T}}, config_id
         term.energies[k]
     end
 end
-
-function Base.iterate(emc::EnergyMultiConfig{T}, args...) where T
-    config_spec = iterate(emc.configs, args...)
-    if config_spec === nothing
-        return nothing
-    end
-    config, state = config_spec
-    if !all(spec -> is_satisfied(typeof(emc.problem), spec, _get(config, spec.variables)), emc.hard_specs)
-        return (energy_max(T), config), state
-    end
-    energy = zero(T)
-    for (i, spec) in enumerate(emc.energy_terms)
-        subconfig = _get(config, spec.variables)
-        energy += local_energy(typeof(emc.problem), spec, subconfig) * emc.weights[i]
-    end
-    return (energy, config), state
-end
-_get(config::AbstractVector, indices) = view(config, indices)
-_get(config::Tuple, indices) = Iterators.map(i -> config[i], indices)
 
 """
 $TYPEDSIGNATURES

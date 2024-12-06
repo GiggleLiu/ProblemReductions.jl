@@ -22,9 +22,7 @@ julia> variables(factoring) # return the sum of factors' bit size
 1:4
 
 julia> flavors(factoring)
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(factoring,[0,1,1,1]) # 01 -> 2, 11 -> 3
 0
@@ -38,7 +36,7 @@ end
 
 # variables interface
 num_variables(f::Factoring) = f.m+f.n
-flavors(::Type{Factoring}) = [0, 1]
+flavors(::Type{Factoring}) = (0, 1)
 problem_size(f::Factoring) = (; num_bits_first=f.m, num_bits_second=f.n)
 
 # utilities
@@ -47,7 +45,7 @@ function energy_multi(f::Factoring, configs)
     return Iterators.map(configs) do config
         input1 = BitStr(config[1:f.m]).buf
         input2 = BitStr(config[f.m+1:f.m+f.n]).buf
-        return (input1 * input2 == f.input ? 0 : 1, config)
+        return (input1 * input2 == f.input ? 0 : 1)
     end
 end
 

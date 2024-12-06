@@ -28,15 +28,13 @@ julia> num_variables(IS)  # degrees of freedom
 4
 
 julia> flavors(IS)  # flavors of the vertices
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(IS, [1, 0, 0, 1]) # Positive sample: -(size) of an independent set
 -2
 
 julia> energy(IS, [0, 1, 1, 0]) # Negative sample: 0
-3037000500
+3037000498
 
 julia> findbest(IS, BruteForce())  # solve the problem with brute force
 2-element Vector{Vector{Int64}}:
@@ -55,7 +53,7 @@ Base.:(==)(a::IndependentSet, b::IndependentSet) = a.graph == b.graph && a.weigh
 
 # Variables Interface
 num_variables(gp::IndependentSet) = nv(gp.graph)
-flavors(::Type{<:IndependentSet}) = [0, 1]
+flavors(::Type{<:IndependentSet}) = (0, 1)
 problem_size(c::IndependentSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface

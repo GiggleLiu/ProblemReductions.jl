@@ -34,15 +34,13 @@ julia> num_variables(SP)  # degrees of freedom
 5
 
 julia> flavors(SP)  # flavors of the subsets
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(SP, [1, 0, 0, 1, 0]) # Positive sample: -(size) of a packing
 -2
 
 julia> energy(SP, [1, 0, 1, 1, 0]) # Negative sample: 0
-3037000500
+3037000497
 
 julia> findbest(SP, BruteForce())  # solve the problem with brute force
 3-element Vector{Vector{Int64}}:
@@ -65,7 +63,7 @@ problem_size(c::SetPacking) = (; num_elements = length(c.elements), num_sets = l
 
 # Variables Interface
 num_variables(c::SetPacking) = length(c.sets)
-flavors(::Type{<:SetPacking}) = [0, 1]
+flavors(::Type{<:SetPacking}) = (0, 1)
 
 weights(c::SetPacking) = c.weights
 set_weights(c::SetPacking, weights::Vector{T}) where {T} = SetPacking(c.sets, weights)

@@ -25,10 +25,7 @@ julia> variables(coloring)
 1:10
 
 julia> flavors(coloring)
-3-element Vector{Int64}:
- 0
- 1
- 2
+(0, 1, 2)
 
 julia> is_vertex_coloring(coloring.graph,[1,2,3,1,3,2,1,2,3,1]) #random assignment
 false
@@ -47,7 +44,7 @@ problem_size(c::Coloring) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # variables interface
 num_variables(gp::Coloring{K}) where K = nv(gp.graph)
-flavors(::Type{<:Coloring{K}}) where K = collect(0:K-1) # colors
+flavors(::Type{<:Coloring{K}}) where K = ntuple(i->i-1, K) # colors
 num_flavors(::Type{<:Coloring{K}}) where K = K # number of colors
 
 # weights interface

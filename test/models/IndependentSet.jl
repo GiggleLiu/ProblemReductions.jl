@@ -28,7 +28,7 @@ using Test, ProblemReductions, Graphs
     # variables
     @test variables(IS_01) == [1, 2, 3, 4]
     @test num_variables(IS_01) == 4
-    @test flavors(IndependentSet) == [0, 1]
+    @test flavors(IndependentSet) == (0, 1)
 
     # energy
     # Positive examples

@@ -16,8 +16,8 @@ using Test, ProblemReductions, Graphs
     # variables
     @test variables(mc) == [1, 2, 3, 4]
     @test num_variables(mc) == 4
-    @test flavors(MaxCut) == [0, 1]
-    @test flavors(mc) == [0, 1]
+    @test flavors(MaxCut) == (0, 1)
+    @test flavors(mc) == (0, 1)
     @test num_flavors(mc) == 2
     # weights
     @test ProblemReductions.weights(mc) == [1, 3, 1, 4]

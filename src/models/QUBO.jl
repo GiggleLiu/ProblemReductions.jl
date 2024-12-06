@@ -34,9 +34,7 @@ julia> num_variables(QUBO01)  # degrees of freedom
 3
 
 julia> flavors(QUBO01)  # flavors of the vertices
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(QUBO01, [0, 1, 0])
 1.0
@@ -75,7 +73,7 @@ end
 
 # variables interface
 num_variables(c::QUBO) = size(c.matrix, 1)
-flavors(::Type{<:QUBO}) = [0, 1]
+flavors(::Type{<:QUBO}) = (0, 1)
 problem_size(c::QUBO) = (; num_variables=size(c.matrix, 1))
 
 function weights(c::QUBO)

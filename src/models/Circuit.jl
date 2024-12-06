@@ -230,9 +230,7 @@ julia> sat.symbols
  :d
 
 julia> flavors(sat)
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(sat, [true, false, true, true, false, false, true])
 3
@@ -273,7 +271,7 @@ Base.show(io::IO, ::MIME"text/plain", x::CircuitSAT) = show(io, x)
 
 # variables interface
 num_variables(c::CircuitSAT) = length(c.symbols)
-flavors(::Type{<:CircuitSAT}) = [0, 1]
+flavors(::Type{<:CircuitSAT}) = (0, 1)
 problem_size(c::CircuitSAT) = (; num_exprs=length(c.circuit.exprs), num_variables=length(c.symbols))
 
 # weights interface

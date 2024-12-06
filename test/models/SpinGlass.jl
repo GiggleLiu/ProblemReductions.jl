@@ -12,7 +12,7 @@ using ProblemReductions, Test, Graphs
     # variables
     @test variables(sg) == [1, 2, 3]
     @test num_variables(sg) == 3
-    @test flavors(sg) == [1, -1]
+    @test flavors(sg) == (1, -1)
     @test num_flavors(sg) == 2
 
     # weights

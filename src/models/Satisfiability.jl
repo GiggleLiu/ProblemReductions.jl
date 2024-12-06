@@ -192,7 +192,7 @@ num_variables(c::KSatisfiability) = length(c.symbols)
 symbols(c::KSatisfiability) = c.symbols
 
 problem_size(c::AbstractSatisfiabilityProblem) = (; num_claues = length(clauses(c)), num_variables = num_variables(c))
-flavors(::Type{<:AbstractSatisfiabilityProblem}) = [0, 1]  # false, true
+flavors(::Type{<:AbstractSatisfiabilityProblem}) = (0, 1)  # false, true
 
 weights(c::KSatisfiability) = c.weights
 set_weights(c::KSatisfiability, weights::Vector{WT}) where {WT} = KSatisfiability(c.symbols, c.cnf, weights)
