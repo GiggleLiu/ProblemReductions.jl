@@ -5,11 +5,15 @@ using ProblemReductions: SATColoringConstructor, add_clause!, Satisfiability, CN
     bool1 = BoolVar(:X)
     bool2 = BoolVar(:Y)
     clause1 = CNFClause([bool1, bool2])
-    CNF1 = CNF([clause1])
+    clause2 = CNFClause([bool1, ¬bool2])
+    CNF1 = CNF([clause1, clause2])
     Sat1 = Satisfiability(CNF1)
     @test Sat1 isa Satisfiability
     result = reduceto(Coloring{3}, Sat1)
-    expected_varlabel = Dict{BoolVar{Symbol}, Int64}(¬bool1 => 6, ¬bool2 => 7,bool2 => 5, bool1 => 4) 
-    @test result.varlabel == expected_varlabel
+    @test result.posvertices == [4, 5]
+    @test result.negvertices == [6, 7]
     @test target_problem(result) isa Coloring
+    res = findbest(target_problem(result), BruteForce())
+    backres = extract_solution.(Ref(result), res)
+    @test unique(backres) == [[1, 0], [1, 1]]
 end

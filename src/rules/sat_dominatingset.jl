@@ -26,7 +26,7 @@ function reduceto(::Type{DominatingSet{<:SimpleGraph}}, s::AbstractSatisfiabilit
     end
     for (i, clause_tmp) in enumerate(s.cnf.clauses)
         for literal in clause_tmp.vars
-            literal_node = 3 * (findfirst(==(literal.name), variables(s))-1) + (literal.neg ? 2 : 1)
+            literal_node = 3 * (findfirst(==(literal.name), symbols(s))-1) + (literal.neg ? 2 : 1)
             add_edge!(g, literal_node, 3 * num_variables(s)+i)
         end
     end
