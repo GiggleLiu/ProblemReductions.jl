@@ -69,7 +69,7 @@ function is_satisfied(::Type{<:IndependentSet}, spec::HardConstraint, config)
     return count(!iszero, config) <= 1
 end
 
-function energy_terms(c::IndependentSet)
+function soft_constraints(c::IndependentSet)
     return [SoftConstraint([i], :num_vertex, w) for (w, i) in zip(weights(c), 1:nv(c.graph))]
 end
 

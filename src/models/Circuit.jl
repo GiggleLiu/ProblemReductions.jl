@@ -280,7 +280,7 @@ set_weights(c::CircuitSAT, weights) = CircuitSAT(c.circuit, weights, c.symbols)
 
 # constraints interface
 @nohard_constraints CircuitSAT
-function energy_terms(c::CircuitSAT)
+function soft_constraints(c::CircuitSAT)
     syms = symbols(c.circuit)
     return [SoftConstraint([findfirst(==(s), c.symbols) for s in syms], syms=>expr, w) for (w, expr) in zip(c.weights, c.circuit.exprs)]
 end

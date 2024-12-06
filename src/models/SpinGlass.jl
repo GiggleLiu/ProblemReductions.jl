@@ -88,7 +88,7 @@ weights(gp::SpinGlass) = vcat(gp.J, gp.h)
 set_weights(c::SpinGlass, weights) = SpinGlass(c.graph, weights[1:ne(c.graph)], weights[ne(c.graph)+1:end])
 
 # constraints interface
-function energy_terms(sg::SpinGlass)
+function soft_constraints(sg::SpinGlass)
     return vcat([SoftConstraint(_vec(e), :edge, w) for (w, e) in zip(sg.J, edges(sg.graph))], [SoftConstraint([v], :vertex, w) for (w, v) in zip(sg.h, vertices(sg.graph))])
 end
 @nohard_constraints SpinGlass

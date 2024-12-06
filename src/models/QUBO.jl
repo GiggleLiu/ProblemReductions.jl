@@ -84,7 +84,7 @@ function weights(c::QUBO)
 end
 
 # constraints interface
-function energy_terms(c::QUBO)
+function soft_constraints(c::QUBO)
     vcat(
         [SoftConstraint([i, j], :offdiagonal, c.matrix[i, j] + c.matrix[j, i]) for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
         [SoftConstraint([i], :diagonal, c.matrix[i, i]) for i in variables(c) if c.matrix[i, i] != 0]

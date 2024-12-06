@@ -65,7 +65,7 @@ function is_satisfied(::Type{<:MaximalIS}, spec::HardConstraint, config)
     return !(nselect == 0 || (nselect > 1 && !iszero(first(config))))
 end
 # constraints interface
-function energy_terms(c::MaximalIS)
+function soft_constraints(c::MaximalIS)
     return [SoftConstraint([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 function local_energy(::Type{<:MaximalIS{T}}, spec::SoftConstraint{WT}, config) where {T, WT}

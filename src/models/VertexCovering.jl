@@ -73,7 +73,7 @@ function is_satisfied(::Type{<:VertexCovering}, spec::HardConstraint, config)
     @assert length(config) == num_variables(spec)
     return any(!iszero, config)
 end
-function energy_terms(c::VertexCovering)
+function soft_constraints(c::VertexCovering)
     return [SoftConstraint([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 function local_energy(::Type{<:VertexCovering{T}}, spec::SoftConstraint{WT}, config) where {T, WT}

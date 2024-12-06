@@ -37,7 +37,7 @@ function is_satisfied(::Type{<:Matching}, spec::HardConstraint, config)
     return count(isone, config) <= 1
 end
 
-function energy_terms(c::Matching)
+function soft_constraints(c::Matching)
     # as many edges as possible
     return [SoftConstraint([e], :num_edges, w) for (w, e) in zip(weights(c), variables(c))]
 end

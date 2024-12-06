@@ -83,7 +83,7 @@ function is_satisfied(::Type{<:SetPacking}, spec::HardConstraint, config)
     return count(isone, config) <= 1
 end
 
-function energy_terms(c::SetPacking)  # sets sharing the same element
+function soft_constraints(c::SetPacking)  # sets sharing the same element
     return [SoftConstraint([s], :set, w) for (w, s) in zip(weights(c), 1:length(c.sets))]
 end
 

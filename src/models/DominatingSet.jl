@@ -70,7 +70,7 @@ function is_satisfied(::Type{<:DominatingSet}, spec::HardConstraint, config)
     return count(isone, config) >= 1
 end
 
-function energy_terms(c::DominatingSet)
+function soft_constraints(c::DominatingSet)
     # constraints on vertex and its neighbours
     return [SoftConstraint([v], :num_vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
 end

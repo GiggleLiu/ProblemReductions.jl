@@ -59,7 +59,7 @@ weights(c::MaxCut) = c.weights
 set_weights(c::MaxCut, weights) = MaxCut(c.graph, weights)
 
 # constraints interface
-function energy_terms(c::MaxCut)
+function soft_constraints(c::MaxCut)
     return [SoftConstraint(_vec(e), :cut, w) for (w, e) in zip(weights(c), edges(c.graph))]
 end
 function local_energy(::Type{<:MaxCut{T}}, spec::SoftConstraint{WT}, config) where {T, WT}

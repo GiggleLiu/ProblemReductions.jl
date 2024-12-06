@@ -42,7 +42,7 @@ using ProblemReductions: KSatisfiability,clauses
     copied = set_weights(deepcopy(ksat_test), randn(length(ProblemReductions.weights(ksat_test))))
     @test ksat_test != copied
     @test ksat_test == ProblemReductions.set_weights(copied, ProblemReductions.weights(ksat_test))
-    @show ProblemReductions.local_energy_terms(ksat_test)
+    @show ProblemReductions.energy_terms(ksat_test)
     @test clauses(ksat_test) == cnf_test.clauses
     @test ksat_test isa KSatisfiability
     @test ProblemReductions.symbols(ksat_test) == vars

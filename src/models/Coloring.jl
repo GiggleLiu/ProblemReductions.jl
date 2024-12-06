@@ -53,7 +53,7 @@ set_weights(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
 
 # constraints interface
 @nohard_constraints Coloring
-function energy_terms(c::Coloring)
+function soft_constraints(c::Coloring)
     # constraints on edges
     return [SoftConstraint(_vec(e), :coloring, w) for (w, e) in zip(weights(c), edges(c.graph))]
 end

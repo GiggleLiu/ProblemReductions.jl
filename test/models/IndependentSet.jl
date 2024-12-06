@@ -46,7 +46,7 @@ end
 @testset "energyterms" begin
     g01 = smallgraph(:diamond)
     IS_01 = IndependentSet(g01)
-    terms = ProblemReductions.local_energy_terms(IS_01)
+    terms = ProblemReductions.energy_terms(IS_01)
     @test length(terms) == 9
     for cfg in [[0, 1, 1, 0], [1, 0, 0, 1]]
         e1 = ProblemReductions.energy_eval_byid(terms, cfg .+ 1)

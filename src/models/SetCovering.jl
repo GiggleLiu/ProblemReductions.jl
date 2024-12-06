@@ -78,7 +78,7 @@ function is_satisfied(::Type{<:SetCovering{T}}, spec::HardConstraint, config) wh
     return count(isone, config) > 0
 end
 
-function energy_terms(c::SetCovering)
+function soft_constraints(c::SetCovering)
     return [SoftConstraint([i], :set, w) for (i, w) in zip(variables(c), weights(c))]
 end
 function local_energy(::Type{<:SetCovering{ET, T}}, spec::SoftConstraint{WT}, config) where {ET, T, WT}

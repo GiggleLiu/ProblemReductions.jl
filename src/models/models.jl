@@ -25,7 +25,7 @@ The abstract base type of constraint satisfaction problems. `T` is the type of t
 - [`hard_constraints`](@ref), the specification of the hard constraints. Once the hard constraints are violated, the energy goes to infinity.
 - [`is_satisfied`](@ref), check if the hard constraints are satisfied.
 
-- [`energy_terms`](@ref), the specification of the energy terms as soft constraints, which is associated with weights.
+- [`soft_constraints`](@ref), the specification of the energy terms as soft constraints, which is associated with weights.
 - [`local_energy`](@ref), the local energy for the constraints.
 - [`weights`](@ref): The weights of the soft constraints.
 - [`set_weights`](@ref): Change the weights for the `problem` and return a new problem instance.
@@ -160,7 +160,7 @@ function energy end
 # energy interface
 energy(problem::AbstractProblem, config) = first(energy_eval_byid_multiple(problem, (config_to_id(problem, config),)))
 function energy_eval_byid_multiple(problem::ConstraintSatisfactionProblem{T}, ids) where T
-    terms = local_energy_terms(problem)
+    terms = energy_terms(problem)
     return Iterators.map(ids) do id
         energy_eval_byid(terms, id)
     end
@@ -192,7 +192,7 @@ function Base.show(io::IO, term::EnergyTerm)
 end
 Base.show(io::IO, ::MIME"text/plain", term::EnergyTerm) = show(io, term)
 
-function local_energy_terms(problem::ConstraintSatisfactionProblem{T}) where T
+function energy_terms(problem::ConstraintSatisfactionProblem{T}) where T
     vars = variables(problem)
     flvs = flavors(problem)
     nflv = length(flvs)
@@ -205,7 +205,7 @@ function local_energy_terms(problem::ConstraintSatisfactionProblem{T}) where T
         strides = [nflv^i for i in 0:length(constraint.variables)-1]
         push!(terms, EnergyTerm(constraint.variables, flvs, strides, vec(energies)))
     end
-    for (i, constraint) in enumerate(energy_terms(problem))
+    for (i, constraint) in enumerate(soft_constraints(problem))
         sizes = [nflv for _ in constraint.variables]
         energies = map(CartesianIndices(Tuple(sizes))) do idx
             local_energy(typeof(problem), constraint, getindex.(Ref(flvs), idx.I))
@@ -254,11 +254,11 @@ Base.getindex(::UnitWeight, i) = 1
 Base.size(w::UnitWeight) = (w.n,)
 
 """
-    energy_terms(problem::AbstractProblem) -> Vector{SoftConstraint}
+    soft_constraints(problem::AbstractProblem) -> Vector{SoftConstraint}
 
 The energy terms of the problem. Each term is associated with weights.
 """
-function energy_terms end
+function soft_constraints end
 
 """
     hard_constraints(problem::AbstractProblem) -> Vector{HardConstraint}
