@@ -137,11 +137,11 @@ The lower the energy, the better the configuration.
 function energy end
 
 # energy interface
-energy(problem::AbstractProblem, config) = first(energy_multi(problem, (config,)))
-function energy_multi(problem::ConstraintSatisfactionProblem{T}, configs) where T
+energy(problem::AbstractProblem, config) = first(energy_eval_byid_multiple(problem, (config_to_id(problem, config),)))
+function energy_eval_byid_multiple(problem::ConstraintSatisfactionProblem{T}, ids) where T
     terms = local_energy_terms(problem)
-    return Iterators.map(configs) do config
-        energy_eval_byid(terms, config_to_id(problem, config))
+    return Iterators.map(ids) do id
+        energy_eval_byid(terms, id)
     end
 end
 function config_to_id(problem::AbstractProblem, config)

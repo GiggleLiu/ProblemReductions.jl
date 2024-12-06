@@ -17,12 +17,12 @@ export UnitWeight
 # models
 export BooleanExpr, Circuit, Assignment, simple_form, CircuitSAT, @circuit, booleans, ¬, ∨, ∧, ⊻, is_literal, is_cnf, is_dnf
 export SpinGlass, spinglass_gadget
-export Coloring, coloring_energy, is_vertex_coloring
-export SetCovering, is_set_covering, set_covering_energy
+export Coloring, is_vertex_coloring
+export SetCovering, is_set_covering
 export BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, satisfiable, KSatisfiability
 export MaxCut
 export IndependentSet
-export VertexCovering, is_vertex_covering, vertex_covering_energy
+export VertexCovering, is_vertex_covering
 export SetPacking, is_set_packing
 export DominatingSet
 export QUBO

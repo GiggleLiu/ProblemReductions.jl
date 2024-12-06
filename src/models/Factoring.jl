@@ -40,11 +40,11 @@ flavors(::Type{Factoring}) = (0, 1)
 problem_size(f::Factoring) = (; num_bits_first=f.m, num_bits_second=f.n)
 
 # utilities
-function energy_multi(f::Factoring, configs)
-    @assert all(config->length(config) == num_variables(f), configs)
-    return Iterators.map(configs) do config
-        input1 = BitStr(config[1:f.m]).buf
-        input2 = BitStr(config[f.m+1:f.m+f.n]).buf
+function energy_eval_byid_multiple(f::Factoring, config_ids)
+    @assert all(id->length(id) == num_variables(f), config_ids)
+    return Iterators.map(config_ids) do id
+        input1 = BitStr(id[1:f.m] .- 1).buf
+        input2 = BitStr(id[f.m+1:f.m+f.n] .- 1).buf
         return (input1 * input2 == f.input ? 0 : 1)
     end
 end
