@@ -186,7 +186,7 @@ function KSatisfiability{K}(cnf::CNF{S}, weights::WT=UnitWeight(length(cnf.claus
 end
 get_k(::Type{<:KSatisfiability{K}}) where K = K
 Base.:(==)(x::KSatisfiability, y::KSatisfiability) = x.cnf == y.cnf && x.weights == y.weights && x.allow_less == y.allow_less
-is_kSAT(cnf::CNF, k::Int; allow_less::Bool=false) = all(c -> k == length(c.vars) || (allow_less && k < length(c.vars)), cnf.clauses)
+is_kSAT(cnf::CNF, k::Int; allow_less::Bool=false) = all(c -> k == length(c.vars) || (allow_less && k > length(c.vars)), cnf.clauses)
 clauses(c::KSatisfiability) = c.cnf.clauses
 num_variables(c::KSatisfiability) = length(c.symbols)
 symbols(c::KSatisfiability) = c.symbols
@@ -195,7 +195,7 @@ problem_size(c::AbstractSatisfiabilityProblem) = (; num_claues = length(clauses(
 flavors(::Type{<:AbstractSatisfiabilityProblem}) = (0, 1)  # false, true
 
 weights(c::KSatisfiability) = c.weights
-set_weights(c::KSatisfiability, weights::Vector{WT}) where {WT} = KSatisfiability(c.symbols, c.cnf, weights)
+set_weights(c::KSatisfiability{K}, weights::AbstractVector{WT}) where {K, WT} = KSatisfiability{K}(c.symbols, c.cnf, weights, c.allow_less)
 
 # constraints interface
 function energy_terms(c::AbstractSatisfiabilityProblem)
