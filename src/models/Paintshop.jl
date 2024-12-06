@@ -56,14 +56,14 @@ Base.:(==)(a::PaintShop, b::PaintShop) = a.sequence == b.sequence && a.isfirst =
 function energy_terms(c::PaintShop)
     # constraints on alphabets with the same color
     syms = symbols(c)
-    return [LocalConstraint([findfirst(==(c.sequence[i]), syms), findfirst(==(c.sequence[i+1]), syms)], (c.isfirst[i], c.isfirst[i+1])) for i=1:length(c.sequence)-1]
+    return [SoftConstraint([findfirst(==(c.sequence[i]), syms), findfirst(==(c.sequence[i+1]), syms)], (c.isfirst[i], c.isfirst[i+1]), 1) for i=1:length(c.sequence)-1]
 end
 
-function local_energy(::Type{<:PaintShop}, spec::LocalConstraint, config)
+function local_energy(::Type{<:PaintShop}, spec::SoftConstraint{WT}, config) where {WT}
     @assert length(config) == num_variables(spec)
     isfirst1, isfirst2 = spec.specification
     c1, c2 = config
-    return (c1 == c2) == (isfirst1 == isfirst2) ? 0 : 1
+    return (c1 == c2) == (isfirst1 == isfirst2) ? zero(WT) : spec.weight
 end
 
 @nohard_constraints PaintShop

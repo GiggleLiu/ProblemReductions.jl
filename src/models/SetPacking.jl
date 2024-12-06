@@ -76,20 +76,20 @@ function hard_constraints(c::SetPacking)  # sets sharing the same element
             push!(get!(()->Int[], d, e), i)
         end
     end
-    return [LocalConstraint(v, :independent) for v in values(d)]
+    return [HardConstraint(v, :independence) for v in values(d)]
 end
-function is_satisfied(::Type{<:SetPacking}, spec::LocalConstraint, config)
+function is_satisfied(::Type{<:SetPacking}, spec::HardConstraint, config)
     @assert length(config) == num_variables(spec)
     return count(isone, config) <= 1
 end
 
 function energy_terms(c::SetPacking)  # sets sharing the same element
-    return [LocalConstraint([s], :set) for s in 1:length(c.sets)]
+    return [SoftConstraint([s], :set, w) for (w, s) in zip(weights(c), 1:length(c.sets))]
 end
 
-function local_energy(::Type{<:SetPacking}, spec::LocalConstraint, config)
+function local_energy(::Type{<:SetPacking}, spec::SoftConstraint{WT}, config) where {WT}
     @assert length(config) == num_variables(spec) == 1
-    return -first(config)
+    return WT(-first(config)) * spec.weight
 end
 
 """

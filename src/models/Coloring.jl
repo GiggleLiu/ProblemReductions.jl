@@ -55,13 +55,13 @@ set_weights(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
 @nohard_constraints Coloring
 function energy_terms(c::Coloring)
     # constraints on edges
-    return [LocalConstraint(_vec(e), :coloring) for e in edges(c.graph)]
+    return [SoftConstraint(_vec(e), :coloring, w) for (w, e) in zip(weights(c), edges(c.graph))]
 end
 
-function local_energy(::Type{<:Coloring{K, T}}, spec::LocalConstraint, config) where {K, T}
+function local_energy(::Type{<:Coloring{K, T}}, spec::SoftConstraint{WT}, config) where {K, T, WT}
     @assert length(config) == num_variables(spec)
     a, b = config
-    return a == b ? one(T) : zero(T)
+    return a == b ? spec.weight : zero(WT)
 end
 
 """

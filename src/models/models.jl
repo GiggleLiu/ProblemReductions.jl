@@ -31,17 +31,34 @@ abstract type ConstraintSatisfactionProblem{T} <: AbstractProblem end
 """
 $TYPEDEF
 
-The local constraint of the problem.
+A hard constraint on a [`ConstraintSatisfactionProblem`](@ref).
 
 ### Fields
 - `variables`: the indices of the variables involved in the constraint.
 - `specification`: the specification of the constraint.
 """
-struct LocalConstraint{ST}
+struct HardConstraint{ST}
     variables::Vector{Int}
     specification::ST
 end
-num_variables(spec::LocalConstraint) = length(spec.variables)
+num_variables(spec::HardConstraint) = length(spec.variables)
+
+"""
+$TYPEDEF
+
+A soft constraint on a [`ConstraintSatisfactionProblem`](@ref).
+
+### Fields
+- `variables`: the indices of the variables involved in the constraint.
+- `specification`: the specification of the constraint.
+- `weight`:  the weight of the constraint.
+"""
+struct SoftConstraint{WT, ST}
+    variables::Vector{Int}
+    specification::ST
+    weight::WT
+end
+num_variables(spec::SoftConstraint) = length(spec.variables)
 
 ######## Interfaces for computational problems ##########
 """
@@ -186,9 +203,8 @@ function local_energy_terms(problem::ConstraintSatisfactionProblem{T}) where T
     end
     for (i, constraint) in enumerate(energy_terms(problem))
         sizes = [nflv for _ in constraint.variables]
-        ws = is_weighted(problem) ? weights(problem) : UnitWeight(length(terms))
         energies = map(CartesianIndices(Tuple(sizes))) do idx
-            local_energy(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)) * ws[i]
+            local_energy(typeof(problem), constraint, getindex.(Ref(flvs), idx.I))
         end
         strides = [nflv^i for i in 0:length(constraint.variables)-1]
         push!(terms, EnergyTerm(constraint.variables, flvs, strides, vec(energies)))
@@ -234,14 +250,14 @@ Base.getindex(::UnitWeight, i) = 1
 Base.size(w::UnitWeight) = (w.n,)
 
 """
-    energy_terms(problem::AbstractProblem) -> Vector{LocalConstraint}
+    energy_terms(problem::AbstractProblem) -> Vector{SoftConstraint}
 
 The energy terms of the problem. Each term is associated with weights.
 """
 function energy_terms end
 
 """
-    hard_constraints(problem::AbstractProblem) -> Vector{LocalConstraint}
+    hard_constraints(problem::AbstractProblem) -> Vector{HardConstraint}
 
 The hard constraints of the problem. Once the hard constraints are violated, the energy goes to infinity.
 """
@@ -250,13 +266,13 @@ function hard_constraints end
 macro nohard_constraints(problem)
     esc(quote
         function $ProblemReductions.hard_constraints(problem::$(problem))
-            return LocalConstraint{Nothing}[]
+            return HardConstraint{Nothing}[]
         end
     end)
 end
 
 """
-    local_energy(::Type{<:ConstraintSatisfactionProblem{T}}, constraint::LocalConstraint, config) -> T
+    local_energy(::Type{<:ConstraintSatisfactionProblem{T}}, constraint::SoftConstraint, config) -> T
 
 The local energy of the `constraint` given the configuration `config`.
 """

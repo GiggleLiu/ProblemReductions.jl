@@ -200,16 +200,16 @@ set_weights(c::KSatisfiability{K}, weights::AbstractVector{WT}) where {K, WT} = 
 # constraints interface
 function energy_terms(c::AbstractSatisfiabilityProblem)
     vars = symbols(c)
-    return map(clauses(c)) do cl
+    return map(zip(clauses(c), weights(c))) do (cl, w)
         idx = [findfirst(==(v), vars) for v in symbols(cl)]
-        LocalConstraint(idx, vars[idx] => cl)
+        SoftConstraint(idx, vars[idx] => cl, w)
     end
 end
-function local_energy(::Type{<:AbstractSatisfiabilityProblem{S, T}}, spec::LocalConstraint, config) where {S, T}
+function local_energy(::Type{<:AbstractSatisfiabilityProblem{S, T}}, spec::SoftConstraint{WT}, config) where {S, T, WT}
     @assert length(config) == num_variables(spec)
     vars, expr = spec.specification
     assignment = Dict(zip(vars, config))
-    return !satisfiable(expr, assignment) ? one(T) : zero(T)
+    return !satisfiable(expr, assignment) ? spec.weight : zero(WT)
 end
 
 @nohard_constraints AbstractSatisfiabilityProblem

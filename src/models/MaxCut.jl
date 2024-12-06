@@ -60,12 +60,12 @@ set_weights(c::MaxCut, weights) = MaxCut(c.graph, weights)
 
 # constraints interface
 function energy_terms(c::MaxCut)
-    return [LocalConstraint(_vec(e), :cut) for e in edges(c.graph)]
+    return [SoftConstraint(_vec(e), :cut, w) for (w, e) in zip(weights(c), edges(c.graph))]
 end
-function local_energy(::Type{<:MaxCut{T}}, spec::LocalConstraint, config) where {T}
+function local_energy(::Type{<:MaxCut{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
     a, b = config
-    return (a != b) ? -one(T) : zero(T)
+    return (a != b) ? -spec.weight : zero(WT)
 end
 @nohard_constraints MaxCut
 

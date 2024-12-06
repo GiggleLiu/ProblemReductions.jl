@@ -71,19 +71,19 @@ set_weights(c::SetCovering, weights) = SetCovering(c.sets, weights)
 
 # constraints interface
 function hard_constraints(c::SetCovering)
-    return [LocalConstraint(findall(s->v in s, c.sets), :cover) for v in c.elements]
+    return [HardConstraint(findall(s->v in s, c.sets), :cover) for v in c.elements]
 end
-function is_satisfied(::Type{<:SetCovering{T}}, spec::LocalConstraint, config) where {T}
+function is_satisfied(::Type{<:SetCovering{T}}, spec::HardConstraint, config) where {T}
     @assert length(config) == num_variables(spec)
     return count(isone, config) > 0
 end
 
 function energy_terms(c::SetCovering)
-    return [LocalConstraint([i], :set) for i in variables(c)]
+    return [SoftConstraint([i], :set, w) for (i, w) in zip(variables(c), weights(c))]
 end
-function local_energy(::Type{<:SetCovering{ET, T}}, spec::LocalConstraint, config) where {ET, T}
+function local_energy(::Type{<:SetCovering{ET, T}}, spec::SoftConstraint{WT}, config) where {ET, T, WT}
     @assert length(config) == num_variables(spec)
-    return T(first(config))
+    return WT(first(config)) * spec.weight
 end
 
 """

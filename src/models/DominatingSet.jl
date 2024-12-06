@@ -62,14 +62,20 @@ weights(c::DominatingSet) = c.weights
 set_weights(c::DominatingSet, weights) = DominatingSet(c.graph, weights)
 
 # Constraints Interface
-@nohard_constraints DominatingSet
-function energy_terms(c::DominatingSet)
-    # constraints on vertex and its neighbours
-    return [LocalConstraint(vcat(v, neighbors(c.graph, v)), :dominating) for v in vertices(c.graph)]
+function hard_constraints(c::DominatingSet)
+    return [HardConstraint(vcat(v, neighbors(c.graph, v)), :dominance) for v in vertices(c.graph)]
+end
+function is_satisfied(::Type{<:DominatingSet}, spec::HardConstraint, config)
+    @assert length(config) == num_variables(spec)
+    return count(isone, config) >= 1
 end
 
-function local_energy(::Type{<:DominatingSet{GT, T}}, spec::LocalConstraint, config) where {GT, T}
-    @assert length(config) == num_variables(spec)
-    nselect = count(isone, config)
-    return nselect < 1 ? energy_max(T) : T(first(config))
+function energy_terms(c::DominatingSet)
+    # constraints on vertex and its neighbours
+    return [SoftConstraint([v], :num_vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
+end
+
+function local_energy(::Type{<:DominatingSet{GT, T}}, spec::SoftConstraint{WT}, config) where {GT, T, WT}
+    @assert length(config) == num_variables(spec) == 1
+    return WT(first(config)) * spec.weight
 end

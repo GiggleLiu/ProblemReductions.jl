@@ -86,17 +86,17 @@ end
 # constraints interface
 function energy_terms(c::QUBO)
     vcat(
-        [LocalConstraint([i, j], :offdiagonal) for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
-        [LocalConstraint([i], :diagonal) for i in variables(c) if c.matrix[i, i] != 0]
+        [SoftConstraint([i, j], :offdiagonal, c.matrix[i, j] + c.matrix[j, i]) for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
+        [SoftConstraint([i], :diagonal, c.matrix[i, i]) for i in variables(c) if c.matrix[i, i] != 0]
     )
 end
 @nohard_constraints QUBO
-function local_energy(::Type{<:QUBO}, spec::LocalConstraint, config)
+function local_energy(::Type{<:QUBO}, spec::SoftConstraint, config)
     @assert length(config) == num_variables(spec)
     if spec.specification == :offdiagonal
         a, b = config
-        return a * b
+        return a * b * spec.weight
     else
-        return first(config)
+        return first(config) * spec.weight
     end
 end

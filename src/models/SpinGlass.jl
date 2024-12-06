@@ -89,11 +89,11 @@ set_weights(c::SpinGlass, weights) = SpinGlass(c.graph, weights[1:ne(c.graph)], 
 
 # constraints interface
 function energy_terms(sg::SpinGlass)
-    return vcat([LocalConstraint(_vec(e), :edge) for e in edges(sg.graph)], [LocalConstraint([v], :vertex) for v in vertices(sg.graph)])
+    return vcat([SoftConstraint(_vec(e), :edge, w) for (w, e) in zip(sg.J, edges(sg.graph))], [SoftConstraint([v], :vertex, w) for (w, v) in zip(sg.h, vertices(sg.graph))])
 end
 @nohard_constraints SpinGlass
 
-function local_energy(::Type{<:SpinGlass}, spec::LocalConstraint, config)
+function local_energy(::Type{<:SpinGlass}, spec::SoftConstraint{WT}, config) where {WT}
     @assert length(config) == num_variables(spec)
-    spec.specification == :edge ? prod(config) : first(config)
+    return WT(spec.specification == :edge ? prod(config) : first(config)) * spec.weight
 end

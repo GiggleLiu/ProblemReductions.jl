@@ -282,18 +282,18 @@ set_weights(c::CircuitSAT, weights) = CircuitSAT(c.circuit, weights, c.symbols)
 @nohard_constraints CircuitSAT
 function energy_terms(c::CircuitSAT)
     syms = symbols(c.circuit)
-    return [LocalConstraint([findfirst(==(s), c.symbols) for s in syms], syms=>expr) for expr in c.circuit.exprs]
+    return [SoftConstraint([findfirst(==(s), c.symbols) for s in syms], syms=>expr, w) for (w, expr) in zip(c.weights, c.circuit.exprs)]
 end
 
-function local_energy(::Type{<:CircuitSAT{T}}, spec::LocalConstraint, config) where {T}
+function local_energy(::Type{<:CircuitSAT{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
     syms, ex = spec.specification
     dict = Dict(syms[i]=>Bool(c) for (i, c) in enumerate(config))
     for o in ex.outputs
         @assert haskey(dict, o) "The output variable `$o` is not in the configuration"
-        dict[o] != evaluate_expr(ex.expr, dict) && return 1  # this is the loss!
+        dict[o] != evaluate_expr(ex.expr, dict) && return spec.weight  # this is the loss!
     end
-    return 0
+    return zero(WT)
 end
 
 function symbols(expr::Union{Assignment, BooleanExpr, Circuit})

@@ -67,18 +67,18 @@ set_weights(c::VertexCovering, weights) = VertexCovering(c.graph, weights)
 
 # constraints interface
 function hard_constraints(c::VertexCovering)
-    return [LocalConstraint(_vec(e), :cover) for e in edges(c.graph)]
+    return [HardConstraint(_vec(e), :cover) for e in edges(c.graph)]
 end
-function is_satisfied(::Type{<:VertexCovering}, spec::LocalConstraint, config)
+function is_satisfied(::Type{<:VertexCovering}, spec::HardConstraint, config)
     @assert length(config) == num_variables(spec)
     return any(!iszero, config)
 end
 function energy_terms(c::VertexCovering)
-    return [LocalConstraint([v], :vertex) for v in vertices(c.graph)]
+    return [SoftConstraint([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
-function local_energy(::Type{<:VertexCovering{T}}, spec::LocalConstraint, config) where T
+function local_energy(::Type{<:VertexCovering{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
-    return T(first(config))
+    return WT(first(config)) * spec.weight
 end
 
 """

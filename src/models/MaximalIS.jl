@@ -57,20 +57,20 @@ weights(c::MaximalIS) = c.weights
 set_weights(c::MaximalIS, weights) = MaximalIS(c.graph, weights)
 
 function hard_constraints(c::MaximalIS)
-    return [LocalConstraint(vcat(v, neighbors(c.graph, v)), :maximal_independent) for v in vertices(c.graph)]
+    return [HardConstraint(vcat(v, neighbors(c.graph, v)), :maximal_independence) for v in vertices(c.graph)]
 end
-function is_satisfied(::Type{<:MaximalIS}, spec::LocalConstraint, config)
+function is_satisfied(::Type{<:MaximalIS}, spec::HardConstraint, config)
     @assert length(config) == num_variables(spec)
     nselect = count(!iszero, config)
     return !(nselect == 0 || (nselect > 1 && !iszero(first(config))))
 end
 # constraints interface
 function energy_terms(c::MaximalIS)
-    return [LocalConstraint([v], :vertex) for v in vertices(c.graph)]
+    return [SoftConstraint([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
-function local_energy(::Type{<:MaximalIS{T}}, spec::LocalConstraint, config) where {T}
+function local_energy(::Type{<:MaximalIS{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
-    return T(-first(config))
+    return WT(-first(config)) * spec.weight
 end
 
 """

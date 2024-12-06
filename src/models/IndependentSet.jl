@@ -62,18 +62,18 @@ set_weights(c::IndependentSet, weights) = IndependentSet(c.graph, weights)
 
 # constraints interface
 function hard_constraints(c::IndependentSet)
-    return [LocalConstraint(_vec(e), nothing) for e in edges(c.graph)]
+    return [HardConstraint(_vec(e), :independence) for e in edges(c.graph)]
 end
-function is_satisfied(::Type{<:IndependentSet}, spec::LocalConstraint, config)
+function is_satisfied(::Type{<:IndependentSet}, spec::HardConstraint, config)
     @assert length(config) == num_variables(spec)
     return count(!iszero, config) <= 1
 end
 
 function energy_terms(c::IndependentSet)
-    return [LocalConstraint([i], nothing) for i in 1:nv(c.graph)]
+    return [SoftConstraint([i], :num_vertex, w) for (w, i) in zip(weights(c), 1:nv(c.graph))]
 end
 
-function local_energy(::Type{<:IndependentSet{GT, T}}, spec::LocalConstraint, config) where {GT, T}
+function local_energy(::Type{<:IndependentSet{GT, T}}, spec::SoftConstraint{WT}, config) where {GT, T, WT}
     @assert length(config) == num_variables(spec) == 1
-    return T(-first(config))
+    return WT(-first(config)) * spec.weight
 end
