@@ -276,6 +276,13 @@ macro nohard_constraints(problem)
 end
 
 """
+    is_satisfied(::Type{<:ConstraintSatisfactionProblem}, constraint::HardConstraint, config) -> Bool
+
+Check if the `constraint` is satisfied by the configuration `config`.
+"""
+function is_satisfied end
+
+"""
     local_energy(::Type{<:ConstraintSatisfactionProblem{T}}, constraint::SoftConstraint, config) -> T
 
 The local energy of the `constraint` given the configuration `config`.
