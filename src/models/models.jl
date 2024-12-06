@@ -22,9 +22,13 @@ abstract type AbstractProblem end
 The abstract base type of constraint satisfaction problems. `T` is the type of the local energy of the constraints.
 
 ### Required interfaces
-- [`energy_terms`](@ref), the specification of the energy terms, it is associated with weights.
 - [`hard_constraints`](@ref), the specification of the hard constraints. Once the hard constraints are violated, the energy goes to infinity.
+- [`is_satisfied`](@ref), check if the hard constraints are satisfied.
+
+- [`energy_terms`](@ref), the specification of the energy terms as soft constraints, which is associated with weights.
 - [`local_energy`](@ref), the local energy for the constraints.
+- [`weights`](@ref): The weights of the soft constraints.
+- [`set_weights`](@ref): Change the weights for the `problem` and return a new problem instance.
 """
 abstract type ConstraintSatisfactionProblem{T} <: AbstractProblem end
 
