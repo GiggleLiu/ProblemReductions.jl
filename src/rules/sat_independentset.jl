@@ -15,7 +15,7 @@ end
 target_problem(res::ReductionSATToIndependentSet) = res.target
 
 function reduceto(::Type{IndependentSet{<:SimpleGraph}}, s::AbstractSatisfiabilityProblem)
-    literals = BoolVar{eltype(variables(s))}[]
+    literals = BoolVar{eltype(symbols(s))}[]
     g = SimpleGraph(0)
     for c in clauses(s)  # add edges between literals in the same clause
         add_vertices!(g, length(c.vars))
@@ -29,7 +29,7 @@ function reduceto(::Type{IndependentSet{<:SimpleGraph}}, s::AbstractSatisfiabili
             literals[i] == ¬(literals[j]) && add_edge!(g, i, j)
         end
     end
-    return ReductionSATToIndependentSet(IndependentSet(g), literals, variables(s), length(clauses(s)))
+    return ReductionSATToIndependentSet(IndependentSet(g), literals, symbols(s), length(clauses(s)))
 end
 
 function extract_solution(res::ReductionSATToIndependentSet{ST}, sol) where ST

@@ -19,11 +19,7 @@ julia> factoring = Factoring(2,2,6)
 Factoring(2, 2, 6)
 
 julia> variables(factoring) # return the sum of factors' bit size
-4-element Vector{Int64}:
- 1
- 2
- 3
- 4
+1:4
 
 julia> flavors(factoring)
 2-element Vector{Int64}:

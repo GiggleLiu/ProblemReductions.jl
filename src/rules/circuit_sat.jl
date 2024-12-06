@@ -14,7 +14,7 @@ end
 target_problem(res::ReductionSATToCircuit) = res.target
 
 function reduceto(::Type{<:CircuitSAT}, s::Satisfiability)
-    return ReductionSATToCircuit( cnf_to_circuit_sat(s.cnf), s.variables)
+    return ReductionSATToCircuit( cnf_to_circuit_sat(s.cnf), s.symbols)
 end
 
 function clause_to_boolean_expr(clause::CNFClause{T}) where T

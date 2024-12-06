@@ -141,24 +141,24 @@ Satisfiability{String, Int64, UnitWeight}(["x", "y", "z", "w"], [1, 1], (x ∨ y
 ```
 """
 struct Satisfiability{S, T, WT<:AbstractArray{T}} <:AbstractSatisfiabilityProblem{S, T}
-    variables::Vector{S}
+    symbols::Vector{S}
     weights::WT
     cnf::CNF{S}
-    function Satisfiability(variables::Vector{S}, cnf::CNF{S}, weights::WT) where {S, T, WT<:AbstractArray{T}}
+    function Satisfiability(symbols::Vector{S}, cnf::CNF{S}, weights::WT) where {S, T, WT<:AbstractArray{T}}
         @assert length(weights) == length(cnf.clauses) "length of weights must be equal to the number of clauses $(length(cnf.clauses)), got: $(length(weights))"
-        new{S, T, WT}(variables, weights, cnf)
+        new{S, T, WT}(symbols, weights, cnf)
     end
 end
 function Satisfiability(cnf::CNF{S}, weights::AbstractVector=UnitWeight(length(cnf.clauses))) where {S}
     Satisfiability(symbols(cnf), cnf, weights)
 end
 clauses(c::Satisfiability) = c.cnf.clauses
-num_variables(c::Satisfiability) = length(c.variables)
-symbols(c::Satisfiability) = c.variables
-Base.:(==)(x::Satisfiability, y::Satisfiability) = x.cnf == y.cnf && x.weights == y.weights && x.variables == y.variables
+num_variables(c::Satisfiability) = length(c.symbols)
+symbols(c::Satisfiability) = c.symbols
+Base.:(==)(x::Satisfiability, y::Satisfiability) = x.cnf == y.cnf && x.weights == y.weights && x.symbols == y.symbols
 
 weights(c::Satisfiability) = c.weights
-set_weights(c::Satisfiability, weights::AbstractVector) = Satisfiability(c.variables, c.cnf, weights)
+set_weights(c::Satisfiability, weights::AbstractVector) = Satisfiability(c.symbols, c.cnf, weights)
 
 """
 $TYPEDEF
@@ -166,32 +166,36 @@ $TYPEDEF
 The satisfiability problem for k-SAT, where the goal is to find an assignment that satisfies the CNF.
 
 ### Fields
-- `variables::Vector{T}`: The variables in the CNF.
+- `symbols::Vector{T}`: The symbols in the CNF.
 - `cnf::CNF{T}`: The CNF expression.
+- `weights`: the weights associated with clauses.
+- `allow_less::Bool`: whether to allow less than `k` literals in a clause.
 """
 struct KSatisfiability{K, S, T, WT<:AbstractArray{T}} <:AbstractSatisfiabilityProblem{S, T}
-    variables::Vector{S}
+    symbols::Vector{S}
     cnf::CNF{S}
     weights::WT
-    function KSatisfiability{K}(variables::Vector{S}, cnf::CNF{S}, weights::WT) where {K, S, T, WT<:AbstractVector{T}}
-        @assert is_kSAT(cnf, K) "The CNF is not a $K-SAT problem"
-        new{K, S, T, WT}(variables, cnf, weights)
+    allow_less::Bool
+    function KSatisfiability{K}(symbols::Vector{S}, cnf::CNF{S}, weights::WT, allow_less::Bool) where {K, S, T, WT<:AbstractVector{T}}
+        @assert is_kSAT(cnf, K; allow_less) "The CNF is not a $K-SAT problem"
+        new{K, S, T, WT}(symbols, cnf, weights, allow_less)
     end
 end
-function KSatisfiability{K}(cnf::CNF{S}, weights::WT=UnitWeight(length(cnf.clauses))) where {K, S, WT<:AbstractVector}
-    KSatisfiability{K}(symbols(cnf), cnf, weights)
+function KSatisfiability{K}(cnf::CNF{S}, weights::WT=UnitWeight(length(cnf.clauses)); allow_less::Bool=false) where {K, S, WT<:AbstractVector}
+    KSatisfiability{K}(symbols(cnf), cnf, weights, allow_less)
 end
-Base.:(==)(x::KSatisfiability, y::KSatisfiability) = x.cnf == y.cnf
-is_kSAT(cnf::CNF, k::Int) = all(c -> k == length(c.vars), cnf.clauses)
+get_k(::Type{<:KSatisfiability{K}}) where K = K
+Base.:(==)(x::KSatisfiability, y::KSatisfiability) = x.cnf == y.cnf && x.weights == y.weights && x.allow_less == y.allow_less
+is_kSAT(cnf::CNF, k::Int; allow_less::Bool=false) = all(c -> k == length(c.vars) || (allow_less && k < length(c.vars)), cnf.clauses)
 clauses(c::KSatisfiability) = c.cnf.clauses
-num_variables(c::KSatisfiability) = length(c.variables)
-symbols(c::KSatisfiability) = c.variables
+num_variables(c::KSatisfiability) = length(c.symbols)
+symbols(c::KSatisfiability) = c.symbols
 
 problem_size(c::AbstractSatisfiabilityProblem) = (; num_claues = length(clauses(c)), num_variables = num_variables(c))
 flavors(::Type{<:AbstractSatisfiabilityProblem}) = [0, 1]  # false, true
 
 weights(c::KSatisfiability) = c.weights
-set_weights(c::KSatisfiability, weights::Vector{WT}) where {WT} = KSatisfiability(c.variables, c.cnf, weights)
+set_weights(c::KSatisfiability, weights::Vector{WT}) where {WT} = KSatisfiability(c.symbols, c.cnf, weights)
 
 # constraints interface
 function energy_terms(c::AbstractSatisfiabilityProblem)
