@@ -30,7 +30,7 @@ julia> num_variables(maxcut) # return the number of vertices
 julia> flavors(maxcut) # return the flavors of the vertices
 (0, 1)
 
-julia> energy(maxcut, [0,1,0]) # return the energy of the configuration
+julia> get_size(maxcut, [0,1,0]) # return the size of the configuration
 -4
 
 julia> findbest(maxcut, BruteForce()) # find the best configuration
@@ -62,7 +62,7 @@ set_weights(c::MaxCut, weights) = MaxCut(c.graph, weights)
 function soft_constraints(c::MaxCut)
     return [SoftConstraint(_vec(e), :cut, w) for (w, e) in zip(weights(c), edges(c.graph))]
 end
-function local_energy(::Type{<:MaxCut{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
+function local_size(::Type{<:MaxCut{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
     a, b = config
     return (a != b) ? -spec.weight : zero(WT)

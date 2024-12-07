@@ -232,7 +232,7 @@ julia> sat.symbols
 julia> flavors(sat)
 (0, 1)
 
-julia> energy(sat, [true, false, true, true, false, false, true])
+julia> get_size(sat, [true, false, true, true, false, false, true])
 3
 
 julia> findbest(sat, BruteForce())
@@ -285,7 +285,7 @@ function soft_constraints(c::CircuitSAT)
     return [SoftConstraint([findfirst(==(s), c.symbols) for s in syms], syms=>expr, w) for (w, expr) in zip(c.weights, c.circuit.exprs)]
 end
 
-function local_energy(::Type{<:CircuitSAT{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
+function local_size(::Type{<:CircuitSAT{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
     syms, ex = spec.specification
     dict = Dict(syms[i]=>Bool(c) for (i, c) in enumerate(config))

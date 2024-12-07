@@ -24,7 +24,7 @@ julia> variables(factoring) # return the sum of factors' bit size
 julia> flavors(factoring)
 (0, 1)
 
-julia> energy(factoring,[0,1,1,1]) # 01 -> 2, 11 -> 3
+julia> size(factoring,[0,1,1,1]) # 01 -> 2, 11 -> 3
 0
 ```
 """
@@ -40,7 +40,7 @@ flavors(::Type{Factoring}) = (0, 1)
 problem_size(f::Factoring) = (; num_bits_first=f.m, num_bits_second=f.n)
 
 # utilities
-function energy_eval_byid_multiple(f::Factoring, config_ids)
+function size_eval_byid_multiple(f::Factoring, config_ids)
     @assert all(id->length(id) == num_variables(f), config_ids)
     return Iterators.map(config_ids) do id
         input1 = BitStr(id[1:f.m] .- 1).buf

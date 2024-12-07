@@ -47,14 +47,14 @@ julia> extract_solution.(Ref(res), sol) # extract the solution to the original p
 The solution to the original problem is extracted using [`extract_solution`](@ref). Note that the `findbest` funciton returns a set of equally good solutions, so broadcasting is used here.
 
 ## Model Problems
-A model problem is a subclass of [`AbstractProblem`](@ref) that defines the energy function of a computational problem.
+A model problem is a subclass of [`AbstractProblem`](@ref) that defines the size function of a computational problem.
 Facts affecting the computational complexity classification of the problem also include the topology of the problem and the domain of the variables.
 
 The required interfaces are:
 - [`num_variables`](@ref): The number of variables in the problem, the variables are `1:num_variables`.
 - [`flavors`](@ref): A tuple of integers as the flavors (or domain) of a degree of freedom.
     e.g. for the maximum independent set problems, the flavors are `(0, 1)`, where `0` means the vertex is not in the set and `1` means the vertex is in the set.
-- [`energy`](@ref): Energy of a given configuration, the smaller the better. If a configuration is invalid, the energy should be `Inf`.
+- [`get_size`](@ref): Size of a given configuration, the smaller the better. If a configuration is invalid, the size should be `Inf`.
 
 Optional functions include:
 - [`problem_size`](@ref): The size of the problem, which is the number of variables.

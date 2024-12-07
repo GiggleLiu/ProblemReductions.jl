@@ -25,12 +25,12 @@ using ProblemReductions: KSatisfiability,clauses
     cfg = [1, 1, 1, 1]
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(sat_test.cnf, assignment) == true
-    @test energy(sat_test, cfg) == 0
+    @test get_size(sat_test, cfg) == 0
 
     cfg = [0, 0, 1, 0]
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(sat_test.cnf, assignment) == false
-    @test energy(sat_test, cfg) == 1
+    @test get_size(sat_test, cfg) == 1
 
     res = findbest(sat_test, BruteForce())
     @test length(res) == 14
@@ -42,7 +42,7 @@ using ProblemReductions: KSatisfiability,clauses
     copied = set_weights(deepcopy(ksat_test), randn(length(ProblemReductions.weights(ksat_test))))
     @test ksat_test != copied
     @test ksat_test == ProblemReductions.set_weights(copied, ProblemReductions.weights(ksat_test))
-    @show ProblemReductions.energy_terms(ksat_test)
+    @show ProblemReductions.size_terms(ksat_test)
     @test clauses(ksat_test) == cnf_test.clauses
     @test ksat_test isa KSatisfiability
     @test ProblemReductions.symbols(ksat_test) == vars
@@ -51,5 +51,5 @@ using ProblemReductions: KSatisfiability,clauses
     cfg = [0, 1, 0, 1]
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(ksat_test.cnf, assignment) == true
-    @test energy(ksat_test, cfg) == 0
+    @test get_size(ksat_test, cfg) == 0
 end

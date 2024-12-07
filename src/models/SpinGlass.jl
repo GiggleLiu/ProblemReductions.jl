@@ -53,7 +53,7 @@ julia> num_variables(spinglass)  # degrees of freedom
 julia> flavors(spinglass)  # flavors of the spins
 (1, -1)
 
-julia> energy(spinglass, [-1, 1, 1, -1])  # energy of a configuration
+julia> get_size(spinglass, [-1, 1, 1, -1])  # size of a configuration
 -2
 
 julia> findbest(spinglass, BruteForce())  # solve the problem with brute force
@@ -93,7 +93,7 @@ function soft_constraints(sg::SpinGlass)
 end
 @nohard_constraints SpinGlass
 
-function local_energy(::Type{<:SpinGlass}, spec::SoftConstraint{WT}, config) where {WT}
+function local_size(::Type{<:SpinGlass}, spec::SoftConstraint{WT}, config) where {WT}
     @assert length(config) == num_variables(spec)
     return WT(spec.specification == :edge ? prod(config) : first(config)) * spec.weight
 end

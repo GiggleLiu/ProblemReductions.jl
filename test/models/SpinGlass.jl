@@ -19,7 +19,7 @@ using ProblemReductions, Test, Graphs
     @test ProblemReductions.weights(sg) == [1, -2, -2, 1, 1, -2]
     @test set_weights(sg, [1, 2, 2, -1, -1, -2]) == SpinGlass(g, [1, 2, 2], [-1, -1, -2])
 
-    @test energy(sg, [1, 1, 1]) == -3
+    @test get_size(sg, [1, 1, 1]) == -3
     configs = findbest(sg, BruteForce())
     for cfg in configs
         @test cfg[3] == cfg[1] & cfg[2]
@@ -27,11 +27,11 @@ using ProblemReductions, Test, Graphs
 end
 
 
-@testset "energyterms - spinglass" begin
+@testset "size terms - spinglass" begin
     g01 = smallgraph(:diamond)
     sg = SpinGlass(g01, [1, -2, -2, 1, 2], [1, 1, -2, -2])
-    terms = ProblemReductions.energy_terms(sg)
+    terms = ProblemReductions.size_terms(sg)
     for cfg in [[-1, 1, 1, -1], [1, -1, -1, 1]]
-        @test ProblemReductions.energy_eval_byid(terms, (1 .- cfg) .÷ 2 .+ 1) == ProblemReductions.energy(sg, cfg)
+        @test ProblemReductions.size_eval_byid(terms, (1 .- cfg) .÷ 2 .+ 1) == ProblemReductions.get_size(sg, cfg)
     end
 end

@@ -36,10 +36,10 @@ julia> num_variables(QUBO01)  # degrees of freedom
 julia> flavors(QUBO01)  # flavors of the vertices
 (0, 1)
 
-julia> energy(QUBO01, [0, 1, 0])
+julia> get_size(QUBO01, [0, 1, 0])
 1.0
 
-julia> energy(QUBO02, [0, 1, 0])
+julia> get_size(QUBO02, [0, 1, 0])
 1.0
 
 julia> findbest(QUBO01, BruteForce())  # solve the problem with brute force
@@ -91,7 +91,7 @@ function soft_constraints(c::QUBO)
     )
 end
 @nohard_constraints QUBO
-function local_energy(::Type{<:QUBO}, spec::SoftConstraint, config)
+function local_size(::Type{<:QUBO}, spec::SoftConstraint, config)
     @assert length(config) == num_variables(spec)
     if spec.specification == :offdiagonal
         a, b = config

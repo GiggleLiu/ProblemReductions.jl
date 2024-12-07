@@ -36,11 +36,11 @@ julia> num_variables(SP)  # degrees of freedom
 julia> flavors(SP)  # flavors of the subsets
 (0, 1)
 
-julia> energy(SP, [1, 0, 0, 1, 0]) # Positive sample: -(size) of a packing
+julia> get_size(SP, [1, 0, 0, 1, 0]) # Positive sample: -(size) of a packing
 -2
 
-julia> energy(SP, [1, 0, 1, 1, 0]) # Negative sample: 0
-3037000497
+julia> get_size(SP, [1, 0, 1, 1, 0]) # Negative sample: 0
+0
 
 julia> findbest(SP, BruteForce())  # solve the problem with brute force
 3-element Vector{Vector{Int64}}:
@@ -87,7 +87,7 @@ function soft_constraints(c::SetPacking)  # sets sharing the same element
     return [SoftConstraint([s], :set, w) for (w, s) in zip(weights(c), 1:length(c.sets))]
 end
 
-function local_energy(::Type{<:SetPacking}, spec::SoftConstraint{WT}, config) where {WT}
+function local_size(::Type{<:SetPacking}, spec::SoftConstraint{WT}, config) where {WT}
     @assert length(config) == num_variables(spec) == 1
     return WT(-first(config)) * spec.weight
 end

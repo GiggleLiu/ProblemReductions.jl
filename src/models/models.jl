@@ -6,7 +6,7 @@ The abstract base type of computational problems.
 ### Required interfaces
 - [`variables`](@ref), the degrees of freedoms in the computational problem.
 - [`flavors`](@ref), the flavors (domain) of a degree of freedom.
-- [`energy`](@ref), energy the energy (the lower the better) of the input configuration.
+- [`get_size`](@ref), the size (the lower the better) of the input configuration.
 - [`problem_size`](@ref), the size of the computational problem. e.g. for a graph, it could be `(n_vertices=?, n_edges=?)`.
 
 ### Optional interfaces
@@ -19,14 +19,14 @@ abstract type AbstractProblem end
 """
     ConstraintSatisfactionProblem{T} <: AbstractProblem
 
-The abstract base type of constraint satisfaction problems. `T` is the type of the local energy of the constraints.
+The abstract base type of constraint satisfaction problems. `T` is the type of the local size of the constraints.
 
 ### Required interfaces
-- [`hard_constraints`](@ref), the specification of the hard constraints. Once the hard constraints are violated, the energy goes to infinity.
+- [`hard_constraints`](@ref), the specification of the hard constraints. Once the hard constraints are violated, the size goes to infinity.
 - [`is_satisfied`](@ref), check if the hard constraints are satisfied.
 
-- [`soft_constraints`](@ref), the specification of the energy terms as soft constraints, which is associated with weights.
-- [`local_energy`](@ref), the local energy for the constraints.
+- [`soft_constraints`](@ref), the specification of the size terms as soft constraints, which is associated with weights.
+- [`local_size`](@ref), the local size for the soft constraints.
 - [`weights`](@ref): The weights of the soft constraints.
 - [`set_weights`](@ref): Change the weights for the `problem` and return a new problem instance.
 """
@@ -144,25 +144,26 @@ end
 
 """
     num_flavors(::Type{<:AbstractProblem}) -> Int
+    num_flavors(::GT) where GT<:AbstractProblem -> Int
 
 Returns the number of flavors (domain) of a degree of freedom.
 """
-num_flavors(::GT) where GT<:AbstractProblem = length(flavors(GT))
+num_flavors(::GT) where GT<:AbstractProblem = num_flavors(GT)
+num_flavors(::Type{GT}) where GT<:AbstractProblem = length(flavors(GT))
 
 """
-    energy(problem::AbstractProblem, config) -> Real
+    get_size(problem::AbstractProblem, config) -> Real
 
-Energy of the `problem` given the configuration `config`.
-The lower the energy, the better the configuration.
+Size of the `problem` given the configuration `config`.
 """
-function energy end
+function get_size end
 
-# energy interface
-energy(problem::AbstractProblem, config) = first(energy_eval_byid_multiple(problem, (config_to_id(problem, config),)))
-function energy_eval_byid_multiple(problem::ConstraintSatisfactionProblem{T}, ids) where T
-    terms = energy_terms(problem)
+# size interface
+get_size(problem::AbstractProblem, config) = first(size_eval_byid_multiple(problem, (config_to_id(problem, config),)))
+function size_eval_byid_multiple(problem::ConstraintSatisfactionProblem{T}, ids) where T
+    terms = size_terms(problem)
     return Iterators.map(ids) do id
-        energy_eval_byid(terms, id)
+        size_eval_byid(terms, id)
     end
 end
 function config_to_id(problem::AbstractProblem, config)
@@ -174,50 +175,50 @@ function id_to_config(problem::AbstractProblem, id)
     map(i -> flvs[i], id)
 end
 
-struct EnergyTerm{LT, N, F, T}
+struct LocalSize{LT, N, F, T}
     variables::Vector{LT}
     flavors::NTuple{N, F}
     strides::Vector{Int}
     energies::Vector{T}
 end
-function Base.show(io::IO, term::EnergyTerm)
-    println(io, """EnergyTerm""")
+function Base.show(io::IO, term::LocalSize)
+    println(io, """LocalSize""")
     entries = []
     sizes = repeat([length(term.flavors)], length(term.variables))
-    for (idx, energy) in zip(CartesianIndices(Tuple(sizes)), term.energies)
-        push!(entries, [getindex.(Ref(term.flavors), idx.I)..., energy])
+    for (idx, size) in zip(CartesianIndices(Tuple(sizes)), term.sizes)
+        push!(entries, [getindex.(Ref(term.flavors), idx.I)..., size])
     end
-	pretty_table(io, transpose(hcat(entries...)); header=[string.(term.variables)..., "energy"])
+	pretty_table(io, transpose(hcat(entries...)); header=[string.(term.variables)..., "size"])
 	return nothing
 end
-Base.show(io::IO, ::MIME"text/plain", term::EnergyTerm) = show(io, term)
+Base.show(io::IO, ::MIME"text/plain", term::LocalSize) = show(io, term)
 
-energy_terms(problem::ConstraintSatisfactionProblem{T}) where T = energy_terms(T, problem)
-function energy_terms(::Type{T}, problem::ConstraintSatisfactionProblem) where T
+size_terms(problem::ConstraintSatisfactionProblem{T}) where T = size_terms(T, problem)
+function size_terms(::Type{T}, problem::ConstraintSatisfactionProblem) where T
     vars = variables(problem)
     flvs = flavors(problem)
     nflv = length(flvs)
-    terms = EnergyTerm{eltype(vars), length(flvs), eltype(flvs), T}[]
+    terms = LocalSize{eltype(vars), length(flvs), eltype(flvs), T}[]
     for constraint in hard_constraints(problem)
         sizes = [nflv for _ in constraint.variables]
         energies = map(CartesianIndices(Tuple(sizes))) do idx
-            is_satisfied(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)) ? zero(T) : energy_max(T)
+            is_satisfied(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)) ? zero(T) : size_max(T)
         end
         strides = [nflv^i for i in 0:length(constraint.variables)-1]
-        push!(terms, EnergyTerm(constraint.variables, flvs, strides, vec(energies)))
+        push!(terms, LocalSize(constraint.variables, flvs, strides, vec(energies)))
     end
     for (i, constraint) in enumerate(soft_constraints(problem))
         sizes = [nflv for _ in constraint.variables]
         energies = map(CartesianIndices(Tuple(sizes))) do idx
-            T(local_energy(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)))
+            T(local_size(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)))
         end
         strides = [nflv^i for i in 0:length(constraint.variables)-1]
-        push!(terms, EnergyTerm(constraint.variables, flvs, strides, vec(energies)))
+        push!(terms, LocalSize(constraint.variables, flvs, strides, vec(energies)))
     end
     return terms
 end
 
-Base.@propagate_inbounds function energy_eval_byid(terms::AbstractVector{EnergyTerm{LT, N, F, T}}, config_id) where {LT, N, F, T}
+Base.@propagate_inbounds function size_eval_byid(terms::AbstractVector{LocalSize{LT, N, F, T}}, config_id) where {LT, N, F, T}
     sum(terms) do term
         k = 1
         for (stride, var) in zip(term.strides, term.variables)
@@ -257,14 +258,14 @@ Base.size(w::UnitWeight) = (w.n,)
 """
     soft_constraints(problem::AbstractProblem) -> Vector{SoftConstraint}
 
-The energy terms of the problem. Each term is associated with weights.
+The constraints related to the size of the problem. Each term is associated with weights.
 """
 function soft_constraints end
 
 """
     hard_constraints(problem::AbstractProblem) -> Vector{HardConstraint}
 
-The hard constraints of the problem. Once the hard constraints are violated, the energy goes to infinity.
+The hard constraints of the problem.
 """
 function hard_constraints end
 
@@ -284,15 +285,15 @@ Check if the `constraint` is satisfied by the configuration `config`.
 function is_satisfied end
 
 """
-    local_energy(::Type{<:ConstraintSatisfactionProblem{T}}, constraint::SoftConstraint, config) -> T
+    local_size(::Type{<:ConstraintSatisfactionProblem{T}}, constraint::SoftConstraint, config) -> T
 
-The local energy of the `constraint` given the configuration `config`.
+The local size of the `constraint` given the configuration `config`.
 """
-function local_energy end
+function local_size end
 
-# the maximum energy for the local energy function, this is used to avoid overflow of integer energy
-energy_max(::Type{T}) where T = typemax(T)
-energy_max(::Type{T}) where T<:Integer = round(T, sqrt(typemax(T)))
+# the maximum size for the local size function, this is used to avoid overflow of integer size
+size_max(::Type{T}) where T = typemax(T)
+size_max(::Type{T}) where T<:Integer = round(T, sqrt(typemax(T)))
 
 include("SpinGlass.jl")
 include("Circuit.jl")

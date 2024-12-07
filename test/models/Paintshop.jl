@@ -19,6 +19,6 @@ using ProblemReductions:paint_shop_coloring_from_config
     @test num_variables(ps2) == 3
     @test num_flavors(ps2) == 2
     @test paint_shop_coloring_from_config(ps2, [1,1,0]) == [1,1,0,0,0,1]
-    @test energy(ps2, [1,1,0]) == 2
+    @test get_size(ps2, [1,1,0]) == 2
     @test findbest(ps2, BruteForce()) == [[1,1,0],[0,0,1]]
 end

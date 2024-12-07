@@ -26,14 +26,15 @@ using Test, ProblemReductions, Graphs
     @test flavors(DominatingSet) == (0, 1)
     @test problem_size(DS_01) == (; num_vertices = 5, num_edges = 4)
 
-    # energy
+    # get_size
     # Positive examples
-    @test energy(DS_01, [1, 0, 1, 0, 1]) == 3
-    @test energy(DS_01, [0, 1, 0, 1, 0]) == 2
-    @test energy(DS_01, [1, 1, 1, 1, 0]) == 4
+    @test get_size(DS_01, [1, 0, 1, 0, 1]) == 3
+    @test get_size(DS_01, [0, 1, 0, 1, 0]) == 2
+    @test get_size(DS_01, [1, 1, 1, 1, 0]) == 4
     # Negative examples
-    @test energy(DS_01, [0, 1, 1, 0, 0]) > 1000
-    @test energy(DS_01, [1, 0, 0, 0, 1]) > 1000
+    @test get_size(DS_01, [0, 1, 1, 0, 0]) > 1000
+    @test get_size(DS_01, [1, 0, 0, 0, 1]) > 1000
     # findbest function
     @test findbest(DS_01, BruteForce()) == [[1, 0, 0, 1, 0], [0, 1, 0, 1, 0], [0, 1, 0, 0, 1]]
+    @test is_dominating_set(g01, [1, 0, 0, 1, 0])
 end

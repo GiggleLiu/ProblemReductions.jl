@@ -205,7 +205,7 @@ function soft_constraints(c::AbstractSatisfiabilityProblem)
         SoftConstraint(idx, vars[idx] => cl, w)
     end
 end
-function local_energy(::Type{<:AbstractSatisfiabilityProblem{S, T}}, spec::SoftConstraint{WT}, config) where {S, T, WT}
+function local_size(::Type{<:AbstractSatisfiabilityProblem{S, T}}, spec::SoftConstraint{WT}, config) where {S, T, WT}
     @assert length(config) == num_variables(spec)
     vars, expr = spec.specification
     assignment = Dict(zip(vars, config))

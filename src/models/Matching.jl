@@ -42,7 +42,7 @@ function soft_constraints(c::Matching)
     return [SoftConstraint([e], :num_edges, w) for (w, e) in zip(weights(c), variables(c))]
 end
 
-function local_energy(::Type{<:Matching{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
+function local_size(::Type{<:Matching{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec) == 1
     return WT(first(config)) * spec.weight
 end

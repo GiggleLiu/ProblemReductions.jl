@@ -45,7 +45,6 @@ problem_size(c::Coloring) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 # variables interface
 num_variables(gp::Coloring{K}) where K = nv(gp.graph)
 flavors(::Type{<:Coloring{K}}) where K = ntuple(i->i-1, K) # colors
-num_flavors(::Type{<:Coloring{K}}) where K = K # number of colors
 
 # weights interface
 weights(c::Coloring) = c.weights
@@ -58,7 +57,7 @@ function soft_constraints(c::Coloring)
     return [SoftConstraint(_vec(e), :coloring, w) for (w, e) in zip(weights(c), edges(c.graph))]
 end
 
-function local_energy(::Type{<:Coloring{K, T}}, spec::SoftConstraint{WT}, config) where {K, T, WT}
+function local_size(::Type{<:Coloring{K, T}}, spec::SoftConstraint{WT}, config) where {K, T, WT}
     @assert length(config) == num_variables(spec)
     a, b = config
     return a == b ? spec.weight : zero(WT)

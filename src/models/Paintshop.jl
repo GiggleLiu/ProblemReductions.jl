@@ -26,7 +26,7 @@ julia> num_variables(problem)
 julia> flavors(problem)
 (0, 1)
 
-julia> energy(problem, [0, 1, 0])
+julia> get_size(problem, [0, 1, 0])
 4
 
 julia> findbest(problem, BruteForce())
@@ -59,7 +59,7 @@ function soft_constraints(c::PaintShop)
     return [SoftConstraint([findfirst(==(c.sequence[i]), syms), findfirst(==(c.sequence[i+1]), syms)], (c.isfirst[i], c.isfirst[i+1]), 1) for i=1:length(c.sequence)-1]
 end
 
-function local_energy(::Type{<:PaintShop}, spec::SoftConstraint{WT}, config) where {WT}
+function local_size(::Type{<:PaintShop}, spec::SoftConstraint{WT}, config) where {WT}
     @assert length(config) == num_variables(spec)
     isfirst1, isfirst2 = spec.specification
     c1, c2 = config
@@ -80,4 +80,13 @@ function paint_shop_coloring_from_config(p::PaintShop{LT}, config) where {LT}
     return map(1:length(p.sequence)) do i
         p.isfirst[i] ? d[p.sequence[i]] : ~d[p.sequence[i]]
     end
+end
+
+"""
+    num_paint_shop_color_switch(sequence::AbstractVector, coloring)
+
+Returns the number of color switches.
+"""
+function num_paint_shop_color_switch(sequence::AbstractVector, coloring)
+    return count(i->coloring[i] != coloring[i+1], 1:length(sequence)-1)
 end

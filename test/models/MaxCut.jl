@@ -23,8 +23,8 @@ using Test, ProblemReductions, Graphs
     @test ProblemReductions.weights(mc) == [1, 3, 1, 4]
     @test set_weights(mc, [1, 3, 4, 4]) == MaxCut(g, [1, 3, 4, 4])
 
-    # energy
-    @test energy(mc, [1, 0, 0, 1]) == -8
-    @test energy(set_weights(mc,[1,2,4,4]), [0, 1, 1, 0]) == -7
+    # get_size
+    @test get_size(mc, [1, 0, 0, 1]) == -8
+    @test get_size(set_weights(mc,[1,2,4,4]), [0, 1, 1, 0]) == -7
     @test findbest(mc, BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
 end

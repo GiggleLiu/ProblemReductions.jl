@@ -29,7 +29,7 @@ julia> num_variables(problem)  # degrees of freedom
 julia> flavors(problem)
 (0, 1)
 
-julia> energy(problem, [0, 1, 0, 0])  # unlike the independent set, this configuration is not a valid solution
+julia> get_size(problem, [0, 1, 0, 0])  # unlike the independent set, this configuration is not a valid solution
 3037000499
 
 julia> findbest(problem, BruteForce())
@@ -68,7 +68,7 @@ end
 function soft_constraints(c::MaximalIS)
     return [SoftConstraint([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
-function local_energy(::Type{<:MaximalIS{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
+function local_size(::Type{<:MaximalIS{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
     return WT(-first(config)) * spec.weight
 end

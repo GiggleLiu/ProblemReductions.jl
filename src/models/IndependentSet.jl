@@ -30,11 +30,11 @@ julia> num_variables(IS)  # degrees of freedom
 julia> flavors(IS)  # flavors of the vertices
 (0, 1)
 
-julia> energy(IS, [1, 0, 0, 1]) # Positive sample: -(size) of an independent set
+julia> get_size(IS, [1, 0, 0, 1]) # Positive sample: -(size) of an independent set
 -2
 
-julia> energy(IS, [0, 1, 1, 0]) # Negative sample: 0
-3037000498
+julia> get_size(IS, [0, 1, 1, 0]) # Negative sample: 0
+0
 
 julia> findbest(IS, BruteForce())  # solve the problem with brute force
 2-element Vector{Vector{Int64}}:
@@ -73,7 +73,7 @@ function soft_constraints(c::IndependentSet)
     return [SoftConstraint([i], :num_vertex, w) for (w, i) in zip(weights(c), 1:nv(c.graph))]
 end
 
-function local_energy(::Type{<:IndependentSet{GT, T}}, spec::SoftConstraint{WT}, config) where {GT, T, WT}
+function local_size(::Type{<:IndependentSet{GT, T}}, spec::SoftConstraint{WT}, config) where {GT, T, WT}
     @assert length(config) == num_variables(spec) == 1
     return WT(-first(config)) * spec.weight
 end

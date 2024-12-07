@@ -32,11 +32,11 @@ VertexCovering{Int64, Vector{Int64}}(SimpleGraph{Int64}(5, [[2, 3, 4], [1, 3], [
 julia> num_variables(VC)  # degrees of freedom
 4
 
-julia> energy(VC, [1, 0, 0, 1]) # Negative sample
-3037000505
+julia> get_size(VC, [1, 0, 0, 1]) # Negative sample
+3
 
-julia> energy(VC, [0, 1, 1, 0]) # Positive sample
-3037000504
+julia> get_size(VC, [0, 1, 1, 0]) # Positive sample
+3
 
 julia> findbest(VC, BruteForce())  # solve the problem with brute force
 1-element Vector{Vector{Int64}}:
@@ -76,7 +76,7 @@ end
 function soft_constraints(c::VertexCovering)
     return [SoftConstraint([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
-function local_energy(::Type{<:VertexCovering{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
+function local_size(::Type{<:VertexCovering{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
     return WT(first(config)) * spec.weight
 end
