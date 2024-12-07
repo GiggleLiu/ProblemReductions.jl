@@ -192,7 +192,8 @@ function Base.show(io::IO, term::EnergyTerm)
 end
 Base.show(io::IO, ::MIME"text/plain", term::EnergyTerm) = show(io, term)
 
-function energy_terms(problem::ConstraintSatisfactionProblem{T}) where T
+energy_terms(problem::ConstraintSatisfactionProblem{T}) where T = energy_terms(T, problem)
+function energy_terms(::Type{T}, problem::ConstraintSatisfactionProblem) where T
     vars = variables(problem)
     flvs = flavors(problem)
     nflv = length(flvs)
@@ -208,7 +209,7 @@ function energy_terms(problem::ConstraintSatisfactionProblem{T}) where T
     for (i, constraint) in enumerate(soft_constraints(problem))
         sizes = [nflv for _ in constraint.variables]
         energies = map(CartesianIndices(Tuple(sizes))) do idx
-            local_energy(typeof(problem), constraint, getindex.(Ref(flvs), idx.I))
+            T(local_energy(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)))
         end
         strides = [nflv^i for i in 0:length(constraint.variables)-1]
         push!(terms, EnergyTerm(constraint.variables, flvs, strides, vec(energies)))
