@@ -30,24 +30,17 @@ julia> sets = [[1, 2, 5], [1, 3], [2, 4], [3, 6], [2, 3, 6]]
 julia> SP = SetPacking(sets)
 SetPacking{Int64, Int64, UnitWeight}([1, 2, 5, 3, 4, 6], [[1, 2, 5], [1, 3], [2, 4], [3, 6], [2, 3, 6]], [1, 1, 1, 1, 1])
 
-julia> variables(SP)  # degrees of freedom
-5-element Vector{Int64}:
- 1
- 2
- 3
- 4
- 5
+julia> num_variables(SP)  # degrees of freedom
+5
 
 julia> flavors(SP)  # flavors of the subsets
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(SP, [1, 0, 0, 1, 0]) # Positive sample: -(size) of a packing
 -2
 
 julia> energy(SP, [1, 0, 1, 1, 0]) # Negative sample: 0
-3037000500
+3037000497
 
 julia> findbest(SP, BruteForce())  # solve the problem with brute force
 3-element Vector{Vector{Int64}}:
@@ -69,8 +62,8 @@ Base.:(==)(a::SetPacking, b::SetPacking) = ( a.sets == b.sets && a.weights == b.
 problem_size(c::SetPacking) = (; num_elements = length(c.elements), num_sets = length(c.sets))
 
 # Variables Interface
-variables(c::SetPacking) = [1:length(c.sets)...]
-flavors(::Type{<:SetPacking}) = [0, 1]
+num_variables(c::SetPacking) = length(c.sets)
+flavors(::Type{<:SetPacking}) = (0, 1)
 
 weights(c::SetPacking) = c.weights
 set_weights(c::SetPacking, weights::Vector{T}) where {T} = SetPacking(c.sets, weights)
@@ -83,20 +76,20 @@ function hard_constraints(c::SetPacking)  # sets sharing the same element
             push!(get!(()->Int[], d, e), i)
         end
     end
-    return [LocalConstraint(v, :independent) for v in values(d)]
+    return [HardConstraint(v, :independence) for v in values(d)]
 end
-function is_satisfied(::Type{<:SetPacking}, spec::LocalConstraint, config)
+function is_satisfied(::Type{<:SetPacking}, spec::HardConstraint, config)
     @assert length(config) == num_variables(spec)
     return count(isone, config) <= 1
 end
 
-function energy_terms(c::SetPacking)  # sets sharing the same element
-    return [LocalConstraint([s], :set) for s in 1:length(c.sets)]
+function soft_constraints(c::SetPacking)  # sets sharing the same element
+    return [SoftConstraint([s], :set, w) for (w, s) in zip(weights(c), 1:length(c.sets))]
 end
 
-function local_energy(::Type{<:SetPacking}, spec::LocalConstraint, config)
+function local_energy(::Type{<:SetPacking}, spec::SoftConstraint{WT}, config) where {WT}
     @assert length(config) == num_variables(spec) == 1
-    return -first(config)
+    return WT(-first(config)) * spec.weight
 end
 
 """

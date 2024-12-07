@@ -23,20 +23,14 @@ julia> graph = SimpleGraph(Graphs.SimpleEdge.([(1, 2), (1, 3), (3, 4), (2, 3), (
 julia> problem = MaximalIS(graph)
 MaximalIS{Int64, UnitWeight}(SimpleGraph{Int64}(5, [[2, 3, 4], [1, 3], [1, 2, 4], [1, 3]]), [1, 1, 1, 1])
 
-julia> variables(problem)  # degrees of freedom
-4-element Vector{Int64}:
- 1
- 2
- 3
- 4
+julia> num_variables(problem)  # degrees of freedom
+4
 
 julia> flavors(problem)
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(problem, [0, 1, 0, 0])  # unlike the independent set, this configuration is not a valid solution
-3037000500
+3037000499
 
 julia> findbest(problem, BruteForce())
 1-element Vector{Vector{Int64}}:
@@ -54,9 +48,8 @@ end
 Base.:(==)(a::MaximalIS, b::MaximalIS) = a.graph == b.graph && a.weights == b.weights
 
 # variables interface
-variables(gp::MaximalIS) = [1:nv(gp.graph)...]
 num_variables(gp::MaximalIS) = nv(gp.graph)
-flavors(::Type{<:MaximalIS}) = [0, 1]
+flavors(::Type{<:MaximalIS}) = (0, 1)
 problem_size(c::MaximalIS) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
@@ -64,20 +57,20 @@ weights(c::MaximalIS) = c.weights
 set_weights(c::MaximalIS, weights) = MaximalIS(c.graph, weights)
 
 function hard_constraints(c::MaximalIS)
-    return [LocalConstraint(vcat(v, neighbors(c.graph, v)), :maximal_independent) for v in vertices(c.graph)]
+    return [HardConstraint(vcat(v, neighbors(c.graph, v)), :maximal_independence) for v in vertices(c.graph)]
 end
-function is_satisfied(::Type{<:MaximalIS}, spec::LocalConstraint, config)
+function is_satisfied(::Type{<:MaximalIS}, spec::HardConstraint, config)
     @assert length(config) == num_variables(spec)
     nselect = count(!iszero, config)
     return !(nselect == 0 || (nselect > 1 && !iszero(first(config))))
 end
 # constraints interface
-function energy_terms(c::MaximalIS)
-    return [LocalConstraint([v], :vertex) for v in vertices(c.graph)]
+function soft_constraints(c::MaximalIS)
+    return [SoftConstraint([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
-function local_energy(::Type{<:MaximalIS{T}}, spec::LocalConstraint, config) where {T}
+function local_energy(::Type{<:MaximalIS{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
-    return T(-first(config))
+    return WT(-first(config)) * spec.weight
 end
 
 """

@@ -8,7 +8,7 @@ using ProblemReductions: is_matching
     @test m1 isa Matching
     @test variables(m1) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     @test num_variables(m1) == 15
-    @test flavors(m1) == [0, 1]
+    @test flavors(m1) == (0, 1)
     @test problem_size(m1) == (; num_vertices = 10, num_edges = 15)
 
     #test2 
@@ -21,7 +21,7 @@ using ProblemReductions: is_matching
     @test set_weights(m2, [1, 1, 0, 0]) == Matching(g2, [1, 1, 0, 0])
     @test variables(m2) == [1, 2, 3, 4]
     @test num_variables(m2) == 4
-    @test flavors(m2) == [0, 1]
+    @test flavors(m2) == (0, 1)
     @test ProblemReductions.weights(m2) == [1, 0, 0, 1]
     @test ProblemReductions.set_weights(m2, [1, 1, 0, 0]) == Matching(g2, [1, 1, 0, 0])
     @test is_matching(m2.graph, [1, 0, 0, 1]) == true

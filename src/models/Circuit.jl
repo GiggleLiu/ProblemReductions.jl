@@ -119,12 +119,6 @@ function print_statements(io::IO, exprs)
 end
 Base.show(io::IO, ::MIME"text/plain", x::Circuit) = show(io, x)
 
-function symbols(expr)
-    vars = Symbol[]
-    extract_symbols!(expr, vars)
-    return unique!(vars)
-end
-
 function extract_symbols!(c::Circuit, vars::Vector{Symbol})
     for ex in c.exprs
         extract_symbols!(ex, vars)
@@ -236,9 +230,7 @@ julia> sat.symbols
  :d
 
 julia> flavors(sat)
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(sat, [true, false, true, true, false, false, true])
 3
@@ -278,8 +270,8 @@ end
 Base.show(io::IO, ::MIME"text/plain", x::CircuitSAT) = show(io, x)
 
 # variables interface
-variables(c::CircuitSAT) = collect(1:length(c.symbols))
-flavors(::Type{<:CircuitSAT}) = [0, 1]
+num_variables(c::CircuitSAT) = length(c.symbols)
+flavors(::Type{<:CircuitSAT}) = (0, 1)
 problem_size(c::CircuitSAT) = (; num_exprs=length(c.circuit.exprs), num_variables=length(c.symbols))
 
 # weights interface
@@ -288,18 +280,24 @@ set_weights(c::CircuitSAT, weights) = CircuitSAT(c.circuit, weights, c.symbols)
 
 # constraints interface
 @nohard_constraints CircuitSAT
-function energy_terms(c::CircuitSAT)
+function soft_constraints(c::CircuitSAT)
     syms = symbols(c.circuit)
-    return [LocalConstraint([findfirst(==(s), c.symbols) for s in syms], syms=>expr) for expr in c.circuit.exprs]
+    return [SoftConstraint([findfirst(==(s), c.symbols) for s in syms], syms=>expr, w) for (w, expr) in zip(c.weights, c.circuit.exprs)]
 end
 
-function local_energy(::Type{<:CircuitSAT{T}}, spec::LocalConstraint, config) where {T}
+function local_energy(::Type{<:CircuitSAT{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
     syms, ex = spec.specification
     dict = Dict(syms[i]=>Bool(c) for (i, c) in enumerate(config))
     for o in ex.outputs
         @assert haskey(dict, o) "The output variable `$o` is not in the configuration"
-        dict[o] != evaluate_expr(ex.expr, dict) && return 1  # this is the loss!
+        dict[o] != evaluate_expr(ex.expr, dict) && return spec.weight  # this is the loss!
     end
-    return 0
+    return zero(WT)
+end
+
+function symbols(expr::Union{Assignment, BooleanExpr, Circuit})
+    vars = Symbol[]
+    extract_symbols!(expr, vars)
+    return unique!(vars)
 end

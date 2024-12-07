@@ -17,7 +17,7 @@ using Test, ProblemReductions
     # variables
     @test variables(SP_01) == [1, 2, 3, 4, 5]
     @test num_variables(SP_01) == 5
-    @test flavors(SetPacking) == [0, 1]
+    @test flavors(SetPacking) == (0, 1)
 
     # energy
     # a Positive examples

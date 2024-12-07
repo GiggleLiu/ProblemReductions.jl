@@ -51,21 +51,13 @@ A model problem is a subclass of [`AbstractProblem`](@ref) that defines the ener
 Facts affecting the computational complexity classification of the problem also include the topology of the problem and the domain of the variables.
 
 The required interfaces are:
-- [`variables`](@ref): The degrees of freedoms in the problem.
-    e.g. for the maximum independent set problems, they are the indices of vertices: 1, 2, 3...,
-    while for the max cut problem, they are the edges.
-- [`flavors`](@ref): A vector of integers as the flavors (or domain) of a degree of freedom.
-    e.g. for the maximum independent set problems, the flavors are [0, 1], where 0 means the vertex is not in the set and 1 means the vertex is in the set.
-- [`weights`](@ref): Energies associated with constraints.
-- [`energy`](@ref): Energy of a given configuration.
-- [`problem_size`](@ref): The size of the problem, which is the number of variables.
+- [`num_variables`](@ref): The number of variables in the problem, the variables are `1:num_variables`.
+- [`flavors`](@ref): A tuple of integers as the flavors (or domain) of a degree of freedom.
+    e.g. for the maximum independent set problems, the flavors are `(0, 1)`, where `0` means the vertex is not in the set and `1` means the vertex is in the set.
+- [`energy`](@ref): Energy of a given configuration, the smaller the better. If a configuration is invalid, the energy should be `Inf`.
 
 Optional functions include:
-- [`num_variables`](@ref): The number of variables in the problem.
-- [`num_flavors`](@ref): The number of flavors in the problem.
-- [`set_weights`](@ref): Change the weights for the `problem` and return a new problem instance.
-- [`weight_type`](@ref): The data type of weights.
-- [`findbest`](@ref): Find the best configurations in the computational problem.
+- [`problem_size`](@ref): The size of the problem, which is the number of variables.
 
 The following code lists all problems defined in ProblemReductions:
 ```@repl reduction_graph
@@ -97,7 +89,6 @@ A problem reduction rule is a function that reduces a problem to another problem
 
 Optional functions include:
 - [`extract_multiple_solutions`](@ref): Extract a set of solutions to the target problem back to the original problem. You may want to implement this when you want to make extracting multiple solutions faster.
-- [`reduce_size`](@ref): Infer the size of the target problem from the source problem size.
 
 The [`reduction_graph`](@ref) function returns the reduction graph of the problems that induced by the reduction rules defined in ProblemReductions:
 ```@repl reduction_graph

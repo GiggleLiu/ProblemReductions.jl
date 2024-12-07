@@ -93,7 +93,13 @@ identity_reduction(::Type{<:AbstractProblem}, source) = IdentityReductionResult(
 Returns a [`ReductionGraph`](@ref) instance from the reduction rules defined with method `reduceto`.
 """
 function reduction_graph()
-    ms = filter(m->m.sig.types[2] <: Type{<:AbstractProblem}, methods(reduceto))
+    ms = filter(methods(reduceto)) do m
+        if !hasproperty(m.sig, :types)
+            @warn "Illegal type signature as the first argument of `reduceto`, got $(m.sig). Note the `where` syntax is not supported yet. Skip this method."
+            return false
+        end
+        m.sig.types[2] <: Type{<:AbstractProblem}
+    end
     rules = extract_types.(getfield.(ms, :sig))
     nodes = unique!(vcat(concrete_subtypes(AbstractProblem), first.(rules), last.(rules)))
     graph = SimpleDiGraph(length(nodes))

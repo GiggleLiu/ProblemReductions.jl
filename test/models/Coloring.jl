@@ -4,7 +4,7 @@ using Test, ProblemReductions, Graphs
 
 @testset "coloring" begin
     # constructor function
-    @test flavors(Coloring{3}) == [0,1,2]
+    @test flavors(Coloring{3}) == (0, 1, 2)
     @test num_flavors(Coloring{3}) == 3
     
     g = SimpleGraph(4)

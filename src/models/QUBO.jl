@@ -30,22 +30,11 @@ julia> graph = SimpleGraph(3)
 julia> QUBO02 = QUBO(graph, Float64[], [1., 1., 1.])
 QUBO{Float64}([1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0])
 
-julia> variables(QUBO01)  # degrees of freedom
-3-element Vector{Int64}:
- 1
- 2
- 3
-
-julia> variables(QUBO02)
-3-element Vector{Int64}:
- 1
- 2
- 3
+julia> num_variables(QUBO01)  # degrees of freedom
+3
 
 julia> flavors(QUBO01)  # flavors of the vertices
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(QUBO01, [0, 1, 0])
 1.0
@@ -83,8 +72,8 @@ function QUBO(graph::SimpleGraph, edge_weights::Vector{T}, vertex_weights::Vecto
 end
 
 # variables interface
-variables(c::QUBO) = collect(1:size(c.matrix, 1))
-flavors(::Type{<:QUBO}) = [0, 1]
+num_variables(c::QUBO) = size(c.matrix, 1)
+flavors(::Type{<:QUBO}) = (0, 1)
 problem_size(c::QUBO) = (; num_variables=size(c.matrix, 1))
 
 function weights(c::QUBO)
@@ -95,19 +84,19 @@ function weights(c::QUBO)
 end
 
 # constraints interface
-function energy_terms(c::QUBO)
+function soft_constraints(c::QUBO)
     vcat(
-        [LocalConstraint([i, j], :offdiagonal) for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
-        [LocalConstraint([i], :diagonal) for i in variables(c) if c.matrix[i, i] != 0]
+        [SoftConstraint([i, j], :offdiagonal, c.matrix[i, j] + c.matrix[j, i]) for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
+        [SoftConstraint([i], :diagonal, c.matrix[i, i]) for i in variables(c) if c.matrix[i, i] != 0]
     )
 end
 @nohard_constraints QUBO
-function local_energy(::Type{<:QUBO}, spec::LocalConstraint, config)
+function local_energy(::Type{<:QUBO}, spec::SoftConstraint, config)
     @assert length(config) == num_variables(spec)
     if spec.specification == :offdiagonal
         a, b = config
-        return a * b
+        return a * b * spec.weight
     else
-        return first(config)
+        return first(config) * spec.weight
     end
 end

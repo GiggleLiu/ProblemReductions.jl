@@ -47,17 +47,11 @@ julia> h = [1, -1, -1, 1]  # external field
 julia> spinglass = SpinGlass(graph, J, h)  # Define a spin glass problem
 SpinGlass{SimpleGraph{Int64}, Int64, Vector{Int64}}(SimpleGraph{Int64}(4, [[2, 3], [1, 3], [1, 2, 4], [3]]), [1, -1, 1, -1], [1, -1, -1, 1])
 
-julia> variables(spinglass)  # degrees of freedom
-4-element Vector{Int64}:
- 1
- 2
- 3
- 4
+julia> num_variables(spinglass)  # degrees of freedom
+4
 
 julia> flavors(spinglass)  # flavors of the spins
-2-element Vector{Int64}:
-  1
- -1
+(1, -1)
 
 julia> energy(spinglass, [-1, 1, 1, -1])  # energy of a configuration
 -2
@@ -85,8 +79,8 @@ function spin_glass_from_matrix(M::AbstractMatrix, h::AbstractVector)
 end
 
 # variables interface
-variables(gp::SpinGlass) = collect(1:nv(gp.graph))
-flavors(::Type{<:SpinGlass}) = [1, -1]
+num_variables(gp::SpinGlass) = nv(gp.graph)
+flavors(::Type{<:SpinGlass}) = (1, -1)
 problem_size(c::SpinGlass) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
@@ -94,12 +88,12 @@ weights(gp::SpinGlass) = vcat(gp.J, gp.h)
 set_weights(c::SpinGlass, weights) = SpinGlass(c.graph, weights[1:ne(c.graph)], weights[ne(c.graph)+1:end])
 
 # constraints interface
-function energy_terms(sg::SpinGlass)
-    return vcat([LocalConstraint(_vec(e), :edge) for e in edges(sg.graph)], [LocalConstraint([v], :vertex) for v in vertices(sg.graph)])
+function soft_constraints(sg::SpinGlass)
+    return vcat([SoftConstraint(_vec(e), :edge, w) for (w, e) in zip(sg.J, edges(sg.graph))], [SoftConstraint([v], :vertex, w) for (w, v) in zip(sg.h, vertices(sg.graph))])
 end
 @nohard_constraints SpinGlass
 
-function local_energy(::Type{<:SpinGlass}, spec::LocalConstraint, config)
+function local_energy(::Type{<:SpinGlass}, spec::SoftConstraint{WT}, config) where {WT}
     @assert length(config) == num_variables(spec)
-    spec.specification == :edge ? prod(config) : first(config)
+    return WT(spec.specification == :edge ? prod(config) : first(config)) * spec.weight
 end

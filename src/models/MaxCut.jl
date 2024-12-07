@@ -28,9 +28,7 @@ julia> num_variables(maxcut) # return the number of vertices
 3
 
 julia> flavors(maxcut) # return the flavors of the vertices
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(maxcut, [0,1,0]) # return the energy of the configuration
 -4
@@ -52,9 +50,8 @@ end
 Base.:(==)(a::MaxCut, b::MaxCut) = a.graph == b.graph && a.weights == b.weights
 
 # varibles interface 
-variables(gp::MaxCut) = [1:nv(gp.graph)...]
 num_variables(gp::MaxCut) = nv(gp.graph)
-flavors(::Type{<:MaxCut}) = [0, 1] #choose it or not
+flavors(::Type{<:MaxCut}) = (0, 1) #choose it or not
 problem_size(c::MaxCut) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
                             
 # weights interface
@@ -62,13 +59,13 @@ weights(c::MaxCut) = c.weights
 set_weights(c::MaxCut, weights) = MaxCut(c.graph, weights)
 
 # constraints interface
-function energy_terms(c::MaxCut)
-    return [LocalConstraint(_vec(e), :cut) for e in edges(c.graph)]
+function soft_constraints(c::MaxCut)
+    return [SoftConstraint(_vec(e), :cut, w) for (w, e) in zip(weights(c), edges(c.graph))]
 end
-function local_energy(::Type{<:MaxCut{T}}, spec::LocalConstraint, config) where {T}
+function local_energy(::Type{<:MaxCut{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
     a, b = config
-    return (a != b) ? -one(T) : zero(T)
+    return (a != b) ? -spec.weight : zero(WT)
 end
 @nohard_constraints MaxCut
 

@@ -22,26 +22,47 @@ abstract type AbstractProblem end
 The abstract base type of constraint satisfaction problems. `T` is the type of the local energy of the constraints.
 
 ### Required interfaces
-- [`energy_terms`](@ref), the specification of the energy terms, it is associated with weights.
 - [`hard_constraints`](@ref), the specification of the hard constraints. Once the hard constraints are violated, the energy goes to infinity.
+- [`is_satisfied`](@ref), check if the hard constraints are satisfied.
+
+- [`soft_constraints`](@ref), the specification of the energy terms as soft constraints, which is associated with weights.
 - [`local_energy`](@ref), the local energy for the constraints.
+- [`weights`](@ref): The weights of the soft constraints.
+- [`set_weights`](@ref): Change the weights for the `problem` and return a new problem instance.
 """
 abstract type ConstraintSatisfactionProblem{T} <: AbstractProblem end
 
 """
 $TYPEDEF
 
-The local constraint of the problem.
+A hard constraint on a [`ConstraintSatisfactionProblem`](@ref).
 
 ### Fields
 - `variables`: the indices of the variables involved in the constraint.
 - `specification`: the specification of the constraint.
 """
-struct LocalConstraint{ST}
+struct HardConstraint{ST}
     variables::Vector{Int}
     specification::ST
 end
-num_variables(spec::LocalConstraint) = length(spec.variables)
+num_variables(spec::HardConstraint) = length(spec.variables)
+
+"""
+$TYPEDEF
+
+A soft constraint on a [`ConstraintSatisfactionProblem`](@ref).
+
+### Fields
+- `variables`: the indices of the variables involved in the constraint.
+- `specification`: the specification of the constraint.
+- `weight`:  the weight of the constraint.
+"""
+struct SoftConstraint{WT, ST}
+    variables::Vector{Int}
+    specification::ST
+    weight::WT
+end
+num_variables(spec::SoftConstraint) = length(spec.variables)
 
 ######## Interfaces for computational problems ##########
 """
@@ -80,14 +101,14 @@ function problem_size end
 The degrees of freedoms in the computational problem. e.g. for the maximum independent set problems, they are the indices of vertices: 1, 2, 3...,
 while for the max cut problem, they are the edges.
 """
-function variables end
+variables(c::AbstractProblem) = 1:num_variables(c)
 
 """
     num_variables(problem::AbstractProblem) -> Int
 
 The number of variables in the computational problem.
 """
-num_variables(c::AbstractProblem) = length(variables(c))
+function num_variables end
 
 """
     weight_type(problem::AbstractProblem) -> Type
@@ -137,41 +158,74 @@ The lower the energy, the better the configuration.
 function energy end
 
 # energy interface
-energy(problem::AbstractProblem, config) = first(energy_multi(problem, [config]))[1]
-struct EnergyMultiConfig{T, PT<:ConstraintSatisfactionProblem{T}, ST, ST2, VT, WT <: AbstractVector{T}}
-    problem::PT
-    configs::VT  # iterator of configurations
-    hard_specs::Vector{LocalConstraint{ST}}
-    energy_terms::Vector{LocalConstraint{ST2}}
-    weights::WT
-end
-
-function energy_multi(problem::ConstraintSatisfactionProblem{T}, configs) where T
-    @assert all(config -> length(config) == num_variables(problem), configs) "All configurations must have the same length as the number of variables, got: $(length.(configs)), which should be $(num_variables(problem))"
-    hard_specs = hard_constraints(problem)
+energy(problem::AbstractProblem, config) = first(energy_eval_byid_multiple(problem, (config_to_id(problem, config),)))
+function energy_eval_byid_multiple(problem::ConstraintSatisfactionProblem{T}, ids) where T
     terms = energy_terms(problem)
-    ws = is_weighted(problem) ? weights(problem) : UnitWeight(length(terms))
-    return EnergyMultiConfig(problem, configs, hard_specs, terms, ws)
+    return Iterators.map(ids) do id
+        energy_eval_byid(terms, id)
+    end
+end
+function config_to_id(problem::AbstractProblem, config)
+    flvs = flavors(problem)
+    map(c -> findfirst(==(c), flvs), config)
+end
+function id_to_config(problem::AbstractProblem, id)
+    flvs = flavors(problem)
+    map(i -> flvs[i], id)
 end
 
-function Base.iterate(emc::EnergyMultiConfig{T}, args...) where T
-    config_spec = iterate(emc.configs, args...)
-    if config_spec === nothing
-        return nothing
-    end
-    config, state = config_spec
-    if !all(spec -> is_satisfied(typeof(emc.problem), spec, _get(config, spec.variables)), emc.hard_specs)
-        return (energy_max(T), config), state
-    end
-    energy = zero(T)
-    for (i, spec) in enumerate(emc.energy_terms)
-        subconfig = _get(config, spec.variables)
-        energy += local_energy(typeof(emc.problem), spec, subconfig) * emc.weights[i]
-    end
-    return (energy, config), state
+struct EnergyTerm{LT, N, F, T}
+    variables::Vector{LT}
+    flavors::NTuple{N, F}
+    strides::Vector{Int}
+    energies::Vector{T}
 end
-_get(config::AbstractVector, indices) = view(config, indices)
-_get(config::Tuple, indices) = Iterators.map(i -> config[i], indices)
+function Base.show(io::IO, term::EnergyTerm)
+    println(io, """EnergyTerm""")
+    entries = []
+    sizes = repeat([length(term.flavors)], length(term.variables))
+    for (idx, energy) in zip(CartesianIndices(Tuple(sizes)), term.energies)
+        push!(entries, [getindex.(Ref(term.flavors), idx.I)..., energy])
+    end
+	pretty_table(io, transpose(hcat(entries...)); header=[string.(term.variables)..., "energy"])
+	return nothing
+end
+Base.show(io::IO, ::MIME"text/plain", term::EnergyTerm) = show(io, term)
+
+energy_terms(problem::ConstraintSatisfactionProblem{T}) where T = energy_terms(T, problem)
+function energy_terms(::Type{T}, problem::ConstraintSatisfactionProblem) where T
+    vars = variables(problem)
+    flvs = flavors(problem)
+    nflv = length(flvs)
+    terms = EnergyTerm{eltype(vars), length(flvs), eltype(flvs), T}[]
+    for constraint in hard_constraints(problem)
+        sizes = [nflv for _ in constraint.variables]
+        energies = map(CartesianIndices(Tuple(sizes))) do idx
+            is_satisfied(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)) ? zero(T) : energy_max(T)
+        end
+        strides = [nflv^i for i in 0:length(constraint.variables)-1]
+        push!(terms, EnergyTerm(constraint.variables, flvs, strides, vec(energies)))
+    end
+    for (i, constraint) in enumerate(soft_constraints(problem))
+        sizes = [nflv for _ in constraint.variables]
+        energies = map(CartesianIndices(Tuple(sizes))) do idx
+            T(local_energy(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)))
+        end
+        strides = [nflv^i for i in 0:length(constraint.variables)-1]
+        push!(terms, EnergyTerm(constraint.variables, flvs, strides, vec(energies)))
+    end
+    return terms
+end
+
+Base.@propagate_inbounds function energy_eval_byid(terms::AbstractVector{EnergyTerm{LT, N, F, T}}, config_id) where {LT, N, F, T}
+    sum(terms) do term
+        k = 1
+        for (stride, var) in zip(term.strides, term.variables)
+            k += stride * (config_id[var]-1)
+        end
+        term.energies[k]
+    end
+end
 
 """
 $TYPEDSIGNATURES
@@ -201,14 +255,14 @@ Base.getindex(::UnitWeight, i) = 1
 Base.size(w::UnitWeight) = (w.n,)
 
 """
-    energy_terms(problem::AbstractProblem) -> Vector{LocalConstraint}
+    soft_constraints(problem::AbstractProblem) -> Vector{SoftConstraint}
 
 The energy terms of the problem. Each term is associated with weights.
 """
-function energy_terms end
+function soft_constraints end
 
 """
-    hard_constraints(problem::AbstractProblem) -> Vector{LocalConstraint}
+    hard_constraints(problem::AbstractProblem) -> Vector{HardConstraint}
 
 The hard constraints of the problem. Once the hard constraints are violated, the energy goes to infinity.
 """
@@ -217,13 +271,20 @@ function hard_constraints end
 macro nohard_constraints(problem)
     esc(quote
         function $ProblemReductions.hard_constraints(problem::$(problem))
-            return LocalConstraint{Nothing}[]
+            return HardConstraint{Nothing}[]
         end
     end)
 end
 
 """
-    local_energy(::Type{<:ConstraintSatisfactionProblem{T}}, constraint::LocalConstraint, config) -> T
+    is_satisfied(::Type{<:ConstraintSatisfactionProblem}, constraint::HardConstraint, config) -> Bool
+
+Check if the `constraint` is satisfied by the configuration `config`.
+"""
+function is_satisfied end
+
+"""
+    local_energy(::Type{<:ConstraintSatisfactionProblem{T}}, constraint::SoftConstraint, config) -> T
 
 The local energy of the `constraint` given the configuration `config`.
 """

@@ -15,7 +15,7 @@ using ProblemReductions, Test, Graphs
     # variables
     @test variables(q01) == [1, 2, 3]
     @test num_variables(q01) == 3
-    @test flavors(q01) == [0, 1]
+    @test flavors(q01) == (0, 1)
     @test num_flavors(q01) == 2
 
     # energy

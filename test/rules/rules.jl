@@ -70,7 +70,7 @@ end
             spinglass => MaxCut,
             qubo => SpinGlass{<:SimpleGraph},
             spinglass => QUBO,
-            sat => KSatisfiability,
+            sat => KSatisfiability{3},
             ksat => Satisfiability,
             sat => IndependentSet{<:SimpleGraph},
             sat => DominatingSet{<:SimpleGraph},

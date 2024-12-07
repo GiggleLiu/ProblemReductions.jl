@@ -23,7 +23,7 @@ using Test, ProblemReductions, Graphs
     # variables
     @test variables(DS_01) == [1, 2, 3, 4, 5]
     @test num_variables(DS_01) == 5
-    @test flavors(DominatingSet) == [0, 1]
+    @test flavors(DominatingSet) == (0, 1)
     @test problem_size(DS_01) == (; num_vertices = 5, num_edges = 4)
 
     # energy

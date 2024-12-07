@@ -22,23 +22,10 @@ julia> coloring = Coloring{3}(g)  # 3 colors
 Coloring{3, Int64, UnitWeight}(SimpleGraph{Int64}(15, [[2, 5, 6], [1, 3, 7], [2, 4, 8], [3, 5, 9], [1, 4, 10], [1, 8, 9], [2, 9, 10], [3, 6, 10], [4, 6, 7], [5, 7, 8]]), [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
 julia> variables(coloring)
-10-element Vector{Int64}:
-  1
-  2
-  3
-  4
-  5
-  6
-  7
-  8
-  9
- 10
+1:10
 
 julia> flavors(coloring)
-3-element Vector{Int64}:
- 0
- 1
- 2
+(0, 1, 2)
 
 julia> is_vertex_coloring(coloring.graph,[1,2,3,1,3,2,1,2,3,1]) #random assignment
 false
@@ -56,8 +43,8 @@ Base.:(==)(a::Coloring, b::Coloring) = a.graph == b.graph && a.weights == b.weig
 problem_size(c::Coloring) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # variables interface
-variables(gp::Coloring{K}) where K = collect(1:nv(gp.graph))
-flavors(::Type{<:Coloring{K}}) where K = collect(0:K-1) # colors
+num_variables(gp::Coloring{K}) where K = nv(gp.graph)
+flavors(::Type{<:Coloring{K}}) where K = ntuple(i->i-1, K) # colors
 num_flavors(::Type{<:Coloring{K}}) where K = K # number of colors
 
 # weights interface
@@ -66,15 +53,15 @@ set_weights(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
 
 # constraints interface
 @nohard_constraints Coloring
-function energy_terms(c::Coloring)
+function soft_constraints(c::Coloring)
     # constraints on edges
-    return [LocalConstraint(_vec(e), :coloring) for e in edges(c.graph)]
+    return [SoftConstraint(_vec(e), :coloring, w) for (w, e) in zip(weights(c), edges(c.graph))]
 end
 
-function local_energy(::Type{<:Coloring{K, T}}, spec::LocalConstraint, config) where {K, T}
+function local_energy(::Type{<:Coloring{K, T}}, spec::SoftConstraint{WT}, config) where {K, T, WT}
     @assert length(config) == num_variables(spec)
     a, b = config
-    return a == b ? one(T) : zero(T)
+    return a == b ? spec.weight : zero(WT)
 end
 
 """

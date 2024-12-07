@@ -11,7 +11,7 @@ end
     z = 15
     f = Factoring(m, n, z)
     @test variables(f) == [1, 2, 3, 4, 5]
-    @test flavors(Factoring) == [0, 1]
+    @test flavors(Factoring) == (0, 1)
     @test problem_size(f) == (; num_bits_first = 2, num_bits_second = 3)
     @test num_flavors(f) == 2
     @test energy(f, [0, 1, 1, 1, 0]) == 1

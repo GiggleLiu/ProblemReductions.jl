@@ -6,17 +6,23 @@ A brute force method to find the best configuration of a problem.
 struct BruteForce end
 
 function findbest(problem::AbstractProblem, ::BruteForce; atol=eps(Float64), rtol=eps(Float64))
-    best_size = Inf
-    best_configs = Vector{Int}[]
-    configs = Iterators.product([flavors(problem) for i in 1:num_variables(problem)]...)
-    for (size, config) in energy_multi(problem, configs)
-        if isapprox(size, best_size; atol, rtol)
-            push!(best_configs, collect(config))
-        elseif size < best_size[1]
-            best_size = Float64(size)
-            empty!(best_configs)
-            push!(best_configs, collect(config))
+    flvs = flavors(problem)
+    best_ids = NTuple{num_variables(problem), Int}[]
+    configs = Iterators.product([1:length(flvs) for i in 1:num_variables(problem)]...)
+    energies = energy_eval_byid_multiple(problem, configs)
+    _findbest!(best_ids, configs, energies, atol, rtol)
+    return [collect(id_to_config(problem, id)) for id in best_ids]
+end
+
+function _findbest!(best_ids, configs, energies, atol, rtol)
+    best_energy = Inf
+    for (id, energy) in zip(configs, energies)
+        if isapprox(energy, best_energy; atol, rtol)
+            push!(best_ids, id)
+        elseif energy < best_energy
+            best_energy = energy
+            empty!(best_ids)
+            push!(best_ids, id)
         end
     end
-    return best_configs
 end

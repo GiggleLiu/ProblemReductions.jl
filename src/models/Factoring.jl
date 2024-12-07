@@ -19,16 +19,10 @@ julia> factoring = Factoring(2,2,6)
 Factoring(2, 2, 6)
 
 julia> variables(factoring) # return the sum of factors' bit size
-4-element Vector{Int64}:
- 1
- 2
- 3
- 4
+1:4
 
 julia> flavors(factoring)
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(factoring,[0,1,1,1]) # 01 -> 2, 11 -> 3
 0
@@ -41,17 +35,17 @@ struct Factoring <: AbstractProblem
 end
 
 # variables interface
-variables(f::Factoring) = collect(1:f.m+f.n)
-flavors(::Type{Factoring}) = [0, 1]
+num_variables(f::Factoring) = f.m+f.n
+flavors(::Type{Factoring}) = (0, 1)
 problem_size(f::Factoring) = (; num_bits_first=f.m, num_bits_second=f.n)
 
 # utilities
-function energy_multi(f::Factoring, configs)
-    @assert all(config->length(config) == num_variables(f), configs)
-    return Iterators.map(configs) do config
-        input1 = BitStr(config[1:f.m]).buf
-        input2 = BitStr(config[f.m+1:f.m+f.n]).buf
-        return (input1 * input2 == f.input ? 0 : 1, config)
+function energy_eval_byid_multiple(f::Factoring, config_ids)
+    @assert all(id->length(id) == num_variables(f), config_ids)
+    return Iterators.map(config_ids) do id
+        input1 = BitStr(id[1:f.m] .- 1).buf
+        input2 = BitStr(id[f.m+1:f.m+f.n] .- 1).buf
+        return (input1 * input2 == f.input ? 0 : 1)
     end
 end
 

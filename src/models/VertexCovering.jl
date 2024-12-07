@@ -29,18 +29,14 @@ julia> weights = [1, 3, 1, 4]
 julia> VC= VertexCovering(graph, weights)
 VertexCovering{Int64, Vector{Int64}}(SimpleGraph{Int64}(5, [[2, 3, 4], [1, 3], [1, 2, 4], [1, 3]]), [1, 3, 1, 4])
 
-julia> variables(VC)  # degrees of freedom
-4-element Vector{Int64}:
- 1
- 2
- 3
- 4
+julia> num_variables(VC)  # degrees of freedom
+4
 
 julia> energy(VC, [1, 0, 0, 1]) # Negative sample
-3037000500
+3037000505
 
 julia> energy(VC, [0, 1, 1, 0]) # Positive sample
-3037000500
+3037000504
 
 julia> findbest(VC, BruteForce())  # solve the problem with brute force
 1-element Vector{Vector{Int64}}:
@@ -61,9 +57,8 @@ end
 Base.:(==)(a::VertexCovering, b::VertexCovering) = a.graph == b.graph && a.weights == b.weights
 
 # variables interface
-variables(gp::VertexCovering) = collect(1:nv(gp.graph))
 num_variables(gp::VertexCovering) = nv(gp.graph)
-flavors(::Type{<:VertexCovering}) = [0, 1] # whether the vertex is selected (1) or not (0)
+flavors(::Type{<:VertexCovering}) = (0, 1) # whether the vertex is selected (1) or not (0)
 problem_size(c::VertexCovering) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 #weights interface 
@@ -72,18 +67,18 @@ set_weights(c::VertexCovering, weights) = VertexCovering(c.graph, weights)
 
 # constraints interface
 function hard_constraints(c::VertexCovering)
-    return [LocalConstraint(_vec(e), :cover) for e in edges(c.graph)]
+    return [HardConstraint(_vec(e), :cover) for e in edges(c.graph)]
 end
-function is_satisfied(::Type{<:VertexCovering}, spec::LocalConstraint, config)
+function is_satisfied(::Type{<:VertexCovering}, spec::HardConstraint, config)
     @assert length(config) == num_variables(spec)
     return any(!iszero, config)
 end
-function energy_terms(c::VertexCovering)
-    return [LocalConstraint([v], :vertex) for v in vertices(c.graph)]
+function soft_constraints(c::VertexCovering)
+    return [SoftConstraint([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
-function local_energy(::Type{<:VertexCovering{T}}, spec::LocalConstraint, config) where T
+function local_energy(::Type{<:VertexCovering{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
-    return T(first(config))
+    return WT(first(config)) * spec.weight
 end
 
 """

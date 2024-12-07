@@ -28,7 +28,7 @@ using Test, ProblemReductions, Graphs
     # variables
     @test variables(IS_01) == [1, 2, 3, 4]
     @test num_variables(IS_01) == 4
-    @test flavors(IndependentSet) == [0, 1]
+    @test flavors(IndependentSet) == (0, 1)
 
     # energy
     # Positive examples
@@ -41,4 +41,16 @@ using Test, ProblemReductions, Graphs
     @test findbest(IS_01, BruteForce()) == [[1, 0, 0, 1], [0, 1, 0, 1]] # "1" is superior to "0"
     @test Set( findbest(IS_03, BruteForce()) ) == Set( [[1, 0, 1, 0, 1], [1, 0, 0, 1, 1]] )
     @test configuration_space_size(IS_01) ≈ 4
+end
+
+@testset "energyterms" begin
+    g01 = smallgraph(:diamond)
+    IS_01 = IndependentSet(g01)
+    terms = ProblemReductions.energy_terms(IS_01)
+    @test length(terms) == 9
+    for cfg in [[0, 1, 1, 0], [1, 0, 0, 1]]
+        e1 = ProblemReductions.energy_eval_byid(terms, cfg .+ 1)
+        e2 = ProblemReductions.energy(IS_01, cfg)
+        @test (e1 == e2) || (e1 > 1e4 && e2 > 1e4)
+    end
 end

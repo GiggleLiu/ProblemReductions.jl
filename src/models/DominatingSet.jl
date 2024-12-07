@@ -25,17 +25,10 @@ julia> DS = DominatingSet(graph)
 DominatingSet{SimpleGraph{Int64}, Int64, UnitWeight}(SimpleGraph{Int64}(4, [[2], [1, 3], [2, 4], [3, 5], [4]]), [1, 1, 1, 1, 1])
 
 julia> variables(DS)  # degrees of freedom
-5-element Vector{Int64}:
- 1
- 2
- 3
- 4
- 5
+1:5
 
 julia> flavors(DS)  # flavors of the vertices
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(DS, [0, 1, 0, 1, 0]) # Positive sample: (size) of a dominating set
 2
@@ -60,8 +53,8 @@ end
 Base.:(==)(a::DominatingSet, b::DominatingSet) = ( a.graph == b.graph )
 
 # Variables Interface
-variables(gp::DominatingSet) = [1:nv(gp.graph)...]
-flavors(::Type{<:DominatingSet}) = [0, 1]
+num_variables(gp::DominatingSet) = nv(gp.graph)
+flavors(::Type{<:DominatingSet}) = (0, 1)
 problem_size(c::DominatingSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # Weights Interface
@@ -69,14 +62,20 @@ weights(c::DominatingSet) = c.weights
 set_weights(c::DominatingSet, weights) = DominatingSet(c.graph, weights)
 
 # Constraints Interface
-@nohard_constraints DominatingSet
-function energy_terms(c::DominatingSet)
-    # constraints on vertex and its neighbours
-    return [LocalConstraint(vcat(v, neighbors(c.graph, v)), :dominating) for v in vertices(c.graph)]
+function hard_constraints(c::DominatingSet)
+    return [HardConstraint(vcat(v, neighbors(c.graph, v)), :dominance) for v in vertices(c.graph)]
+end
+function is_satisfied(::Type{<:DominatingSet}, spec::HardConstraint, config)
+    @assert length(config) == num_variables(spec)
+    return count(isone, config) >= 1
 end
 
-function local_energy(::Type{<:DominatingSet{GT, T}}, spec::LocalConstraint, config) where {GT, T}
-    @assert length(config) == num_variables(spec)
-    nselect = count(isone, config)
-    return nselect < 1 ? energy_max(T) : T(first(config))
+function soft_constraints(c::DominatingSet)
+    # constraints on vertex and its neighbours
+    return [SoftConstraint([v], :num_vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
+end
+
+function local_energy(::Type{<:DominatingSet{GT, T}}, spec::SoftConstraint{WT}, config) where {GT, T, WT}
+    @assert length(config) == num_variables(spec) == 1
+    return WT(first(config)) * spec.weight
 end

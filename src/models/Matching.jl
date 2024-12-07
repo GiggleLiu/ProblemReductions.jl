@@ -18,8 +18,7 @@ struct Matching{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
 end
 Base.:(==)(a::Matching, b::Matching) = a.graph == b.graph && a.weights == b.weights
 
-flavors(::Type{<:Matching}) = [0, 1]
-variables(gp::Matching) = collect(1:ne(gp.graph))
+flavors(::Type{<:Matching}) = (0, 1)
 num_variables(gp::Matching) = ne(gp.graph)
 problem_size(c::Matching) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
@@ -30,22 +29,22 @@ set_weights(c::Matching, weights) = Matching(c.graph, weights)
 # constraints interface
 function hard_constraints(c::Matching)
     # edges sharing a vertex cannot be both in the matching
-    return [LocalConstraint([i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)], :noshare) for v in vertices(c.graph)]
+    return [HardConstraint([i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)], :noshare) for v in vertices(c.graph)]
 end
 
-function is_satisfied(::Type{<:Matching}, spec::LocalConstraint, config)
+function is_satisfied(::Type{<:Matching}, spec::HardConstraint, config)
     @assert length(config) == num_variables(spec)
     return count(isone, config) <= 1
 end
 
-function energy_terms(c::Matching)
+function soft_constraints(c::Matching)
     # as many edges as possible
-    return [LocalConstraint([e], :edge) for e in variables(c)]
+    return [SoftConstraint([e], :num_edges, w) for (w, e) in zip(weights(c), variables(c))]
 end
 
-function local_energy(::Type{<:Matching{T}}, spec::LocalConstraint, config) where {T}
+function local_energy(::Type{<:Matching{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec) == 1
-    return T(first(config))
+    return WT(first(config)) * spec.weight
 end
 
 """

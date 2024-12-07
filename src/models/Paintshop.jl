@@ -20,16 +20,11 @@ julia> using ProblemReductions
 julia> problem = PaintShop(["a","b","a","c","c","b"])
 PaintShop{String}(["a", "b", "a", "c", "c", "b"], Bool[1, 1, 0, 1, 0, 0])
 
-julia> variables(problem)
-3-element Vector{String}:
- "a"
- "b"
- "c"
+julia> num_variables(problem)
+3
 
 julia> flavors(problem)
-2-element Vector{Int64}:
- 0
- 1
+(0, 1)
 
 julia> energy(problem, [0, 1, 0])
 4
@@ -51,23 +46,24 @@ struct PaintShop{LT} <: ConstraintSatisfactionProblem{Int}
     end
 end
 
-variables(gp::PaintShop) = unique(gp.sequence)
-flavors(::Type{<:PaintShop}) = [0, 1]
+num_variables(gp::PaintShop) = length(gp.sequence) ÷ 2
+symbols(gp::PaintShop) = unique(gp.sequence)
+flavors(::Type{<:PaintShop}) = (0, 1)
 problem_size(c::PaintShop) = (; sequence_length=length(c.sequence))
 Base.:(==)(a::PaintShop, b::PaintShop) = a.sequence == b.sequence && a.isfirst == b.isfirst
 
 # constraints interface
-function energy_terms(c::PaintShop)
+function soft_constraints(c::PaintShop)
     # constraints on alphabets with the same color
-    vars = variables(c)
-    return [LocalConstraint([findfirst(==(c.sequence[i]), vars), findfirst(==(c.sequence[i+1]), vars)], (c.isfirst[i], c.isfirst[i+1])) for i=1:length(c.sequence)-1]
+    syms = symbols(c)
+    return [SoftConstraint([findfirst(==(c.sequence[i]), syms), findfirst(==(c.sequence[i+1]), syms)], (c.isfirst[i], c.isfirst[i+1]), 1) for i=1:length(c.sequence)-1]
 end
 
-function local_energy(::Type{<:PaintShop}, spec::LocalConstraint, config)
+function local_energy(::Type{<:PaintShop}, spec::SoftConstraint{WT}, config) where {WT}
     @assert length(config) == num_variables(spec)
     isfirst1, isfirst2 = spec.specification
     c1, c2 = config
-    return (c1 == c2) == (isfirst1 == isfirst2) ? 0 : 1
+    return (c1 == c2) == (isfirst1 == isfirst2) ? zero(WT) : spec.weight
 end
 
 @nohard_constraints PaintShop
@@ -80,7 +76,7 @@ The `config` is a sequence of 0 and 1, where 0 means painting the first appearen
 and 1 means painting the first appearence of a car in blue.
 """
 function paint_shop_coloring_from_config(p::PaintShop{LT}, config) where {LT}
-    d = Dict{LT,Bool}(zip(variables(p), config))
+    d = Dict{LT,Bool}(zip(symbols(p), config))
     return map(1:length(p.sequence)) do i
         p.isfirst[i] ? d[p.sequence[i]] : ~d[p.sequence[i]]
     end

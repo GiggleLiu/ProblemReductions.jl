@@ -11,18 +11,18 @@ export @bit_str
 export TruthTable
 export HyperGraph, UnitDiskGraph, GridGraph, PlanarGraph, SimpleGraph
 export @bv_str, StaticElementVector, StaticBitVector, statictrues, staticfalses, onehotv
-export num_variables, num_flavors, variables, flavors, weights, set_weights, is_weighted, energy, weight_type, problem_size, configuration_space_size, constraints
+export num_variables, num_flavors, variables, flavors, weights, set_weights, is_weighted, energy, weight_type, problem_size, configuration_space_size
 export UnitWeight
 
 # models
 export BooleanExpr, Circuit, Assignment, simple_form, CircuitSAT, @circuit, booleans, ¬, ∨, ∧, ⊻, is_literal, is_cnf, is_dnf
 export SpinGlass, spinglass_gadget
-export Coloring, coloring_energy, is_vertex_coloring
-export SetCovering, is_set_covering, set_covering_energy
+export Coloring, is_vertex_coloring
+export SetCovering, is_set_covering
 export BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, satisfiable, KSatisfiability
 export MaxCut
 export IndependentSet
-export VertexCovering, is_vertex_covering, vertex_covering_energy
+export VertexCovering, is_vertex_covering
 export SetPacking, is_set_packing
 export DominatingSet
 export QUBO
