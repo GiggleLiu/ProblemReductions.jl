@@ -17,7 +17,18 @@ The abstract base type of computational problems.
 abstract type AbstractProblem end
 
 abstract type EnergyMode end
+
+"""
+    SmallerSizeIsBetter <: EnergyMode
+
+The energy is defined as the negative size of the solution, which is the larger size the smaller lower nergy.
+"""
 struct LargerSizeIsBetter <: EnergyMode end
+"""
+    SmallerSizeIsBetter <: EnergyMode
+
+The energy is defined as the size of the solution, which is the smaller size the smaller energy.
+"""
 struct SmallerSizeIsBetter <: EnergyMode end
 
 """
@@ -156,6 +167,15 @@ Returns the number of flavors (domain) of a degree of freedom.
 num_flavors(::GT) where GT<:AbstractProblem = num_flavors(GT)
 num_flavors(::Type{GT}) where GT<:AbstractProblem = length(flavors(GT))
 
+"""
+$TYPEDEF
+
+The size of the problem given a configuration.
+
+### Fields
+- `size`: the size of the problem.
+- `is_valid`: whether the configuration is valid.
+"""
 struct SolutionSize{T}
     size::T
     is_valid::Bool
@@ -302,11 +322,16 @@ function is_satisfied end
 """
     energy_mode(problem::AbstractProblem) -> EnergyMode
 
-The definition of the energy function, which can be `LargerSizeIsBetter` or `SmallerSizeIsBetter`.
+The definition of the energy function, which can be [`LargerSizeIsBetter`](@ref) or [`SmallerSizeIsBetter`](@ref).
 If will be used in the energy based modeling of the target problem.
 """
 energy_mode(problem::AbstractProblem) = energy_mode(typeof(problem))
 
+"""
+    energy(problem::AbstractProblem, config) -> Number
+
+The energy of the `problem` given the configuration `config`. Please check the [`energy_mode`](@ref) for the definition of the energy function.
+"""
 function energy(problem::AbstractProblem, config)
     energy_mode(problem) == LargerSizeIsBetter() ? -solution_size(problem, config) : solution_size(problem, config)
 end

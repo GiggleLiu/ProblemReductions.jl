@@ -54,7 +54,7 @@ julia> flavors(spinglass)  # flavors of the spins
 (1, -1)
 
 julia> solution_size(spinglass, [-1, 1, 1, -1])  # size of a configuration
--2
+SolutionSize{Int64}(-2, true)
 
 julia> findbest(spinglass, BruteForce())  # solve the problem with brute force
 1-element Vector{Vector{Int64}}:

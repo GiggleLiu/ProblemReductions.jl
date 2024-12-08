@@ -33,10 +33,10 @@ julia> num_variables(VC)  # degrees of freedom
 4
 
 julia> solution_size(VC, [1, 0, 0, 1]) # Negative sample
-3
+SolutionSize{Int64}(5, false)
 
 julia> solution_size(VC, [0, 1, 1, 0]) # Positive sample
-3
+SolutionSize{Int64}(4, false)
 
 julia> findbest(VC, BruteForce())  # solve the problem with brute force
 1-element Vector{Vector{Int64}}:

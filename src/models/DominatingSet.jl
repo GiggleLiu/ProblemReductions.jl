@@ -31,10 +31,10 @@ julia> flavors(DS)  # flavors of the vertices
 (0, 1)
 
 julia> solution_size(DS, [0, 1, 0, 1, 0]) # Positive sample: (size) of a dominating set
-2
+SolutionSize{Int64}(2, true)
 
 julia> solution_size(DS, [0, 1, 1, 0, 0]) # Negative sample: number of vertices
-3
+SolutionSize{Int64}(2, false)
 
 julia> findbest(DS, BruteForce())  # solve the problem with brute force
 3-element Vector{Vector{Int64}}:

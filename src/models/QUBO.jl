@@ -37,10 +37,10 @@ julia> flavors(QUBO01)  # flavors of the vertices
 (0, 1)
 
 julia> solution_size(QUBO01, [0, 1, 0])
-1.0
+SolutionSize{Float64}(1.0, true)
 
 julia> solution_size(QUBO02, [0, 1, 0])
-1.0
+SolutionSize{Float64}(1.0, true)
 
 julia> findbest(QUBO01, BruteForce())  # solve the problem with brute force
 1-element Vector{Vector{Int64}}:

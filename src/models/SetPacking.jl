@@ -37,10 +37,10 @@ julia> flavors(SP)  # flavors of the subsets
 (0, 1)
 
 julia> solution_size(SP, [1, 0, 0, 1, 0]) # Positive sample: -(size) of a packing
--2
+SolutionSize{Int64}(2, true)
 
 julia> solution_size(SP, [1, 0, 1, 1, 0]) # Negative sample: 0
-0
+SolutionSize{Int64}(3, false)
 
 julia> findbest(SP, BruteForce())  # solve the problem with brute force
 3-element Vector{Vector{Int64}}:

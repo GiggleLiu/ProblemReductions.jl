@@ -19,7 +19,7 @@ export BooleanExpr, Circuit, Assignment, simple_form, CircuitSAT, @circuit, bool
 export SpinGlass, spinglass_gadget
 export Coloring, is_vertex_coloring
 export SetCovering, is_set_covering
-export BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, satisfiable, KSatisfiability
+export BoolVar, CNFClause, CNF, AbstractSatisfiabilityProblem, Satisfiability, is_kSAT, satisfiable, KSatisfiability
 export MaxCut
 export IndependentSet
 export VertexCovering, is_vertex_covering
@@ -32,7 +32,9 @@ export MaximalIS
 export PaintShop
 
 # rules
-export target_problem, AbstractProblem, ConstraintSatisfactionProblem, solution_size, SolutionSize, AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduce_size
+export target_problem, AbstractProblem, ConstraintSatisfactionProblem, solution_size, SolutionSize
+export energy, energy_mode, LargerSizeIsBetter, SmallerSizeIsBetter
+export AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduce_size
 export LogicGadget, truth_table
 export ReductionSATTo3SAT
 export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering, ReductionSatToColoring,

@@ -30,7 +30,7 @@ julia> flavors(problem)
 (0, 1)
 
 julia> solution_size(problem, [0, 1, 0, 0])  # unlike the independent set, this configuration is not a valid solution
-3037000499
+SolutionSize{Int64}(1, false)
 
 julia> findbest(problem, BruteForce())
 1-element Vector{Vector{Int64}}:

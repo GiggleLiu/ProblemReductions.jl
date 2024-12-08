@@ -31,10 +31,10 @@ julia> flavors(IS)  # flavors of the vertices
 (0, 1)
 
 julia> solution_size(IS, [1, 0, 0, 1]) # Positive sample: -(size) of an independent set
--2
+SolutionSize{Int64}(2, true)
 
 julia> solution_size(IS, [0, 1, 1, 0]) # Negative sample: 0
-0
+SolutionSize{Int64}(2, false)
 
 julia> findbest(IS, BruteForce())  # solve the problem with brute force
 2-element Vector{Vector{Int64}}:

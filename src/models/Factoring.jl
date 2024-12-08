@@ -24,8 +24,8 @@ julia> variables(factoring) # return the sum of factors' bit size
 julia> flavors(factoring)
 (0, 1)
 
-julia> size(factoring,[0,1,1,1]) # 01 -> 2, 11 -> 3
-0
+julia> solution_size(factoring,[0,1,1,1]) # 01 -> 2, 11 -> 3
+SolutionSize{Int64}(0, true)
 ```
 """
 struct Factoring <: AbstractProblem

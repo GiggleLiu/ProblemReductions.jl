@@ -97,6 +97,11 @@ function symbols(cnf::CNF{T}) where T
     unique([var.name for clause in cnf.clauses for var in clause.vars])
 end
 
+"""
+    AbstractSatisfiabilityProblem{S, T} <: ConstraintSatisfactionProblem{T}
+
+The abstract type for [`Satisfiability`](@ref) and [`KSatisfiability`](@ref).
+"""
 abstract type AbstractSatisfiabilityProblem{S, T} <: ConstraintSatisfactionProblem{T} end
 
 """

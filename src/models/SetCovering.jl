@@ -35,10 +35,10 @@ julia> num_variables(setcovering)  # degrees of freedom
 3
 
 julia> solution_size(setcovering, [1, 0, 1])  # size of a configuration
-4
+SolutionSize{Int64}(4, true)
 
 julia> solution_size(setcovering, [0, 1, 1])
-3
+SolutionSize{Int64}(5, false)
 
 julia> sc = set_weights(setcovering, [1, 2, 3])  # set the weights of the subsets
 SetCovering{Int64, Int64, Vector{Int64}}([1, 2, 3, 4], [[1, 2, 3], [2, 4], [1, 4]], [1, 2, 3])

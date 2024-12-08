@@ -27,7 +27,7 @@ julia> flavors(problem)
 (0, 1)
 
 julia> solution_size(problem, [0, 1, 0])
-4
+SolutionSize{Int64}(4, true)
 
 julia> findbest(problem, BruteForce())
 2-element Vector{Vector{Int64}}:
