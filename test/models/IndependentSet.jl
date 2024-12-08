@@ -63,4 +63,6 @@ end
     problem = IndependentSet(g01)
     @test energy(problem, [0, 1, 1, 0]) > 1e4
     @test energy(problem, [1, 0, 0, 1]) == -2
+    problem = IndependentSet(g01, randn(4))
+    @test energy(problem, [0, 1, 1, 0]) == Inf
 end
