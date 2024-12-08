@@ -99,15 +99,15 @@ end
 energy_mode(::Type{<:SetPacking}) = LargerSizeIsBetter()
 
 """
-    is_set_packing(sets::AbstractVector, config)
+    is_set_packing(sp::SetPacking, config)
 
-Return true if `config` (a vector of boolean numbers as the mask of sets) is a set packing of `sets`.
+Return true if `config` (a vector of boolean numbers as the mask of sets) is a set packing of `sp`.
 """
-function is_set_packing(sets::AbstractVector{ST}, config) where ST
-    d = Dict{eltype(ST), Int}()
-    for i=1:length(sets)
+function is_set_packing(sp::SetPacking, config)
+    d = Dict{eltype(sp.elements), Int}()
+    for i=1:length(sp.sets)
         if !iszero(config[i])
-            for e in sets[i]
+            for e in sp.sets[i]
                 d[e] = get(d, e, 0) + 1
             end
         end
