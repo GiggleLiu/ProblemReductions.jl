@@ -34,11 +34,11 @@ SetCovering{Int64, Int64, Vector{Int64}}([1, 2, 3, 4], [[1, 2, 3], [2, 4], [1, 4
 julia> num_variables(setcovering)  # degrees of freedom
 3
 
-julia> energy(setcovering, [1, 0, 1])  # cost of a configuration
-4
+julia> solution_size(setcovering, [1, 0, 1])  # size of a configuration
+SolutionSize{Int64}(4, true)
 
-julia> energy(setcovering, [0, 1, 1])
-3037000505
+julia> solution_size(setcovering, [0, 1, 1])
+SolutionSize{Int64}(5, false)
 
 julia> sc = set_weights(setcovering, [1, 2, 3])  # set the weights of the subsets
 SetCovering{Int64, Int64, Vector{Int64}}([1, 2, 3, 4], [[1, 2, 3], [2, 4], [1, 4]], [1, 2, 3])
@@ -78,13 +78,20 @@ function is_satisfied(::Type{<:SetCovering{T}}, spec::HardConstraint, config) wh
     return count(isone, config) > 0
 end
 
-function soft_constraints(c::SetCovering)
-    return [SoftConstraint([i], :set, w) for (i, w) in zip(variables(c), weights(c))]
+function local_solution_spec(c::SetCovering)
+    return [LocalSolutionSpec([i], :set, w) for (i, w) in zip(variables(c), weights(c))]
 end
-function local_energy(::Type{<:SetCovering{ET, T}}, spec::SoftConstraint{WT}, config) where {ET, T, WT}
+
+"""
+    solution_size(::Type{<:SetCovering}, spec::LocalSolutionSpec, config)
+
+For [`SetCovering`](@ref), the solution size of a configuration is the total weight of the sets that are selected.
+"""
+function solution_size(::Type{<:SetCovering{ET, T}}, spec::LocalSolutionSpec{WT}, config) where {ET, T, WT}
     @assert length(config) == num_variables(spec)
     return WT(first(config)) * spec.weight
 end
+energy_mode(::Type{<:SetCovering}) = SmallerSizeIsBetter()
 
 """
     is_set_covering(c::SetCovering, config)

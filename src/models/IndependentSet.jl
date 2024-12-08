@@ -30,11 +30,11 @@ julia> num_variables(IS)  # degrees of freedom
 julia> flavors(IS)  # flavors of the vertices
 (0, 1)
 
-julia> energy(IS, [1, 0, 0, 1]) # Positive sample: -(size) of an independent set
--2
+julia> solution_size(IS, [1, 0, 0, 1]) # Positive sample: -(size) of an independent set
+SolutionSize{Int64}(2, true)
 
-julia> energy(IS, [0, 1, 1, 0]) # Negative sample: 0
-3037000498
+julia> solution_size(IS, [0, 1, 1, 0]) # Negative sample: 0
+SolutionSize{Int64}(2, false)
 
 julia> findbest(IS, BruteForce())  # solve the problem with brute force
 2-element Vector{Vector{Int64}}:
@@ -69,11 +69,24 @@ function is_satisfied(::Type{<:IndependentSet}, spec::HardConstraint, config)
     return count(!iszero, config) <= 1
 end
 
-function soft_constraints(c::IndependentSet)
-    return [SoftConstraint([i], :num_vertex, w) for (w, i) in zip(weights(c), 1:nv(c.graph))]
+function local_solution_spec(c::IndependentSet)
+    return [LocalSolutionSpec([i], :num_vertex, w) for (w, i) in zip(weights(c), 1:nv(c.graph))]
 end
 
-function local_energy(::Type{<:IndependentSet{GT, T}}, spec::SoftConstraint{WT}, config) where {GT, T, WT}
+"""
+    solution_size(::Type{<:IndependentSet{GT, T}}, spec::LocalSolutionSpec{WT}, config) where {GT, T, WT}
+
+For [`IndependentSet`](@ref), the solution size of a configuration is the weight of vertices in the independent set.
+"""
+function solution_size(::Type{<:IndependentSet{GT, T}}, spec::LocalSolutionSpec{WT}, config) where {GT, T, WT}
     @assert length(config) == num_variables(spec) == 1
-    return WT(-first(config)) * spec.weight
+    return WT(first(config)) * spec.weight
 end
+energy_mode(::Type{<:IndependentSet}) = LargerSizeIsBetter()
+
+"""
+    is_independent_set(g::SimpleGraph, config)
+
+Return true if `config` (a vector of boolean numbers as the mask of vertices) is an independent set of graph `g`.
+"""
+is_independent_set(g::AbstractGraph, config) = !any(e->count(x->isone(config[x]), _vec(e)) > 1, edges(g))

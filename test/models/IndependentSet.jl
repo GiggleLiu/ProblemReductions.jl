@@ -7,6 +7,9 @@ using Test, ProblemReductions, Graphs
     add_edge!(g01, 1, 3)
     add_edge!(g01, 3, 4)
     add_edge!(g01, 2, 3)
+    @test is_independent_set(g01, [0, 0, 0, 0])
+    @test is_independent_set(g01, [1, 0, 0, 1])
+    @test !is_independent_set(g01, [1, 1, 0, 0])
 
     g02 = SimpleGraph(4)
     add_edge!(g02, 1, 3) 
@@ -30,12 +33,12 @@ using Test, ProblemReductions, Graphs
     @test num_variables(IS_01) == 4
     @test flavors(IndependentSet) == (0, 1)
 
-    # energy
+    # solution_size
     # Positive examples
-    @test energy(IS_01, [1, 0, 0, 1]) == -2
-    @test energy(IS_01, [0, 1, 0, 1]) == -2
+    @test solution_size(IS_01, [1, 0, 0, 1]) == SolutionSize(2, true)
+    @test solution_size(IS_01, [0, 1, 0, 1]) == SolutionSize(2, true)
     # a Negative example
-    @test energy(IS_01, [0, 1, 1, 0]) > 1000
+    @test !solution_size(IS_01, [0, 1, 1, 0]).is_valid
 
     # test findbest function
     @test findbest(IS_01, BruteForce()) == [[1, 0, 0, 1], [0, 1, 0, 1]] # "1" is superior to "0"
@@ -43,14 +46,14 @@ using Test, ProblemReductions, Graphs
     @test configuration_space_size(IS_01) ≈ 4
 end
 
-@testset "energyterms" begin
+@testset "size terms" begin
     g01 = smallgraph(:diamond)
     IS_01 = IndependentSet(g01)
-    terms = ProblemReductions.energy_terms(IS_01)
+    terms = ProblemReductions.size_terms(IS_01)
     @test length(terms) == 9
     for cfg in [[0, 1, 1, 0], [1, 0, 0, 1]]
-        e1 = ProblemReductions.energy_eval_byid(terms, cfg .+ 1)
-        e2 = ProblemReductions.energy(IS_01, cfg)
+        e1 = ProblemReductions.size_eval_byid(terms, cfg .+ 1)
+        e2 = ProblemReductions.solution_size(IS_01, cfg)
         @test (e1 == e2) || (e1 > 1e4 && e2 > 1e4)
     end
 end

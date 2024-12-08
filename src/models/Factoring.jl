@@ -24,8 +24,8 @@ julia> variables(factoring) # return the sum of factors' bit size
 julia> flavors(factoring)
 (0, 1)
 
-julia> energy(factoring,[0,1,1,1]) # 01 -> 2, 11 -> 3
-0
+julia> solution_size(factoring,[0,1,1,1]) # 01 -> 2, 11 -> 3
+SolutionSize{Int64}(0, true)
 ```
 """
 struct Factoring <: AbstractProblem
@@ -40,13 +40,14 @@ flavors(::Type{Factoring}) = (0, 1)
 problem_size(f::Factoring) = (; num_bits_first=f.m, num_bits_second=f.n)
 
 # utilities
-function energy_eval_byid_multiple(f::Factoring, config_ids)
+function solution_size_byid(f::Factoring, config_ids)
     @assert all(id->length(id) == num_variables(f), config_ids)
     return Iterators.map(config_ids) do id
         input1 = BitStr(id[1:f.m] .- 1).buf
         input2 = BitStr(id[f.m+1:f.m+f.n] .- 1).buf
-        return (input1 * input2 == f.input ? 0 : 1)
+        return (input1 * input2 == f.input ? SolutionSize(0, true) : SolutionSize(0, false))
     end
 end
+energy_mode(::Type{<:Factoring}) = SmallerSizeIsBetter()
 
 pack_bits(bits) = sum(i->isone(bits[i]) ? 2^(i-1) : 0, 1:length(bits))

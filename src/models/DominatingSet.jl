@@ -30,11 +30,11 @@ julia> variables(DS)  # degrees of freedom
 julia> flavors(DS)  # flavors of the vertices
 (0, 1)
 
-julia> energy(DS, [0, 1, 0, 1, 0]) # Positive sample: (size) of a dominating set
-2
+julia> solution_size(DS, [0, 1, 0, 1, 0]) # Positive sample: (size) of a dominating set
+SolutionSize{Int64}(2, true)
 
-julia> energy(DS, [0, 1, 1, 0, 0]) # Negative sample: number of vertices
-3037000502
+julia> solution_size(DS, [0, 1, 1, 0, 0]) # Negative sample: number of vertices
+SolutionSize{Int64}(2, false)
 
 julia> findbest(DS, BruteForce())  # solve the problem with brute force
 3-element Vector{Vector{Int64}}:
@@ -70,12 +70,25 @@ function is_satisfied(::Type{<:DominatingSet}, spec::HardConstraint, config)
     return count(isone, config) >= 1
 end
 
-function soft_constraints(c::DominatingSet)
+function local_solution_spec(c::DominatingSet)
     # constraints on vertex and its neighbours
-    return [SoftConstraint([v], :num_vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
+    return [LocalSolutionSpec([v], :num_vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 
-function local_energy(::Type{<:DominatingSet{GT, T}}, spec::SoftConstraint{WT}, config) where {GT, T, WT}
+"""
+    solution_size(::Type{<:DominatingSet{GT, T}}, spec::LocalSolutionSpec{WT}, config) where {GT, T, WT}
+
+For [`DominatingSet`](@ref), the solution size of a configuration is the number of vertices in the dominating set.
+"""
+function solution_size(::Type{<:DominatingSet{GT, T}}, spec::LocalSolutionSpec{WT}, config) where {GT, T, WT}
     @assert length(config) == num_variables(spec) == 1
     return WT(first(config)) * spec.weight
 end
+energy_mode(::Type{<:DominatingSet}) = SmallerSizeIsBetter()
+
+"""
+    is_dominating_set(g::SimpleGraph, config)
+
+Return true if `config` (a vector of boolean numbers as the mask of vertices) is a dominating set of graph `g`.
+"""
+is_dominating_set(g::SimpleGraph, config) = all(w->config[w] == 1 || any(v->!iszero(config[v]), neighbors(g, w)), Graphs.vertices(g))

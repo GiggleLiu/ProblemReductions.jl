@@ -18,9 +18,9 @@ using ProblemReductions, Test, Graphs
     @test flavors(q01) == (0, 1)
     @test num_flavors(q01) == 2
 
-    # energy
-    @test energy(q01, [0, 0, 0]) == 0
-    @test energy(q01, [1, 1, 0]) == 2
+    # solution_size
+    @test solution_size(q01, [0, 0, 0]) == SolutionSize(0, true)
+    @test solution_size(q01, [1, 1, 0]) == SolutionSize(2, true)
     @test findbest(q01, BruteForce()) == [[0, 0, 0]]
 
     # the OR gadget

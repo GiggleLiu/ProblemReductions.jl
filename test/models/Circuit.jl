@@ -61,11 +61,15 @@ end
     @test sat.symbols[[1, 2, 3, 5, 7]] == [:c, :x, :y, :z, :d]
     @test variables(sat) == collect(1:7)
     @test num_variables(sat) == 7
-    @test energy(sat, [true, false, false, true, false, true, false]) == 2
+    solution = solution_size(sat, [true, false, false, true, false, true, false])
+    @test solution.size == 2
+    @test solution.is_valid
                        # c    x      y      ¬z     z    c ∧ ¬z   d
     # c = x ∧ y - 1
     # m1 = ¬z - 0
     # m2 = c ∧ m1 - 0
     # d = x ∨ m2 - 1
-    @test energy(sat, [false, false, false, true, false, false, false]) == 0
+    solution = solution_size(sat, [false, false, false, true, false, false, false])
+    @test solution.is_valid
+    @test solution.size == 0
 end

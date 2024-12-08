@@ -53,8 +53,8 @@ julia> num_variables(spinglass)  # degrees of freedom
 julia> flavors(spinglass)  # flavors of the spins
 (1, -1)
 
-julia> energy(spinglass, [-1, 1, 1, -1])  # energy of a configuration
--2
+julia> solution_size(spinglass, [-1, 1, 1, -1])  # size of a configuration
+SolutionSize{Int64}(-2, true)
 
 julia> findbest(spinglass, BruteForce())  # solve the problem with brute force
 1-element Vector{Vector{Int64}}:
@@ -88,12 +88,18 @@ weights(gp::SpinGlass) = vcat(gp.J, gp.h)
 set_weights(c::SpinGlass, weights) = SpinGlass(c.graph, weights[1:ne(c.graph)], weights[ne(c.graph)+1:end])
 
 # constraints interface
-function soft_constraints(sg::SpinGlass)
-    return vcat([SoftConstraint(_vec(e), :edge, w) for (w, e) in zip(sg.J, edges(sg.graph))], [SoftConstraint([v], :vertex, w) for (w, v) in zip(sg.h, vertices(sg.graph))])
+function local_solution_spec(sg::SpinGlass)
+    return vcat([LocalSolutionSpec(_vec(e), :edge, w) for (w, e) in zip(sg.J, edges(sg.graph))], [LocalSolutionSpec([v], :vertex, w) for (w, v) in zip(sg.h, vertices(sg.graph))])
 end
 @nohard_constraints SpinGlass
 
-function local_energy(::Type{<:SpinGlass}, spec::SoftConstraint{WT}, config) where {WT}
+"""
+    solution_size(::Type{<:SpinGlass}, spec::LocalSolutionSpec{WT}, config) where {WT}
+
+The solution size of a [`SpinGlass`](@ref) model is the energy of a configuration.
+"""
+function solution_size(::Type{<:SpinGlass}, spec::LocalSolutionSpec{WT}, config) where {WT}
     @assert length(config) == num_variables(spec)
     return WT(spec.specification == :edge ? prod(config) : first(config)) * spec.weight
 end
+energy_mode(::Type{<:SpinGlass}) = SmallerSizeIsBetter()

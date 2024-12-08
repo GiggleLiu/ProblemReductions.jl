@@ -84,7 +84,7 @@ Base.:(⊻)(x::StaticElementVector{N,S,C}, y::StaticElementVector{N,S,C}) where 
 
 """
     onehotv(::Type{<:StaticElementVector}, i, v)
-    onehotv(::Type{<:StaticBitVector, i)
+    onehotv(::Type{<:StaticBitVector}, i)
 
 Returns a static element vector, with the value at location `i` being `v` (1 if not specified).
 """
@@ -193,4 +193,8 @@ function parse_vector(nflavor::Int, str::String)
         end
     end
     return StaticElementVector(nflavor, val)
+end
+
+function hamming_distance(x::StaticBitVector, y::StaticBitVector)
+    return sum(count_ones.(x.data .⊻ y.data))
 end

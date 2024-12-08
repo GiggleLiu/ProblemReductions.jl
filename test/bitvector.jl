@@ -25,5 +25,6 @@ using ProblemReductions: statictrues, staticfalses, StaticBitVector, onehotv
     @test [xl...] == bl
 
     @test bv"110_111" == StaticBitVector([1,1,0,1,1,1])
+    @test ProblemReductions.hamming_distance(bv"110_111", bv"100_111") == 1
 end
 

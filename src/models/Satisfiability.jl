@@ -97,6 +97,11 @@ function symbols(cnf::CNF{T}) where T
     unique([var.name for clause in cnf.clauses for var in clause.vars])
 end
 
+"""
+    AbstractSatisfiabilityProblem{S, T} <: ConstraintSatisfactionProblem{T}
+
+The abstract type for [`Satisfiability`](@ref) and [`KSatisfiability`](@ref).
+"""
 abstract type AbstractSatisfiabilityProblem{S, T} <: ConstraintSatisfactionProblem{T} end
 
 """
@@ -198,19 +203,26 @@ weights(c::KSatisfiability) = c.weights
 set_weights(c::KSatisfiability{K}, weights::AbstractVector{WT}) where {K, WT} = KSatisfiability{K}(c.symbols, c.cnf, weights, c.allow_less)
 
 # constraints interface
-function soft_constraints(c::AbstractSatisfiabilityProblem)
+function local_solution_spec(c::AbstractSatisfiabilityProblem)
     vars = symbols(c)
     return map(zip(clauses(c), weights(c))) do (cl, w)
         idx = [findfirst(==(v), vars) for v in symbols(cl)]
-        SoftConstraint(idx, vars[idx] => cl, w)
+        LocalSolutionSpec(idx, vars[idx] => cl, w)
     end
 end
-function local_energy(::Type{<:AbstractSatisfiabilityProblem{S, T}}, spec::SoftConstraint{WT}, config) where {S, T, WT}
+
+"""
+    solution_size(::Type{<:AbstractSatisfiabilityProblem}, spec::LocalSolutionSpec, config)
+
+For [`AbstractSatisfiabilityProblem`](@ref), the solution size of a configuration is the number of violated clauses.
+"""
+function solution_size(::Type{<:AbstractSatisfiabilityProblem{S, T}}, spec::LocalSolutionSpec{WT}, config) where {S, T, WT}
     @assert length(config) == num_variables(spec)
     vars, expr = spec.specification
     assignment = Dict(zip(vars, config))
     return !satisfiable(expr, assignment) ? spec.weight : zero(WT)
 end
+energy_mode(::Type{<:AbstractSatisfiabilityProblem}) = SmallerSizeIsBetter()
 
 @nohard_constraints AbstractSatisfiabilityProblem
 

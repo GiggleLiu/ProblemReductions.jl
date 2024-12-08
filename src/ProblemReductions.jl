@@ -11,7 +11,7 @@ export @bit_str
 export TruthTable
 export HyperGraph, UnitDiskGraph, GridGraph, PlanarGraph, SimpleGraph
 export @bv_str, StaticElementVector, StaticBitVector, statictrues, staticfalses, onehotv
-export num_variables, num_flavors, variables, flavors, weights, set_weights, is_weighted, energy, weight_type, problem_size, configuration_space_size
+export num_variables, num_flavors, variables, flavors, weights, set_weights, is_weighted, size, weight_type, problem_size, configuration_space_size
 export UnitWeight
 
 # models
@@ -19,12 +19,12 @@ export BooleanExpr, Circuit, Assignment, simple_form, CircuitSAT, @circuit, bool
 export SpinGlass, spinglass_gadget
 export Coloring, is_vertex_coloring
 export SetCovering, is_set_covering
-export BoolVar, CNFClause, CNF, Satisfiability, is_kSAT, satisfiable, KSatisfiability
+export BoolVar, CNFClause, CNF, AbstractSatisfiabilityProblem, Satisfiability, is_kSAT, satisfiable, KSatisfiability
 export MaxCut
-export IndependentSet
+export IndependentSet, is_independent_set
 export VertexCovering, is_vertex_covering
 export SetPacking, is_set_packing
-export DominatingSet
+export DominatingSet, is_dominating_set
 export QUBO
 export Factoring
 export Matching, is_matching
@@ -32,7 +32,9 @@ export MaximalIS
 export PaintShop
 
 # rules
-export target_problem, AbstractProblem, ConstraintSatisfactionProblem, AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduce_size
+export target_problem, AbstractProblem, ConstraintSatisfactionProblem, solution_size, SolutionSize
+export energy, energy_mode, LargerSizeIsBetter, SmallerSizeIsBetter
+export AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduce_size
 export LogicGadget, truth_table
 export ReductionSATTo3SAT
 export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering, ReductionSatToColoring,

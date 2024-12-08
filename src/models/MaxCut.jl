@@ -30,8 +30,8 @@ julia> num_variables(maxcut) # return the number of vertices
 julia> flavors(maxcut) # return the flavors of the vertices
 (0, 1)
 
-julia> energy(maxcut, [0,1,0]) # return the energy of the configuration
--4
+julia> solution_size(maxcut, [0,1,0]) # return the size of the configuration
+SolutionSize{Int64}(4, true)
 
 julia> findbest(maxcut, BruteForce()) # find the best configuration
 2-element Vector{Vector{Int64}}:
@@ -59,20 +59,36 @@ weights(c::MaxCut) = c.weights
 set_weights(c::MaxCut, weights) = MaxCut(c.graph, weights)
 
 # constraints interface
-function soft_constraints(c::MaxCut)
-    return [SoftConstraint(_vec(e), :cut, w) for (w, e) in zip(weights(c), edges(c.graph))]
+function local_solution_spec(c::MaxCut)
+    return [LocalSolutionSpec(_vec(e), :cut, w) for (w, e) in zip(weights(c), edges(c.graph))]
 end
-function local_energy(::Type{<:MaxCut{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
+
+""" 
+    solution_size(::Type{<:MaxCut{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
+
+For [`MaxCut`](@ref), the solution size of a configuration is the number of violated cut constraints.
+"""
+function solution_size(::Type{<:MaxCut{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
     a, b = config
-    return (a != b) ? -spec.weight : zero(WT)
+    return (a != b) ? spec.weight : zero(WT)
 end
+energy_mode(::Type{<:MaxCut}) = LargerSizeIsBetter()
+
 @nohard_constraints MaxCut
 
-function cut_size(terms, config; weights=UnitWeight(length(terms)))
-    size = zero(promote_type(eltype(weights)))
-    for (i,j) in zip(terms, weights)
-        size += (config[i[1]] != config[i[2]]) * j  # terms are the edges,and terms[1],terms[2] are the two vertices of the edge.
+"""
+    cut_size(g::AbstractGraph, config; weights=UnitWeight(ne(g)))
+
+Return the size of the cut of the graph `g` with configuration `config`.
+The configuration is a vector of boolean numbers as the group indices of vertices.
+Edges between vertices in different groups are counted as a cut.
+"""
+cut_size(g::AbstractGraph, config; weights=UnitWeight(ne(g))) = cut_size([(e.src, e.dst) for e in edges(g)], config; weights=weights)
+function cut_size(iterator, config; weights=UnitWeight(length(iterator)))
+    size = zero(eltype(weights))
+    for (i,j) in zip(iterator, weights)
+        size += (config[i[1]] != config[i[2]]) * j  # iterator are the edges,and iterator[1],iterator[2] are the two vertices of the edge.
     end
     return size
 end
