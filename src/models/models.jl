@@ -336,10 +336,6 @@ function energy(problem::AbstractProblem, config)
     energy_mode(problem) == LargerSizeIsBetter() ? -solution_size(problem, config) : solution_size(problem, config)
 end
 
-# the maximum size for the local size function, this is used to avoid overflow of integer size
-size_max(::Type{T}) where T = typemax(T)
-size_max(::Type{T}) where T<:Integer = round(T, sqrt(typemax(T)))
-
 include("SpinGlass.jl")
 include("Circuit.jl")
 include("Coloring.jl")
