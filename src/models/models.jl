@@ -19,15 +19,16 @@ abstract type AbstractProblem end
 abstract type EnergyMode end
 
 """
-    SmallerSizeIsBetter <: EnergyMode
+    LargerSizeIsBetter <: EnergyMode
 
-The energy is defined as the negative size of the solution, which is the larger size the smaller lower nergy.
+The energy is defined as the negative size of the solution, which is the larger size the lower energy.
 """
 struct LargerSizeIsBetter <: EnergyMode end
+
 """
     SmallerSizeIsBetter <: EnergyMode
 
-The energy is defined as the size of the solution, which is the smaller size the smaller energy.
+The energy is defined as the size of the solution, which is the smaller size the lower energy.
 """
 struct SmallerSizeIsBetter <: EnergyMode end
 
