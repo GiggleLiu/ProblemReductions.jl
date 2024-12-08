@@ -31,7 +31,7 @@ julia> flavors(maxcut) # return the flavors of the vertices
 (0, 1)
 
 julia> solution_size(maxcut, [0,1,0]) # return the size of the configuration
--4
+SolutionSize{Int64}(4, true)
 
 julia> findbest(maxcut, BruteForce()) # find the best configuration
 2-element Vector{Vector{Int64}}:

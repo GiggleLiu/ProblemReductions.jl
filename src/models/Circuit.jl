@@ -233,7 +233,7 @@ julia> flavors(sat)
 (0, 1)
 
 julia> solution_size(sat, [true, false, true, true, false, false, true])
-3
+SolutionSize{Int64}(3, true)
 
 julia> findbest(sat, BruteForce())
 8-element Vector{Vector{Int64}}:
