@@ -77,6 +77,13 @@ energy_mode(::Type{<:MaxCut}) = LargerSizeIsBetter()
 
 @nohard_constraints MaxCut
 
+"""
+    cut_size(g::AbstractGraph, config; weights=UnitWeight(ne(g)))
+
+Return the size of the cut of the graph `g` with configuration `config`.
+The configuration is a vector of boolean numbers as the group indices of vertices.
+Edges between vertices in different groups are counted as a cut.
+"""
 cut_size(g::AbstractGraph, config; weights=UnitWeight(ne(g))) = cut_size([(e.src, e.dst) for e in edges(g)], config; weights=weights)
 function cut_size(iterator, config; weights=UnitWeight(length(iterator)))
     size = zero(eltype(weights))
