@@ -36,10 +36,10 @@ julia> num_variables(SP)  # degrees of freedom
 julia> flavors(SP)  # flavors of the subsets
 (0, 1)
 
-julia> get_size(SP, [1, 0, 0, 1, 0]) # Positive sample: -(size) of a packing
+julia> solution_size(SP, [1, 0, 0, 1, 0]) # Positive sample: -(size) of a packing
 -2
 
-julia> get_size(SP, [1, 0, 1, 1, 0]) # Negative sample: 0
+julia> solution_size(SP, [1, 0, 1, 1, 0]) # Negative sample: 0
 0
 
 julia> findbest(SP, BruteForce())  # solve the problem with brute force
@@ -83,14 +83,20 @@ function is_satisfied(::Type{<:SetPacking}, spec::HardConstraint, config)
     return count(isone, config) <= 1
 end
 
-function soft_constraints(c::SetPacking)  # sets sharing the same element
-    return [SoftConstraint([s], :set, w) for (w, s) in zip(weights(c), 1:length(c.sets))]
+function local_solution_spec(c::SetPacking)  # sets sharing the same element
+    return [LocalSolutionSpec([s], :set, w) for (w, s) in zip(weights(c), 1:length(c.sets))]
 end
 
-function local_size(::Type{<:SetPacking}, spec::SoftConstraint{WT}, config) where {WT}
+"""
+    solution_size(::Type{<:SetPacking}, spec::LocalSolutionSpec, config)
+
+For [`SetPacking`](@ref), the solution size of a configuration is the total weight of the sets that are selected.
+"""
+function solution_size(::Type{<:SetPacking}, spec::LocalSolutionSpec{WT}, config) where {WT}
     @assert length(config) == num_variables(spec) == 1
-    return WT(-first(config)) * spec.weight
+    return WT(first(config)) * spec.weight
 end
+energy_mode(::Type{<:SetPacking}) = LargerSizeIsBetter()
 
 """
     is_set_packing(sets::AbstractVector, config)

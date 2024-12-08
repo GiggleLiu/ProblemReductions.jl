@@ -30,12 +30,12 @@ using Test, ProblemReductions, Graphs
     @test num_variables(IS_01) == 4
     @test flavors(IndependentSet) == (0, 1)
 
-    # get_size
+    # solution_size
     # Positive examples
-    @test get_size(IS_01, [1, 0, 0, 1]) == -2
-    @test get_size(IS_01, [0, 1, 0, 1]) == -2
+    @test solution_size(IS_01, [1, 0, 0, 1]) == SolutionSize(2, true)
+    @test solution_size(IS_01, [0, 1, 0, 1]) == SolutionSize(2, true)
     # a Negative example
-    @test get_size(IS_01, [0, 1, 1, 0]) > 1000
+    @test !solution_size(IS_01, [0, 1, 1, 0]).is_valid
 
     # test findbest function
     @test findbest(IS_01, BruteForce()) == [[1, 0, 0, 1], [0, 1, 0, 1]] # "1" is superior to "0"
@@ -50,7 +50,7 @@ end
     @test length(terms) == 9
     for cfg in [[0, 1, 1, 0], [1, 0, 0, 1]]
         e1 = ProblemReductions.size_eval_byid(terms, cfg .+ 1)
-        e2 = ProblemReductions.get_size(IS_01, cfg)
+        e2 = ProblemReductions.solution_size(IS_01, cfg)
         @test (e1 == e2) || (e1 > 1e4 && e2 > 1e4)
     end
 end

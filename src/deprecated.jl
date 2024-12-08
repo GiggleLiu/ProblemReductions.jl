@@ -1,1 +1,0 @@
-@deprecate energy(problem, config) -get_size(problem, config)

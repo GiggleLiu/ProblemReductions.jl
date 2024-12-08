@@ -25,12 +25,12 @@ using ProblemReductions: KSatisfiability,clauses
     cfg = [1, 1, 1, 1]
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(sat_test.cnf, assignment) == true
-    @test get_size(sat_test, cfg) == 0
+    @test solution_size(sat_test, cfg) == SolutionSize(0, true)
 
     cfg = [0, 0, 1, 0]
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(sat_test.cnf, assignment) == false
-    @test get_size(sat_test, cfg) == 1
+    @test solution_size(sat_test, cfg) == SolutionSize(1, true)
 
     res = findbest(sat_test, BruteForce())
     @test length(res) == 14
@@ -51,5 +51,5 @@ using ProblemReductions: KSatisfiability,clauses
     cfg = [0, 1, 0, 1]
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(ksat_test.cnf, assignment) == true
-    @test get_size(ksat_test, cfg) == 0
+    @test solution_size(ksat_test, cfg) == SolutionSize(0, true)
 end

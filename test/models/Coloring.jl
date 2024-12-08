@@ -24,8 +24,10 @@ using Test, ProblemReductions, Graphs
     @test ProblemReductions.weights(c) == UnitWeight(nv(g))
     @test ProblemReductions.set_weights(c, [1, 2, 2, 1]) == Coloring{3}(g, [1, 2, 2, 1])
 
-    # get_size
-    @test get_size(c,[0, 1, 2, 0]) == 1
+    # solution_size
+    solution = solution_size(c,[0, 1, 2, 0])
+    @test solution.size == 1
+    @test solution.is_valid
     @test is_vertex_coloring(g, [0, 1, 2, 0]) == false
 end
 

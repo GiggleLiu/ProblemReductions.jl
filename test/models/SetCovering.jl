@@ -13,9 +13,9 @@ using Test, ProblemReductions, Graphs
     @test ProblemReductions.weights(c) == [1, 1, 2]
     @test set_weights(c, [1, 2, 3]) == SetCovering([[1, 2], [2, 3], [2, 3, 4]], [1, 2, 3])
     
-    # get_size
-    @test get_size(c, [0, 1, 1]) > 1000
-    @test get_size(c, [1, 0, 1]) == 3
+    # solution_size
+    @test !solution_size(c, [0, 1, 1]).is_valid
+    @test solution_size(c, [1, 0, 1]) == SolutionSize(3, true)
     @test is_set_covering(c,[1,0,1]) == true
     @test is_set_covering(c,[0,0,1]) == false
     

@@ -45,8 +45,9 @@ function size_eval_byid_multiple(f::Factoring, config_ids)
     return Iterators.map(config_ids) do id
         input1 = BitStr(id[1:f.m] .- 1).buf
         input2 = BitStr(id[f.m+1:f.m+f.n] .- 1).buf
-        return (input1 * input2 == f.input ? 0 : 1)
+        return (input1 * input2 == f.input ? SolutionSize(0, true) : SolutionSize(0, false))
     end
 end
+energy_mode(::Type{<:Factoring}) = SmallerSizeIsBetter()
 
 pack_bits(bits) = sum(i->isone(bits[i]) ? 2^(i-1) : 0, 1:length(bits))

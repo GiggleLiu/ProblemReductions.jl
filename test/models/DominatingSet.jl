@@ -1,4 +1,5 @@
 using Test, ProblemReductions, Graphs
+using ProblemReductions: SolutionSize
 
 @testset "dominatingset" begin
     # construct two equivalent graphs
@@ -26,14 +27,14 @@ using Test, ProblemReductions, Graphs
     @test flavors(DominatingSet) == (0, 1)
     @test problem_size(DS_01) == (; num_vertices = 5, num_edges = 4)
 
-    # get_size
+    # solution_size
     # Positive examples
-    @test get_size(DS_01, [1, 0, 1, 0, 1]) == 3
-    @test get_size(DS_01, [0, 1, 0, 1, 0]) == 2
-    @test get_size(DS_01, [1, 1, 1, 1, 0]) == 4
+    @test solution_size(DS_01, [1, 0, 1, 0, 1]) == SolutionSize(3, true)
+    @test solution_size(DS_01, [0, 1, 0, 1, 0]) == SolutionSize(2, true)
+    @test solution_size(DS_01, [1, 1, 1, 1, 0]) == SolutionSize(4, true)
     # Negative examples
-    @test get_size(DS_01, [0, 1, 1, 0, 0]) > 1000
-    @test get_size(DS_01, [1, 0, 0, 0, 1]) > 1000
+    @test !solution_size(DS_01, [0, 1, 1, 0, 0]).is_valid
+    @test !solution_size(DS_01, [1, 0, 0, 0, 1]).is_valid
     # findbest function
     @test findbest(DS_01, BruteForce()) == [[1, 0, 0, 1, 0], [0, 1, 0, 1, 0], [0, 1, 0, 0, 1]]
     @test is_dominating_set(g01, [1, 0, 0, 1, 0])

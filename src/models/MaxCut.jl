@@ -30,7 +30,7 @@ julia> num_variables(maxcut) # return the number of vertices
 julia> flavors(maxcut) # return the flavors of the vertices
 (0, 1)
 
-julia> get_size(maxcut, [0,1,0]) # return the size of the configuration
+julia> solution_size(maxcut, [0,1,0]) # return the size of the configuration
 -4
 
 julia> findbest(maxcut, BruteForce()) # find the best configuration
@@ -59,14 +59,22 @@ weights(c::MaxCut) = c.weights
 set_weights(c::MaxCut, weights) = MaxCut(c.graph, weights)
 
 # constraints interface
-function soft_constraints(c::MaxCut)
-    return [SoftConstraint(_vec(e), :cut, w) for (w, e) in zip(weights(c), edges(c.graph))]
+function local_solution_spec(c::MaxCut)
+    return [LocalSolutionSpec(_vec(e), :cut, w) for (w, e) in zip(weights(c), edges(c.graph))]
 end
-function local_size(::Type{<:MaxCut{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
+
+""" 
+    solution_size(::Type{<:MaxCut{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
+
+For [`MaxCut`](@ref), the solution size of a configuration is the number of violated cut constraints.
+"""
+function solution_size(::Type{<:MaxCut{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
     a, b = config
-    return (a != b) ? -spec.weight : zero(WT)
+    return (a != b) ? spec.weight : zero(WT)
 end
+energy_mode(::Type{<:MaxCut}) = LargerSizeIsBetter()
+
 @nohard_constraints MaxCut
 
 function cut_size(terms, config; weights=UnitWeight(length(terms)))

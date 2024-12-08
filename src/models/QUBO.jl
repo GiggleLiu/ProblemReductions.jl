@@ -36,10 +36,10 @@ julia> num_variables(QUBO01)  # degrees of freedom
 julia> flavors(QUBO01)  # flavors of the vertices
 (0, 1)
 
-julia> get_size(QUBO01, [0, 1, 0])
+julia> solution_size(QUBO01, [0, 1, 0])
 1.0
 
-julia> get_size(QUBO02, [0, 1, 0])
+julia> solution_size(QUBO02, [0, 1, 0])
 1.0
 
 julia> findbest(QUBO01, BruteForce())  # solve the problem with brute force
@@ -84,14 +84,20 @@ function weights(c::QUBO)
 end
 
 # constraints interface
-function soft_constraints(c::QUBO)
+function local_solution_spec(c::QUBO)
     vcat(
-        [SoftConstraint([i, j], :offdiagonal, c.matrix[i, j] + c.matrix[j, i]) for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
-        [SoftConstraint([i], :diagonal, c.matrix[i, i]) for i in variables(c) if c.matrix[i, i] != 0]
+        [LocalSolutionSpec([i, j], :offdiagonal, c.matrix[i, j] + c.matrix[j, i]) for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
+        [LocalSolutionSpec([i], :diagonal, c.matrix[i, i]) for i in variables(c) if c.matrix[i, i] != 0]
     )
 end
 @nohard_constraints QUBO
-function local_size(::Type{<:QUBO}, spec::SoftConstraint, config)
+
+"""
+    solution_size(::Type{<:QUBO}, spec::LocalSolutionSpec, config)
+
+For [`QUBO`](@ref), the solution size of a configuration is the energy of the QUBO problem.
+"""
+function solution_size(::Type{<:QUBO}, spec::LocalSolutionSpec, config)
     @assert length(config) == num_variables(spec)
     if spec.specification == :offdiagonal
         a, b = config
@@ -100,3 +106,4 @@ function local_size(::Type{<:QUBO}, spec::SoftConstraint, config)
         return first(config) * spec.weight
     end
 end
+energy_mode(::Type{<:QUBO}) = SmallerSizeIsBetter()

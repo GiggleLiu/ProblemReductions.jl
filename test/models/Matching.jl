@@ -26,7 +26,7 @@ using ProblemReductions: is_matching
     @test ProblemReductions.set_weights(m2, [1, 1, 0, 0]) == Matching(g2, [1, 1, 0, 0])
     @test is_matching(m2.graph, [1, 0, 0, 1]) == true
     @test is_matching(m2.graph, [1, 1, 0, 0]) == false
-    @test get_size(m2, [1, 0, 0, 1]) == 2
-    @test get_size(m2, [1, 1, 0, 0]) > 1000
+    @test solution_size(m2, [1, 0, 0, 1]) == SolutionSize(2, true)
+    @test !solution_size(m2, [1, 1, 0, 0]).is_valid
     @test sort(findbest(m2, BruteForce()))== sort([[0,0,0,0],[0,0,1,0],[0,1,0,0],[0,1,1,0]])
 end

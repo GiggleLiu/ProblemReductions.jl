@@ -37,15 +37,21 @@ function is_satisfied(::Type{<:Matching}, spec::HardConstraint, config)
     return count(isone, config) <= 1
 end
 
-function soft_constraints(c::Matching)
+function local_solution_spec(c::Matching)
     # as many edges as possible
-    return [SoftConstraint([e], :num_edges, w) for (w, e) in zip(weights(c), variables(c))]
+    return [LocalSolutionSpec([e], :num_edges, w) for (w, e) in zip(weights(c), variables(c))]
 end
 
-function local_size(::Type{<:Matching{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
+"""
+    solution_size(::Type{<:Matching{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
+
+For [`Matching`](@ref), the solution size of a configuration is the number of edges in the matching.
+"""
+function solution_size(::Type{<:Matching{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec) == 1
     return WT(first(config)) * spec.weight
 end
+energy_mode(::Type{<:Matching}) = SmallerSizeIsBetter()
 
 """
     is_matching(graph::SimpleGraph, config)

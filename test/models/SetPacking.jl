@@ -19,15 +19,15 @@ using Test, ProblemReductions
     @test num_variables(SP_01) == 5
     @test flavors(SetPacking) == (0, 1)
 
-    # get_size
+    # solution_size
     # a Positive examples
     cfg01 = [1, 0, 0, 1, 0]
-    @test get_size(SP_01, cfg01) == -2
+    @test solution_size(SP_01, cfg01) == SolutionSize(2, true)
     is_set_packing(SP_01.sets, cfg01) == true
 
     # a Negative example
     cfg02 = [1, 0, 1, 1, 0]
-    @test get_size(SP_01, cfg02) > 1000
+    @test !solution_size(SP_01, cfg02).is_valid
     is_set_packing(SP_01.sets, cfg02) == false
 
     # test findbest function

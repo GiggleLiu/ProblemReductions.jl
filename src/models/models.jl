@@ -6,7 +6,7 @@ The abstract base type of computational problems.
 ### Required interfaces
 - [`variables`](@ref), the degrees of freedoms in the computational problem.
 - [`flavors`](@ref), the flavors (domain) of a degree of freedom.
-- [`get_size`](@ref), the size (the lower the better) of the input configuration.
+- [`solution_size`](@ref), the size (the lower the better) of the input configuration.
 - [`problem_size`](@ref), the size of the computational problem. e.g. for a graph, it could be `(n_vertices=?, n_edges=?)`.
 
 ### Optional interfaces
@@ -15,6 +15,10 @@ The abstract base type of computational problems.
 - [`findbest`](@ref), find the best configurations of the input problem.
 """
 abstract type AbstractProblem end
+
+abstract type EnergyMode end
+struct LargerSizeIsBetter <: EnergyMode end
+struct SmallerSizeIsBetter <: EnergyMode end
 
 """
     ConstraintSatisfactionProblem{T} <: AbstractProblem
@@ -25,10 +29,11 @@ The abstract base type of constraint satisfaction problems. `T` is the type of t
 - [`hard_constraints`](@ref), the specification of the hard constraints. Once the hard constraints are violated, the size goes to infinity.
 - [`is_satisfied`](@ref), check if the hard constraints are satisfied.
 
-- [`soft_constraints`](@ref), the specification of the size terms as soft constraints, which is associated with weights.
-- [`local_size`](@ref), the local size for the soft constraints.
+- [`local_solution_spec`](@ref), the specification of the size terms as soft constraints, which is associated with weights.
 - [`weights`](@ref): The weights of the soft constraints.
 - [`set_weights`](@ref): Change the weights for the `problem` and return a new problem instance.
+- [`solution_size`](@ref), the size of the problem given a configuration.
+- [`energy_mode`](@ref), the definition of the energy function, which can be `LargerSizeIsBetter` or `SmallerSizeIsBetter`.
 """
 abstract type ConstraintSatisfactionProblem{T} <: AbstractProblem end
 
@@ -57,12 +62,12 @@ A soft constraint on a [`ConstraintSatisfactionProblem`](@ref).
 - `specification`: the specification of the constraint.
 - `weight`:  the weight of the constraint.
 """
-struct SoftConstraint{WT, ST}
+struct LocalSolutionSpec{WT, ST}
     variables::Vector{Int}
     specification::ST
     weight::WT
 end
-num_variables(spec::SoftConstraint) = length(spec.variables)
+num_variables(spec::LocalSolutionSpec) = length(spec.variables)
 
 ######## Interfaces for computational problems ##########
 """
@@ -151,15 +156,25 @@ Returns the number of flavors (domain) of a degree of freedom.
 num_flavors(::GT) where GT<:AbstractProblem = num_flavors(GT)
 num_flavors(::Type{GT}) where GT<:AbstractProblem = length(flavors(GT))
 
+struct SolutionSize{T}
+    size::T
+    is_valid::Bool
+end
+function Base.:(+)(s1::SolutionSize, s2::SolutionSize)
+    return SolutionSize(s1.size + s2.size, s1.is_valid && s2.is_valid)
+end
+Base.:(==)(s1::SolutionSize, s2::SolutionSize) = s1.size == s2.size && s1.is_valid == s2.is_valid
+Base.isapprox(s1::SolutionSize, s2::SolutionSize; kwargs...) = isapprox(s1.size, s2.size; kwargs...) && s1.is_valid == s2.is_valid
+
 """
-    get_size(problem::AbstractProblem, config) -> Real
+    solution_size(problem::AbstractProblem, config) -> SolutionSize
 
 Size of the `problem` given the configuration `config`.
 """
-function get_size end
+function solution_size end
 
 # size interface
-get_size(problem::AbstractProblem, config) = first(size_eval_byid_multiple(problem, (config_to_id(problem, config),)))
+solution_size(problem::AbstractProblem, config) = first(size_eval_byid_multiple(problem, (config_to_id(problem, config),)))
 function size_eval_byid_multiple(problem::ConstraintSatisfactionProblem{T}, ids) where T
     terms = size_terms(problem)
     return Iterators.map(ids) do id
@@ -179,16 +194,16 @@ struct LocalSize{LT, N, F, T}
     variables::Vector{LT}
     flavors::NTuple{N, F}
     strides::Vector{Int}
-    energies::Vector{T}
+    solution_sizes::Vector{SolutionSize{T}}
 end
 function Base.show(io::IO, term::LocalSize)
     println(io, """LocalSize""")
     entries = []
     sizes = repeat([length(term.flavors)], length(term.variables))
-    for (idx, size) in zip(CartesianIndices(Tuple(sizes)), term.sizes)
-        push!(entries, [getindex.(Ref(term.flavors), idx.I)..., size])
+    for (idx, size) in zip(CartesianIndices(Tuple(sizes)), term.solution_sizes)
+        push!(entries, [getindex.(Ref(term.flavors), idx.I)..., size.is_valid ? "$(size.size)" : "-"])
     end
-	pretty_table(io, transpose(hcat(entries...)); header=[string.(term.variables)..., "size"])
+	pretty_table(io, vcat([reshape(row, 1, :) for row in entries]...); header=[string.(term.variables)..., "solution size"])
 	return nothing
 end
 Base.show(io::IO, ::MIME"text/plain", term::LocalSize) = show(io, term)
@@ -201,30 +216,30 @@ function size_terms(::Type{T}, problem::ConstraintSatisfactionProblem) where T
     terms = LocalSize{eltype(vars), length(flvs), eltype(flvs), T}[]
     for constraint in hard_constraints(problem)
         sizes = [nflv for _ in constraint.variables]
-        energies = map(CartesianIndices(Tuple(sizes))) do idx
-            is_satisfied(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)) ? zero(T) : size_max(T)
+        solution_sizes = map(CartesianIndices(Tuple(sizes))) do idx
+            SolutionSize(zero(T), is_satisfied(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)))
         end
         strides = [nflv^i for i in 0:length(constraint.variables)-1]
-        push!(terms, LocalSize(constraint.variables, flvs, strides, vec(energies)))
+        push!(terms, LocalSize(constraint.variables, flvs, strides, vec(solution_sizes)))
     end
-    for (i, constraint) in enumerate(soft_constraints(problem))
+    for (i, constraint) in enumerate(local_solution_spec(problem))
         sizes = [nflv for _ in constraint.variables]
-        energies = map(CartesianIndices(Tuple(sizes))) do idx
-            T(local_size(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)))
+        solution_sizes = map(CartesianIndices(Tuple(sizes))) do idx
+            SolutionSize(T(solution_size(typeof(problem), constraint, getindex.(Ref(flvs), idx.I))), true)
         end
         strides = [nflv^i for i in 0:length(constraint.variables)-1]
-        push!(terms, LocalSize(constraint.variables, flvs, strides, vec(energies)))
+        push!(terms, LocalSize(constraint.variables, flvs, strides, vec(solution_sizes)))
     end
     return terms
 end
 
-Base.@propagate_inbounds function size_eval_byid(terms::AbstractVector{LocalSize{LT, N, F, T}}, config_id) where {LT, N, F, T}
+Base.@propagate_inbounds function size_eval_byid(terms::AbstractVector{<:LocalSize}, config_id)
     sum(terms) do term
         k = 1
         for (stride, var) in zip(term.strides, term.variables)
             k += stride * (config_id[var]-1)
         end
-        term.energies[k]
+        term.solution_sizes[k]
     end
 end
 
@@ -256,11 +271,11 @@ Base.getindex(::UnitWeight, i) = 1
 Base.size(w::UnitWeight) = (w.n,)
 
 """
-    soft_constraints(problem::AbstractProblem) -> Vector{SoftConstraint}
+    local_solution_spec(problem::AbstractProblem) -> Vector{LocalSolutionSpec}
 
 The constraints related to the size of the problem. Each term is associated with weights.
 """
-function soft_constraints end
+function local_solution_spec end
 
 """
     hard_constraints(problem::AbstractProblem) -> Vector{HardConstraint}
@@ -285,11 +300,16 @@ Check if the `constraint` is satisfied by the configuration `config`.
 function is_satisfied end
 
 """
-    local_size(::Type{<:ConstraintSatisfactionProblem{T}}, constraint::SoftConstraint, config) -> T
+    energy_mode(problem::AbstractProblem) -> EnergyMode
 
-The local size of the `constraint` given the configuration `config`.
+The definition of the energy function, which can be `LargerSizeIsBetter` or `SmallerSizeIsBetter`.
+If will be used in the energy based modeling of the target problem.
 """
-function local_size end
+energy_mode(problem::AbstractProblem) = energy_mode(typeof(problem))
+
+function energy(problem::AbstractProblem, config)
+    energy_mode(problem) == LargerSizeIsBetter() ? -solution_size(problem, config) : solution_size(problem, config)
+end
 
 # the maximum size for the local size function, this is used to avoid overflow of integer size
 size_max(::Type{T}) where T = typemax(T)

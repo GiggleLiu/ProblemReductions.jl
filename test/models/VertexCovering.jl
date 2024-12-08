@@ -16,9 +16,9 @@ using Test, ProblemReductions, Graphs
     @test ProblemReductions.weights(vc) == [1, 3, 1, 4]
     @test set_weights(vc, [1, 3, 4, 4]) == VertexCovering(g, [1, 3, 4, 4])
 
-    # get_size
-    @test get_size(vc, [1, 0, 0, 1]) > 1000
-    @test get_size(set_weights(vc,[1,2,4,1]), [0, 1, 1, 0]) == 6
+    # solution_size
+    @test !solution_size(vc, [1, 0, 0, 1]).is_valid
+    @test solution_size(set_weights(vc,[1,2,4,1]), [0, 1, 1, 0]) == SolutionSize(6, true)
     @test is_vertex_covering(vc.graph, [1, 0, 0, 1]) == false
     
     #findbest

@@ -232,7 +232,7 @@ julia> sat.symbols
 julia> flavors(sat)
 (0, 1)
 
-julia> get_size(sat, [true, false, true, true, false, false, true])
+julia> solution_size(sat, [true, false, true, true, false, false, true])
 3
 
 julia> findbest(sat, BruteForce())
@@ -280,21 +280,27 @@ set_weights(c::CircuitSAT, weights) = CircuitSAT(c.circuit, weights, c.symbols)
 
 # constraints interface
 @nohard_constraints CircuitSAT
-function soft_constraints(c::CircuitSAT)
+function local_solution_spec(c::CircuitSAT)
     syms = symbols(c.circuit)
-    return [SoftConstraint([findfirst(==(s), c.symbols) for s in syms], syms=>expr, w) for (w, expr) in zip(c.weights, c.circuit.exprs)]
+    return [LocalSolutionSpec([findfirst(==(s), c.symbols) for s in syms], syms=>expr, w) for (w, expr) in zip(c.weights, c.circuit.exprs)]
 end
 
-function local_size(::Type{<:CircuitSAT{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
+"""
+    solution_size(::Type{<:CircuitSAT{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
+
+For [`CircuitSAT`](@ref), the solution size of a configuration is the number of violated constraints.
+"""
+function solution_size(::Type{<:CircuitSAT{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
     syms, ex = spec.specification
     dict = Dict(syms[i]=>Bool(c) for (i, c) in enumerate(config))
     for o in ex.outputs
         @assert haskey(dict, o) "The output variable `$o` is not in the configuration"
-        dict[o] != evaluate_expr(ex.expr, dict) && return spec.weight  # this is the loss!
+        dict[o] != evaluate_expr(ex.expr, dict) && return spec.weight  # not satisfied!
     end
     return zero(WT)
 end
+energy_mode(::Type{<:CircuitSAT}) = SmallerSizeIsBetter()
 
 function symbols(expr::Union{Assignment, BooleanExpr, Circuit})
     vars = Symbol[]

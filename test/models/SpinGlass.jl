@@ -19,7 +19,7 @@ using ProblemReductions, Test, Graphs
     @test ProblemReductions.weights(sg) == [1, -2, -2, 1, 1, -2]
     @test set_weights(sg, [1, 2, 2, -1, -1, -2]) == SpinGlass(g, [1, 2, 2], [-1, -1, -2])
 
-    @test get_size(sg, [1, 1, 1]) == -3
+    @test solution_size(sg, [1, 1, 1]) == SolutionSize(-3, true)
     configs = findbest(sg, BruteForce())
     for cfg in configs
         @test cfg[3] == cfg[1] & cfg[2]
@@ -32,6 +32,6 @@ end
     sg = SpinGlass(g01, [1, -2, -2, 1, 2], [1, 1, -2, -2])
     terms = ProblemReductions.size_terms(sg)
     for cfg in [[-1, 1, 1, -1], [1, -1, -1, 1]]
-        @test ProblemReductions.size_eval_byid(terms, (1 .- cfg) .÷ 2 .+ 1) == ProblemReductions.get_size(sg, cfg)
+        @test ProblemReductions.size_eval_byid(terms, (1 .- cfg) .÷ 2 .+ 1) == ProblemReductions.solution_size(sg, cfg)
     end
 end

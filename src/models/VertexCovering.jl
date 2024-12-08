@@ -32,10 +32,10 @@ VertexCovering{Int64, Vector{Int64}}(SimpleGraph{Int64}(5, [[2, 3, 4], [1, 3], [
 julia> num_variables(VC)  # degrees of freedom
 4
 
-julia> get_size(VC, [1, 0, 0, 1]) # Negative sample
+julia> solution_size(VC, [1, 0, 0, 1]) # Negative sample
 3
 
-julia> get_size(VC, [0, 1, 1, 0]) # Positive sample
+julia> solution_size(VC, [0, 1, 1, 0]) # Positive sample
 3
 
 julia> findbest(VC, BruteForce())  # solve the problem with brute force
@@ -73,13 +73,20 @@ function is_satisfied(::Type{<:VertexCovering}, spec::HardConstraint, config)
     @assert length(config) == num_variables(spec)
     return any(!iszero, config)
 end
-function soft_constraints(c::VertexCovering)
-    return [SoftConstraint([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
+function local_solution_spec(c::VertexCovering)
+    return [LocalSolutionSpec([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
-function local_size(::Type{<:VertexCovering{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
+
+"""
+    solution_size(::Type{<:VertexCovering{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
+
+The solution size of a [`VertexCovering`](@ref) model is the sum of the weights of the selected vertices.
+"""
+function solution_size(::Type{<:VertexCovering{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
     @assert length(config) == num_variables(spec)
     return WT(first(config)) * spec.weight
 end
+energy_mode(::Type{<:VertexCovering}) = SmallerSizeIsBetter()
 
 """
     is_vertex_covering(graph::SimpleGraph, config)

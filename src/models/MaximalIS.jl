@@ -29,7 +29,7 @@ julia> num_variables(problem)  # degrees of freedom
 julia> flavors(problem)
 (0, 1)
 
-julia> get_size(problem, [0, 1, 0, 0])  # unlike the independent set, this configuration is not a valid solution
+julia> solution_size(problem, [0, 1, 0, 0])  # unlike the independent set, this configuration is not a valid solution
 3037000499
 
 julia> findbest(problem, BruteForce())
@@ -65,13 +65,20 @@ function is_satisfied(::Type{<:MaximalIS}, spec::HardConstraint, config)
     return !(nselect == 0 || (nselect > 1 && !iszero(first(config))))
 end
 # constraints interface
-function soft_constraints(c::MaximalIS)
-    return [SoftConstraint([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
+function local_solution_spec(c::MaximalIS)
+    return [LocalSolutionSpec([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
-function local_size(::Type{<:MaximalIS{T}}, spec::SoftConstraint{WT}, config) where {T, WT}
-    @assert length(config) == num_variables(spec)
-    return WT(-first(config)) * spec.weight
+
+"""
+    solution_size(::Type{<:MaximalIS{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
+
+For [`MaximalIS`](@ref), the solution size of a configuration is the number of vertices in the maximal independent set.
+"""
+function solution_size(::Type{<:MaximalIS{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
+    @assert length(config) == num_variables(spec) == 1
+    return WT(first(config)) * spec.weight
 end
+energy_mode(::Type{<:MaximalIS}) = LargerSizeIsBetter()
 
 """
     is_maximal_independent_set(g::SimpleGraph, config)
