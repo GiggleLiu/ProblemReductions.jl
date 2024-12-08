@@ -334,8 +334,12 @@ energy_mode(problem::AbstractProblem) = energy_mode(typeof(problem))
 The energy of the `problem` given the configuration `config`. Please check the [`energy_mode`](@ref) for the definition of the energy function.
 """
 function energy(problem::AbstractProblem, config)
-    energy_mode(problem) == LargerSizeIsBetter() ? -solution_size(problem, config).size : solution_size(problem, config).size
+    s = solution_size(problem, config)
+    return s.is_valid ? (energy_mode(problem) == LargerSizeIsBetter() ? -s.size : s.size) : energy_max(typeof(s.size))
 end
+# the maximum energy for the local energy function, this is used to avoid overflow of integer energy
+energy_max(::Type{T}) where T = typemax(T)
+energy_max(::Type{T}) where T<:Integer = round(T, sqrt(typemax(T)))
 
 include("SpinGlass.jl")
 include("Circuit.jl")

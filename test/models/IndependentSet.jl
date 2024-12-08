@@ -57,3 +57,10 @@ end
         @test (e1 == e2) || (e1 > 1e4 && e2 > 1e4)
     end
 end
+
+@testset "energy based modeling" begin
+    g01 = smallgraph(:diamond)
+    problem = IndependentSet(g01)
+    @test energy(problem, [0, 1, 1, 0]) > 1e4
+    @test energy(problem, [1, 0, 0, 1]) == -2
+end
