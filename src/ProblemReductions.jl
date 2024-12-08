@@ -21,7 +21,7 @@ export Coloring, is_vertex_coloring
 export SetCovering, is_set_covering
 export BoolVar, CNFClause, CNF, AbstractSatisfiabilityProblem, Satisfiability, is_kSAT, satisfiable, KSatisfiability
 export MaxCut
-export IndependentSet
+export IndependentSet, is_independent_set
 export VertexCovering, is_vertex_covering
 export SetPacking, is_set_packing
 export DominatingSet, is_dominating_set

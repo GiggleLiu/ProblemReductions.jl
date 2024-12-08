@@ -194,8 +194,8 @@ Size of the `problem` given the configuration `config`.
 function solution_size end
 
 # size interface
-solution_size(problem::AbstractProblem, config) = first(size_eval_byid_multiple(problem, (config_to_id(problem, config),)))
-function size_eval_byid_multiple(problem::ConstraintSatisfactionProblem{T}, ids) where T
+solution_size(problem::AbstractProblem, config) = first(solution_size_byid(problem, (config_to_id(problem, config),)))
+function solution_size_byid(problem::ConstraintSatisfactionProblem{T}, ids) where T
     terms = size_terms(problem)
     return Iterators.map(ids) do id
         size_eval_byid(terms, id)
@@ -333,7 +333,7 @@ energy_mode(problem::AbstractProblem) = energy_mode(typeof(problem))
 The energy of the `problem` given the configuration `config`. Please check the [`energy_mode`](@ref) for the definition of the energy function.
 """
 function energy(problem::AbstractProblem, config)
-    energy_mode(problem) == LargerSizeIsBetter() ? -solution_size(problem, config) : solution_size(problem, config)
+    energy_mode(problem) == LargerSizeIsBetter() ? -solution_size(problem, config).size : solution_size(problem, config).size
 end
 
 include("SpinGlass.jl")

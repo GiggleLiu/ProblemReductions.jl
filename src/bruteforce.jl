@@ -18,7 +18,7 @@ function Base.findall(problem::AbstractProblem, ::BruteForce; atol=eps(Float64),
     flvs = flavors(problem)
     best_ids = NTuple{num_variables(problem), Int}[]
     configs = Iterators.product([1:length(flvs) for i in 1:num_variables(problem)]...)
-    sizes = size_eval_byid_multiple(problem, configs)
+    sizes = solution_size_byid(problem, configs)
     _find!(by, best_ids, configs, sizes, initial, atol, rtol)
     return [collect(id_to_config(problem, id)) for id in best_ids]
 end

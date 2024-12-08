@@ -34,4 +34,5 @@ end
     for cfg in [[-1, 1, 1, -1], [1, -1, -1, 1]]
         @test ProblemReductions.size_eval_byid(terms, (1 .- cfg) .÷ 2 .+ 1) == ProblemReductions.solution_size(sg, cfg)
     end
+    @test energy(sg, [-1, 1, 1, -1]) == -4
 end

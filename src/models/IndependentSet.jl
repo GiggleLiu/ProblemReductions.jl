@@ -83,3 +83,10 @@ function solution_size(::Type{<:IndependentSet{GT, T}}, spec::LocalSolutionSpec{
     return WT(first(config)) * spec.weight
 end
 energy_mode(::Type{<:IndependentSet}) = LargerSizeIsBetter()
+
+"""
+    is_independent_set(g::SimpleGraph, config)
+
+Return true if `config` (a vector of boolean numbers as the mask of vertices) is an independent set of graph `g`.
+"""
+is_independent_set(g::AbstractGraph, config) = !any(e->count(x->isone(config[x]), _vec(e)) > 1, edges(g))

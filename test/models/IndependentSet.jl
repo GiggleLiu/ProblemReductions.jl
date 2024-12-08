@@ -7,6 +7,9 @@ using Test, ProblemReductions, Graphs
     add_edge!(g01, 1, 3)
     add_edge!(g01, 3, 4)
     add_edge!(g01, 2, 3)
+    @test is_independent_set(g01, [0, 0, 0, 0])
+    @test is_independent_set(g01, [1, 0, 0, 1])
+    @test !is_independent_set(g01, [1, 1, 0, 0])
 
     g02 = SimpleGraph(4)
     add_edge!(g02, 1, 3) 

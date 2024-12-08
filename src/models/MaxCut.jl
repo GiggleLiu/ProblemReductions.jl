@@ -77,10 +77,11 @@ energy_mode(::Type{<:MaxCut}) = LargerSizeIsBetter()
 
 @nohard_constraints MaxCut
 
-function cut_size(terms, config; weights=UnitWeight(length(terms)))
-    size = zero(promote_type(eltype(weights)))
-    for (i,j) in zip(terms, weights)
-        size += (config[i[1]] != config[i[2]]) * j  # terms are the edges,and terms[1],terms[2] are the two vertices of the edge.
+cut_size(g::AbstractGraph, config; weights=UnitWeight(ne(g))) = cut_size([(e.src, e.dst) for e in edges(g)], config; weights=weights)
+function cut_size(iterator, config; weights=UnitWeight(length(iterator)))
+    size = zero(eltype(weights))
+    for (i,j) in zip(iterator, weights)
+        size += (config[i[1]] != config[i[2]]) * j  # iterator are the edges,and iterator[1],iterator[2] are the two vertices of the edge.
     end
     return size
 end
