@@ -12,7 +12,7 @@ This package is supported by the open source promotion plan (OSPP) 2024: [A Juli
 ## Installation
 
 <p>
-GenericTensorNetworks is a &nbsp;
+ProblemReductions is a &nbsp;
     <a href="https://julialang.org">
         <img src="https://raw.githubusercontent.com/JuliaLang/julia-logo-graphics/master/images/julia.ico" width="16em">
         Julia Language
