@@ -35,20 +35,12 @@ target = target_problem(reduction_result)
 # Note that the output of `implement_reduction_path` is a [`AbstractReductionResult`](@ref), which contains the target problem and reduction information. So we 
 # need to extract the target problem by [`target_problem`](@ref) function.
 
-import GenericTensorNetworks, Graphs # import Ising machine solver
-gtn_problem = GenericTensorNetworks.SpinGlass(
-                  ProblemReductions.nv(target.graph),
-                  vcat(ProblemReductions._vec.(Graphs.edges(target.graph)), [[i] for i=1:Graphs.nv(target.graph)]),
-                  ProblemReductions.weights(target)
-                )
-result = GenericTensorNetworks.solve(
-                    GenericTensorNetworks.GenericTensorNetwork(gtn_problem),
-                    GenericTensorNetworks.SingleConfigMin()
-                  )[] 
+import GenericTensorNetworks   # import Generic Tensor Network Solver
+result = findbest(target, GenericTensorNetworks.GTNSolver())
 
 # Here we use `GenericTensorNetworks.jl` to solve the SpinGlass problem and obtain the `result`, we need to extract the solution for source problem from the result.
 
-extract_solution(reduction_result, 1 .- 2 .* Int.(GenericTensorNetworks.read_config(result)))
+extract_solution.(Ref(reduction_result), result)
 
 # The result is `01` and `11`, decimally 2 and 3, which yields the correct factors of 6.
 
