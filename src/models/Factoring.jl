@@ -51,3 +51,9 @@ end
 energy_mode(::Type{<:Factoring}) = SmallerSizeIsBetter()
 
 pack_bits(bits) = sum(i->isone(bits[i]) ? 2^(i-1) : 0, 1:length(bits))
+
+function read_solution(factoring::Factoring,solution::AbstractVector) #return a tuple of 2 numbers result
+    num_m = pack_bits(solution[1:factoring.m])
+    num_n = pack_bits(solution[factoring.m+1:end])
+    return (num_m, num_n)
+end
