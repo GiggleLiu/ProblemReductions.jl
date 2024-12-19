@@ -4,6 +4,11 @@ using Test, ProblemReductions, Graphs
     @test ProblemReductions.pack_bits([0, 1, 1]) == 6
 end
 
+@testset "read_solution" begin
+    f = Factoring(3, 2, 8)
+    @test ProblemReductions.read_solution(f, [0, 0, 1, 0, 1]) == (4, 2)
+end
+
 @testset "factoring" begin
     # construct a factoring problem
     m = 2
