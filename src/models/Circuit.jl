@@ -282,7 +282,7 @@ set_weights(c::CircuitSAT, weights) = CircuitSAT(c.circuit, weights, c.symbols)
 @nohard_constraints CircuitSAT
 function local_solution_spec(c::CircuitSAT)
     syms = symbols(c.circuit)
-    return [LocalSolutionSpec([findfirst(==(s), c.symbols) for s in syms], syms=>expr, w) for (w, expr) in zip(c.weights, c.circuit.exprs)]
+    return [LocalSolutionSpec([findfirst(==(s), syms) for s in symbols(expr)], symbols(expr)=>expr, w) for (w, expr) in zip(c.weights, c.circuit.exprs)]
 end
 
 """

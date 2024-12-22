@@ -73,3 +73,14 @@ end
     @test solution.is_valid
     @test solution.size == 0
 end
+
+@testset "local_solution_spec" begin
+    circuit = @circuit begin
+        c = x ∧ y
+    end
+    push!(circuit.exprs, Assignment([:c],BooleanExpr(true)))
+    sat = CircuitSAT(circuit)
+    ans = ProblemReductions.local_solution_spec(sat)
+    @test ans[1].variables == [1,2,3]
+    @test ans[2].variables == [1]
+end
