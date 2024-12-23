@@ -47,7 +47,7 @@ Base.eltype(::Type{<:StaticElementVector}) = UInt64
     @inbounds if ii1 == ii2
         (x.data[ii1+1] >> (i1-ii1*64-1)) & (1<<S - 1)
     else  # cross two integers
-        (x.data[ii1+1] >> (i1-ii*64-S+1)) | (x.data[ii2+1] & (1<<(i2-ii1*64) - 1))
+        (x.data[ii1+1] >> (i1-ii1*64-S+1)) | (x.data[ii2+1] & (1<<(i2-ii2*64) - 1))
     end
 end
 function StaticElementVector(nflavor::Int, x::AbstractVector)
