@@ -28,3 +28,9 @@ using ProblemReductions: statictrues, staticfalses, StaticBitVector, onehotv
     @test ProblemReductions.hamming_distance(bv"110_111", bv"100_111") == 1
 end
 
+@testset "getindex StaticElementVector" begin
+    sev = StaticElementVector(20, collect(0:19))
+    @test sev[1] == 0
+    @test sev[10] == 9
+    @test sev[20] == 19
+end
