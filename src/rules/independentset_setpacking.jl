@@ -30,3 +30,35 @@ end
 function extract_solution(::ReductionIndependentSetToSetPacking, sol)
     return sol
 end
+
+"""
+$TYPEDEF
+
+The reduction result of a Set Packing problem to an Independent Set problem.
+
+### Fields
+$TYPEDFIELDS
+"""
+struct ReductionSetPackingToIndependentSet{GT, ET} <: AbstractReductionResult
+    target::IndependentSet{GT}  # the target problem
+    subset_list::Vector{Vector{ET}} # The subset collection of the Set Packing problem
+end
+target_problem(res::ReductionSetPackingToIndependentSet) = res.target
+
+function reduceto(::Type{<:IndependentSet{<:SimpleGraph}}, s::SetPacking)
+    g = SimpleGraph(length(s.sets))
+    for set_i=1:length(s.sets)
+        for set_j=set_i+1:length(s.sets)
+            for each_vertex_j in s.sets[set_j]
+                if each_vertex_j in s.sets[set_i]
+                    add_edge!(g, set_i, set_j) && break
+                end
+            end
+        end
+    end
+    return ReductionSetPackingToIndependentSet(IndependentSet(g), s.sets)
+end
+
+function extract_solution(::ReductionSetPackingToIndependentSet, sol)
+    return sol
+end

@@ -38,3 +38,24 @@ using Test, ProblemReductions, Graphs
     @test verify(IS_udg)
     @test verify(IS_gg)
 end
+
+@testset "setpacking_independentset" begin
+    function verify(SP)
+        reduction_results = reduceto(IndependentSet{<:SimpleGraph}, SP)
+        IS = reduction_results |> target_problem
+        sol_IS = findbest(IS, BruteForce())
+        s1 = Set(findbest(SP, BruteForce()))
+        s2 = Set( unique( extract_solution.(Ref(reduction_results), sol_IS) ) )
+        return s2 == s1
+    end
+
+    sets01 = [[1, 2, 5], [1, 3], [2, 4], [3, 6], [2, 3, 6]]
+    sets02 = [[1, 3], [1, 2, 5], [2, 4], [3, 6], [2, 3, 6]]
+
+    SP_01 = SetPacking(sets01)
+    SP_02 = SetPacking(sets02)
+
+
+    @test verify(SP_01)
+    @test verify(SP_02)
+end

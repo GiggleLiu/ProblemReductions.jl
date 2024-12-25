@@ -76,6 +76,7 @@ end
             sat => DominatingSet{<:SimpleGraph},
             is => SetPacking,
             is2 => SetPacking,
+            SetPacking => IndependentSet{<:SimpleGraph}
         ]
         @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve
