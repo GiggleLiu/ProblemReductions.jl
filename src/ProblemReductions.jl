@@ -44,6 +44,7 @@ export CNF
 export ReductionSATToIndependentSet, ReductionSATToDominatingSet
 export ReductionIndependentSetToSetPacking, ReductionSetPackingToIndependentSet
 export ReductionSATToCircuit
+export ReductionIndependentSetToVertexCovering
 
 # reduction path
 export ReductionGraph, reduction_graph, reduction_paths, ConcatenatedReduction

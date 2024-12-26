@@ -44,6 +44,10 @@ end
     include("circuit_sat.jl")
 end
 
+@testset  "independentset_vertexcovering" begin
+    include("vertexcovering_independentset.jl")
+end
+
 @testset "rules" begin
     circuit = CircuitSAT(@circuit begin
         x = a ∨ ¬b
@@ -77,7 +81,8 @@ end
             sat => DominatingSet{<:SimpleGraph},
             is => SetPacking,
             is2 => SetPacking,
-            setpacking => IndependentSet{<:SimpleGraph}
+            setpacking => IndependentSet{<:SimpleGraph},
+            is => VertexCovering,
         ]
         @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve
