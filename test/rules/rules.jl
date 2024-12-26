@@ -60,6 +60,7 @@ end
     qubo = QUBO([0 1 -2; 1 0 -2; -2 -2 6])
     is = IndependentSet(graph)
     is2 = IndependentSet(graph2)
+    setpacking = SetPacking([[1, 2, 5], [1, 3], [2, 4], [3, 6], [2, 3, 6]])
     for (source, target_type) in [
             # please add more tests here
             circuit => SpinGlass{<:SimpleGraph},
@@ -76,6 +77,7 @@ end
             sat => DominatingSet{<:SimpleGraph},
             is => SetPacking,
             is2 => SetPacking,
+            setpacking => IndependentSet{<:SimpleGraph}
         ]
         @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve
