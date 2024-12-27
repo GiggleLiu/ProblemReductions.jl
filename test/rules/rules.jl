@@ -48,6 +48,10 @@ end
     include("vertexcovering_independentset.jl")
 end
 
+@testset "matching_setpacking" begin
+    include("matching_setpacking.jl")
+end
+
 @testset "rules" begin
     circuit = CircuitSAT(@circuit begin
         x = a ∨ ¬b
@@ -65,6 +69,7 @@ end
     is = IndependentSet(graph)
     is2 = IndependentSet(graph2)
     setpacking = SetPacking([[1, 2, 5], [1, 3], [2, 4], [3, 6], [2, 3, 6]])
+    matching = Matching(graph)
     for (source, target_type) in [
             # please add more tests here
             circuit => SpinGlass{<:SimpleGraph},
@@ -83,6 +88,7 @@ end
             is2 => SetPacking,
             setpacking => IndependentSet{<:SimpleGraph},
             is => VertexCovering,
+            matching => SetPacking
         ]
         @info "Testing reduction from $(typeof(source)) to $(target_type)"
         # directly solve
