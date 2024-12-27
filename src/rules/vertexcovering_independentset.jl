@@ -21,9 +21,3 @@ end
 # choose the complementary set of the solution
 extract_solution(::ReductionIndependentSetToVertexCovering, sol) = map(x -> 1 .- x, sol)
 
-
-
-
-
-
-
