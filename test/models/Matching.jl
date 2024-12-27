@@ -28,5 +28,14 @@ using ProblemReductions: is_matching
     @test is_matching(m2.graph, [1, 1, 0, 0]) == false
     @test solution_size(m2, [1, 0, 0, 1]) == SolutionSize(2, true)
     @test !solution_size(m2, [1, 1, 0, 0]).is_valid
-    @test sort(findbest(m2, BruteForce()))== sort([[0,0,0,0],[0,0,1,0],[0,1,0,0],[0,1,1,0]])
+    @test sort(findbest(m2, BruteForce()))== [[1,0,0,1]]
+end
+
+@testset "issue 127" begin
+    g1 = SimpleGraph(4)
+    for (i, j) in [(1, 2), (1, 3), (3, 4), (2, 3)]
+        add_edge!(g1, i, j)
+    end
+    m1 = Matching(g1)
+    @test findbest(m1, BruteForce()) == [[1, 0, 0, 1]]
 end
