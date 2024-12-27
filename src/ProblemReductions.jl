@@ -45,6 +45,7 @@ export ReductionSATToIndependentSet, ReductionSATToDominatingSet
 export ReductionIndependentSetToSetPacking, ReductionSetPackingToIndependentSet
 export ReductionSATToCircuit
 export ReductionIndependentSetToVertexCovering
+export ReductionMatchingToSetPacking
 
 # reduction path
 export ReductionGraph, reduction_graph, reduction_paths, ConcatenatedReduction
