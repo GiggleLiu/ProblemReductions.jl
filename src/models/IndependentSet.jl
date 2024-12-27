@@ -4,6 +4,13 @@ $(TYPEDEF)
 
 Independent Set is a subset of vertices in a undirected graph such that all the vertices in the set are not connected by edges (or called not adjacent).
 The maximum IndependentSet problem is to find the independent set with maximum number of vertices, which is a NP-complete problem.
+Let ``G=(V, E)`` be a graph, and ``w_v`` be the weight of vertex ``v``.
+The energy based model of the independent set problem is:
+```math
+H(G, \\mathbf{n}) = - \\sum_{v \\in V} w_v n_v + \\sum_{(u, v) \\in E} n_u n_v
+```
+where ``n_v`` is the number of vertices in the independent set, i.e. ``n_v = 1`` if ``v`` is in the independent set, and ``n_v = 0`` otherwise.
+The larger the size of the independent set, the lower the energy.
 
 Fields
 -------------------------------

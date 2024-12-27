@@ -3,15 +3,15 @@ $(TYPEDEF)
     SpinGlass(graph::AbstractGraph, weights::AbstractVector)
     SpinGlass(graph::SimpleGraph, J, h=zeros(nv(graph)))
 
-Spin Glass is a type of disordered magnetic system that exhibits a glassy behavior. The Hamiltonian of the system on a simple graph ``G`` is given by
+Spin Glass is a type of disordered magnetic system that exhibits a glassy behavior. The Hamiltonian of the system on a simple graph ``G=(V, E)`` is given by
 ```math
-H(G, \\sigma) = \\sum_{(i,j) \\in E(G)} J_{ij} \\sigma_i \\sigma_j + \\sum_{i \\in V(G)} h_i \\sigma_i
+H(G, \\sigma) = \\sum_{(i,j) \\in E} J_{ij} \\sigma_i \\sigma_j + \\sum_{i \\in V} h_i \\sigma_i
 ```
-where ``J_{ij} \\in \\mathbb{R}`` is the coupling strength between spins ``i`` and ``j``, ``h_i \\in \\mathbb{R}`` is the external field on spin ``i``, and ``\\sigma_i`` is the spin variable that can take values in ``\\{-1, 1\\}`` for spin up and spin down, respectively.
+where ``J_{ij} \\in \\mathbb{R}`` is the coupling strength between spins ``i`` and ``j``, ``h_i \\in \\mathbb{R}`` is the external field on spin ``i``, and ``\\sigma_i \\in \\{-1, 1\\}`` is the spin variable.
 
 This definition naturally extends to the case of a [`HyperGraph`](@ref):
 ```math
-H(G, \\sigma) = \\sum_{e \\in E(G)} J_{e} \\prod_k\\sigma_k + \\sum_{i \\in V(G)} h_i \\sigma_i,
+H(G, \\sigma) = \\sum_{e \\in E} J_{e} \\prod_k\\sigma_k + \\sum_{i \\in V} h_i \\sigma_i,
 ```
 where ``J_e`` is the coupling strength associated with hyperedge ``e``, and the product is over all spins in the hyperedge.
 

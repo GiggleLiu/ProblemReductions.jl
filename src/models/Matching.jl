@@ -51,7 +51,7 @@ function solution_size(::Type{<:Matching{T}}, spec::LocalSolutionSpec{WT}, confi
     @assert length(config) == num_variables(spec) == 1
     return WT(first(config)) * spec.weight
 end
-energy_mode(::Type{<:Matching}) = SmallerSizeIsBetter()
+energy_mode(::Type{<:Matching}) = LargerSizeIsBetter()
 
 """
     is_matching(graph::SimpleGraph, config)
