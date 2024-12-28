@@ -161,6 +161,8 @@ function analyse_expr(bex)
     @match bex begin
         :($f($(args...))) => BooleanExpr(f, analyse_expr.(args))
         ::Symbol => BooleanExpr(bex)
+        ::Bool => BooleanExpr(Symbol(bex))
+        ::Integer => BooleanExpr(Symbol(Bool(bex)))
     end
 end
 

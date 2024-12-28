@@ -84,3 +84,19 @@ end
     @test ans[1].variables == [1,2,3]
     @test ans[2].variables == [1]
 end
+
+@testset "direct assign" begin
+    circuit = @circuit begin
+        c = x ∧ y
+        c = true
+    end
+    sat = CircuitSAT(circuit)
+    @test findbest(sat, BruteForce()) == [[1, 1, 1]]
+
+    circuit2 = @circuit begin
+        c = x ∧ y
+        c = 1
+    end
+    sat = CircuitSAT(circuit)
+    @test findbest(sat, BruteForce()) == [[1, 1, 1]]
+end
