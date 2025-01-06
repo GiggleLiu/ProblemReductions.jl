@@ -57,3 +57,8 @@ function read_solution(factoring::Factoring,solution::AbstractVector) #return a 
     num_n = pack_bits(solution[factoring.m+1:end])
     return (num_m, num_n)
 end
+
+function is_factoring(f::Factoring, solution::AbstractVector)
+    num_m, num_n = read_solution(f, solution)
+    return num_m * num_n == f.input
+end
