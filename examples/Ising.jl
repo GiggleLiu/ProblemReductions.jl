@@ -29,10 +29,10 @@ paths = reduction_paths(g,Factoring,SpinGlass)
 
 # Then we could use [`reduceto`](@ref) to obtain the corresponding SpinGlass problem. 
 
-reduction_result = implement_reduction_path(paths[1], factoring)
+reduction_result = reduceto(paths[1], factoring)
 target = target_problem(reduction_result)
 
-# Note that the output of `implement_reduction_path` is a [`AbstractReductionResult`](@ref), which contains the target problem and reduction information. So we 
+# Note that the output of `reduceto` is a [`AbstractReductionResult`](@ref), which contains the target problem and reduction information. So we 
 # need to extract the target problem by [`target_problem`](@ref) function.
 
 import GenericTensorNetworks   # import Generic Tensor Network Solver
@@ -50,5 +50,5 @@ extract_solution.(Ref(reduction_result), result)
 # For your convenience, here is how to use `ProblemReductions.jl` to reduce source problem to target problem:
 # - Initialize the source problem `source = SourceProblem(...) `.
 # - Obtain the reduction paths `paths = reduction_paths(reduction_graph(), SourceProblem, TargetProblem)`.
-# - Implement the reduction path `reduction_result = implement_reduction_path(paths[1], source)`.
+# - Implement the reduction path `reduction_result = reduceto(paths[1], source)`.
 # - Extract the target problem `target = target_problem(reduction_result)`.
