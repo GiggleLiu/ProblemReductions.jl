@@ -26,7 +26,7 @@ export VertexCovering, is_vertex_covering
 export SetPacking, is_set_packing
 export DominatingSet, is_dominating_set
 export QUBO
-export Factoring
+export Factoring, is_factoring
 export Matching, is_matching
 export MaximalIS
 export PaintShop

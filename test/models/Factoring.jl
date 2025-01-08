@@ -23,3 +23,13 @@ end
     @test solution_size(f, [1, 1, 1, 0, 1]) == SolutionSize(0, true)
     @test findbest(f, BruteForce()) == [[1, 1, 1, 0, 1]]
 end
+
+@testset "is_factoring" begin
+    f = Factoring(2, 2, 6)
+    @test is_factoring(f, [0, 1, 1, 1]) == true
+    @test is_factoring(f, [0, 1, 1, 0]) == false
+
+    f1 = Factoring(3, 2, 8)
+    @test is_factoring(f1, [0, 0, 1, 0, 1]) == true
+    @test is_factoring(f1, [0, 0, 1, 1, 0]) == false
+end
