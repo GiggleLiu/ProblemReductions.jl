@@ -15,11 +15,11 @@ The Boolean Matrix Factorization (BMF) problem is defined on a binary matrix A i
 - [`num_flavors`](@ref), the number of flavors (domain) of a degree of freedom.
 - [`findbest`](@ref), find the best configurations of the input problem.
 """
-struct BinaryMatrixFactorization{K} <: AbstractProblem
+struct BinaryMatrixFactorization<: AbstractProblem
     A::AbstractMatrix
     k::Int
     function BinaryMatrixFactorization(A::AbstractMatrix, k::Int) where K
-        new{k}(A, k)
+        new(A, k)
     end
 end
 Base.:(==)(a::BinaryMatrixFactorization, b::BinaryMatrixFactorization) = a.A == b.A && a.k == b.k
