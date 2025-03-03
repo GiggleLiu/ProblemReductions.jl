@@ -24,7 +24,7 @@ struct BinaryMatrixFactorization<: AbstractProblem
 end
 Base.:(==)(a::BinaryMatrixFactorization, b::BinaryMatrixFactorization) = a.A == b.A && a.k == b.k
 
-variables(bmf::BinaryMatrixFactorization) = size(bmf.A,1) * bmf.k + size(bmf.A,2) * bmf.k
+variables(bmf::BinaryMatrixFactorization) = [1:size(bmf.A,1) * bmf.k + size(bmf.A,2) * bmf.k]
 flavors(::Type{<:BinaryMatrixFactorization}) = (0, 1)
 problem_size(bmf::BinaryMatrixFactorization) = (; num_rows=size(bmf.A,1), num_cols=size(bmf.A,2), k=bmf.k)
 function solution_size(bmf::BinaryMatrixFactorization,b::AbstractMatrix,c::AbstractMatrix) 
