@@ -44,6 +44,10 @@ end
 
 energy_mode(::Type{<:BinaryMatrixFactorization}) = SmallerSizeIsBetter()
 
+function is_binary_matrix_factorization(bmf::BinaryMatrixFactorization, b::AbstractMatrix, c::AbstractMatrix)
+    return solution_size(bmf,b,c) == 0
+end
+
 """
 function findbest(bmf::BinaryMatrixFactorization, ::BruteForce)
     n_rows, n_cols = size(bmf.A)
