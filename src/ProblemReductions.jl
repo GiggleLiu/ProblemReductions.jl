@@ -30,6 +30,7 @@ export Factoring, is_factoring
 export Matching, is_matching
 export MaximalIS
 export PaintShop
+export BicliqueCover, is_biclique_cover
 
 # rules
 export target_problem, AbstractProblem, ConstraintSatisfactionProblem, solution_size, SolutionSize
