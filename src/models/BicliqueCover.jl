@@ -22,6 +22,7 @@ function biclique_cover_from_matrix(A::AbstractMatrix{Int64},k::Int64,weights::A
     end
     new{typeof(weights),T}(graph,k,weights)
 end
+Base.:(==)(a::BicliqueCover, b::BicliqueCover) = a.graph == b.graph && a.k == b.k && a.weights == b.weights
 problem_size(c::BicliqueCover) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph), k=c.k)
 
 # Variables Interface
@@ -31,16 +32,20 @@ flavors(::Type{<:BicliqueCover}) = (0,1)
 
 # Weights Interface
 weights(bc::BicliqueCover) = bc.weights
-set_weights(bc::BicliqueCover, weights) = BicliqueCover(bc.graph, bc.k, weights)
+function set_weights(bc::BicliqueCover, new_weights)
+    @assert length(new_weights) == nv(bc.graph) "Expected $(nv(bc.graph)) weights, got $(length(new_weights))"
+    return BicliqueCover(bc.graph,bc.k,new_weights)
+end
 
 # Constraint Interface
 function hard_constraints(bc::BicliqueCover)
     return [HardConstraint(_vec(e), :cover) for e in edges(bc.graph)]
 end
 
+# not yet implemented
 function is_satisfied(::Type{<:BicliqueCover}, spec::HardConstraint, config)
     @assert length(config) == num_variables(spec)
-    return any(!iszero, config)
+    return any(!iszero,config)
 end
 
 function local_solution_spec(c::BicliqueCover)
@@ -50,17 +55,22 @@ end
 """
     solution_size(c::BicliqueCover, spec::LocalSolutionSpec, config)
 The solution size of a [`BicliqueCover`](@ref) model is the sum of the weights of the selected bicliques.
+
+has problem implementing
 """
-function solution_size(c::BicliqueCover, spec::LocalSolutionSpec,config::AbstractVector{Int64})
+function solution_size(::Type{<:BicliqueCover{WT,T}}, spec::LocalSolutionSpec,config::AbstractVector{Int64}) where {WT,T}
     @assert length(config) == nv(c.graph) * c.k "config length mismatch"
     bicliques = [Set(findall(x->x==1,config[(i-1)*c.k+1:i*c.k])) for i in 1:nv(c.graph)]
     return sum(WT(length(b))*spec.weight for b in bicliques)
+end
+function solution_size(c::BicliqueCover,config::AbstractVector{Int64})
+    return solution_size(c,local_solution_spec(c),config)
 end
 
 energy_mode(::Type{<:BicliqueCover}) = SmallerSizeIsBetter()
 
 # not yet implemented
-function is_biclique_cover(graph::SimpleGraph, config)
+function is_biclique_cover(bc::BicliqueCover, config)
     return true
 end
 
