@@ -59,3 +59,7 @@ end
 @testset "Paintshop" begin
     include("Paintshop.jl")
 end
+
+@testset "BMF" begin
+    include("BMF.jl")
+end
