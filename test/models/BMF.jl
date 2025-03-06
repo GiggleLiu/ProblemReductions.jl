@@ -13,6 +13,10 @@ using Test, ProblemReductions
     @test energy_mode(BinaryMatrixFactorization) == SmallerSizeIsBetter()
     @test is_binary_matrix_factorization(bmf, fill(0, 3, 2), fill(0, 2, 3)) == false
     @test is_binary_matrix_factorization(bmf,fill(1, 3, 2), fill(1, 2, 3)) == true
+    bmf1 = BinaryMatrixFactorization(fill(1,3,3), 3)
+    @test bmf != bmf1
+    bmf2 = BinaryMatrixFactorization(fill(1,3,3), 2)
+    @test bmf == bmf2
 
     # test 2
     A = fill(true, 3, 3)
