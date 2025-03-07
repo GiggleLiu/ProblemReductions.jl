@@ -3,6 +3,7 @@ using Test, ProblemReductions, Graphs
 @testset "Biclique Cover" begin
     g = SimpleGraph(6)
     for (i,j) in [(1,5), (1,4), (2,5), (2,4), (3,6)]
+        # g = ([{1,2,3}, {4,5,6}], [(1,4), (1,5), (2,4), (2,5), (3,6)])
         add_edge!(g, i, j)
     end
     bc = BicliqueCover(g,2)
@@ -14,5 +15,8 @@ using Test, ProblemReductions, Graphs
     @test set_weights(bc,new_weights) == BicliqueCover(bc.graph,bc.k,new_weights)
     new_weights_error = [1,2,3,4,5]
     @test_throws AssertionError set_weights(bc,new_weights_error)
+    @test problem_size(bc) == (num_vertices=6, num_edges=5, k=2)
+    bc_matrix = ProblemReductions.biclique_cover_from_matrix([1 1 0;1 1 0;0 0 1],2,UnitWeight(6))
+    @test bc_matrix == bc
     # constraints interfaces are not implemented and tested yet
 end
