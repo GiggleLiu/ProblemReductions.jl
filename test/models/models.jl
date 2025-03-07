@@ -60,3 +60,7 @@ end
     include("Paintshop.jl")
 end
 
+@testset "BicliqueCover" begin
+    include("BicliqueCover.jl")
+end
+

@@ -42,10 +42,8 @@ function hard_constraints(bc::BicliqueCover)
     return [HardConstraint(_vec(e), :cover) for e in edges(bc.graph)]
 end
 
-# not yet implemented
 function is_satisfied(::Type{<:BicliqueCover}, spec::HardConstraint, config)
-    @assert length(config) == num_variables(spec)
-    return any(!iszero,config)
+   # discuss
 end
 
 function local_solution_spec(c::BicliqueCover)
@@ -69,7 +67,7 @@ end
 
 energy_mode(::Type{<:BicliqueCover}) = SmallerSizeIsBetter()
 
-# not yet implemented
+# discuss
 function is_biclique_cover(bc::BicliqueCover, config)
     return true
 end
