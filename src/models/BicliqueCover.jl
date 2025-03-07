@@ -19,9 +19,7 @@ function biclique_cover_from_matrix(A::AbstractMatrix{Int64},k::Int64,weights::A
     for i in [i for i in 1:size(A,1)]
         for j in [j for j in 1:size(A,2)]
             if A[i,j] == 1
-                print(i,j)
                 add_edge!(graph,i,j+size(A,1))
-                print(graph)
             end
         end
     end
