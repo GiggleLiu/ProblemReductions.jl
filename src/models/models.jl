@@ -52,34 +52,78 @@ abstract type ConstraintSatisfactionProblem{T} <: AbstractProblem end
 """
 $TYPEDEF
 
-A hard constraint on a [`ConstraintSatisfactionProblem`](@ref).
+A hard constraint for specifying a [`ConstraintSatisfactionProblem`](@ref), which is defined on finite domain variables.
 
 ### Fields
+- `num_flavors`: the number of flavors (domain) of a degree of freedom.
 - `variables`: the indices of the variables involved in the constraint.
-- `specification`: the specification of the constraint.
+- `specification`: a boolean vector of length `num_flavors^length(variables)`, specifying whether a configuration is valid.
 """
-struct HardConstraint{ST}
+struct HardConstraint
+    num_flavors::Int
     variables::Vector{Int}
-    specification::ST
+    specification::Vector{Bool}
 end
 num_variables(spec::HardConstraint) = length(spec.variables)
+function combinations(num_flavors::Int, num_variables::Int)
+    strides = [num_flavors^i for i in 0:(num_variables-1)]
+    return [mod.(i .÷ strides, num_flavors) for i in 0:(num_flavors^num_variables-1)]
+end
+function Base.show(io::IO, spec::HardConstraint)
+    print(io, "HardConstraint\n")
+    data = hcat(collect(combinations(spec.num_flavors, spec.num_variables)), spec.specification)
+    header = ["Config", "Valid"]
+    pretty_table(io, data, header=header, alignment=:c)
+end
+Base.show(io::IO, ::MIME"text/plain", spec::HardConstraint) = show(io, spec)
+"""
+    is_satisfied(constraint::HardConstraint, config) -> Bool
+
+Check if the `constraint` is satisfied by the configuration `config`.
+"""
+function is_satisfied(constraint::HardConstraint, config)
+    @assert length(config) == num_variables(constraint) "The length of the configuration must be equal to the number of variables in the constraint, got $(length(config)) and $(num_variables(constraint))"
+    @assert all(x -> 0 <= x <= constraint.num_flavors-1, config) "The configuration must be a vector of integers in the range of 0 to $(constraint.num_flavors-1)"
+    strides = [constraint.num_flavors^i for i in 0:length(constraint.variables)-1]
+    k = sum(stride * c for (stride, c, var) in zip(strides, config, constraint.variables)) + 1
+    return constraint.specification[k]
+end
 
 """
 $TYPEDEF
 
-A soft constraint on a [`ConstraintSatisfactionProblem`](@ref).
+Problem size defined on a subset of variables of a [`ConstraintSatisfactionProblem`](@ref).
 
 ### Fields
+- `num_flavors`: the number of flavors (domain) of a degree of freedom.
 - `variables`: the indices of the variables involved in the constraint.
-- `specification`: the specification of the constraint.
-- `weight`:  the weight of the constraint.
+- `specification`: a vector of size `num_flavors^length(variables)`, specifying the local solution sizes.
 """
-struct LocalSolutionSpec{WT, ST}
+struct LocalSolutionSpec{T}
+    num_flavors::Int
     variables::Vector{Int}
-    specification::ST
-    weight::WT
+    specification::Vector{T}
 end
 num_variables(spec::LocalSolutionSpec) = length(spec.variables)
+function Base.show(io::IO, spec::LocalSolutionSpec{T}) where T
+    print(io, "LocalSolutionSpec{$T}\n")
+    data = hcat(collect(combinations(spec.num_flavors, length(spec.variables))), spec.specification)
+    header = ["Variables: $(spec.variables)", "Size"]
+    pretty_table(io, data, header=header, alignment=:c)
+end
+Base.show(io::IO, ::MIME"text/plain", spec::LocalSolutionSpec) = show(io, spec)
+"""
+    solution_size(spec::LocalSolutionSpec{WT}, config) where {WT}
+
+The local solution size of a local solution configuration.
+"""
+function solution_size(spec::LocalSolutionSpec{WT}, config) where {WT}
+    @assert length(config) == num_variables(spec) "The length of the configuration must be equal to the number of variables in the constraint, got $(length(config)) and $(num_variables(spec))"
+    @assert all(x -> 0 <= x <= spec.num_flavors-1, config) "The configuration must be a vector of integers in the range of 0 to $(spec.num_flavors-1)"
+    strides = [spec.num_flavors^i for i in 0:length(spec.variables)-1]
+    k = sum(stride * c for (stride, c, var) in zip(strides, config, spec.variables)) + 1
+    return spec.specification[k]
+end
 
 ######## Interfaces for computational problems ##########
 """
@@ -135,12 +179,46 @@ The data type of the weights in the computational problem.
 weight_type(gp::AbstractProblem) = eltype(weights(gp))
 
 """
-    flavors(::Type{<:AbstractProblem}) -> Vector
+    flavors(::Type{<:AbstractProblem}) -> UnitRange
+    flavors(::GT) where GT<:AbstractProblem -> UnitRange
 
 Returns a vector of integers as the flavors (domain) of a degree of freedom.
+
+!!! warning
+    Flavors is defined a `0:num_flavors-1`. To access the previous version of the flavors, use [`flavor_names`](@ref).
 """
+flavors(::Type{GT}) where GT<:AbstractProblem = ntuple(i -> i-1, num_flavors(GT))
 flavors(::GT) where GT<:AbstractProblem = flavors(GT)
 
+"""
+    flavor_names(::Type{<:AbstractProblem}) -> Vector
+
+Returns a vector as the names of the flavors (domain) of a degree of freedom.
+It falls back to [`flavors`](@ref) if no method is defined.
+Use `ProblemReductions.name2config` and `ProblemReductions.config2name` to convert between the names and the configuration.
+"""
+flavor_names(::Type{GT}) where GT<:AbstractProblem = collect(flavors(GT))
+flavor_names(::GT) where GT<:AbstractProblem = flavor_names(GT)
+"""
+    name2config(problem::AbstractProblem, config)
+
+Convert the names of the flavors to the configuration.
+"""
+function name2config(problem::AbstractProblem, config)
+    @assert all(c -> c in flavor_names(problem), config) "The flavor must be one of the flavors $(flavor_names(problem)), got: $(config)"
+    flvs = flavor_names(problem)
+    map(c -> findfirst(==(c), flvs) - 1, config)
+end
+
+"""
+    config2name(problem::AbstractProblem, config)
+
+Convert the configuration to the names of the flavors.
+"""
+function config2name(problem::AbstractProblem, config)
+    flvs = flavor_names(problem)
+    map(c -> flvs[c + 1], config)
+end
 
 """
     flavor_to_logical(::Type{T}, flavor) -> T
@@ -187,30 +265,6 @@ end
 Base.:(==)(s1::SolutionSize, s2::SolutionSize) = s1.size == s2.size && s1.is_valid == s2.is_valid
 Base.isapprox(s1::SolutionSize, s2::SolutionSize; kwargs...) = isapprox(s1.size, s2.size; kwargs...) && s1.is_valid == s2.is_valid
 
-"""
-    solution_size(problem::AbstractProblem, config) -> SolutionSize
-
-Size of the `problem` given the configuration `config`.
-"""
-function solution_size end
-
-# size interface
-solution_size(problem::AbstractProblem, config) = first(solution_size_byid(problem, (config_to_id(problem, config),)))
-function solution_size_byid(problem::ConstraintSatisfactionProblem{T}, ids) where T
-    terms = size_terms(problem)
-    return Iterators.map(ids) do id
-        size_eval_byid(terms, id)
-    end
-end
-function config_to_id(problem::AbstractProblem, config)
-    flvs = flavors(problem)
-    map(c -> findfirst(==(c), flvs), config)
-end
-function id_to_config(problem::AbstractProblem, id)
-    flvs = flavors(problem)
-    map(i -> flvs[i], id)
-end
-
 struct LocalSize{LT, N, F, T}
     variables::Vector{LT}
     flavors::NTuple{N, F}
@@ -229,6 +283,29 @@ function Base.show(io::IO, term::LocalSize)
 end
 Base.show(io::IO, ::MIME"text/plain", term::LocalSize) = show(io, term)
 
+
+"""
+    solution_size(problem::AbstractProblem, config) -> SolutionSize
+
+Size of the `problem` given the configuration `config`.
+"""
+function solution_size(problem::ConstraintSatisfactionProblem, config)
+    terms = size_terms(problem)
+    return _size_eval(terms, config)
+end
+function solution_size_multiple(problem::ConstraintSatisfactionProblem, configs)
+    terms = size_terms(problem)
+    return map(configs) do config
+        _size_eval(terms, config)
+    end
+end
+Base.@propagate_inbounds function _size_eval(terms::AbstractVector{<:LocalSize}, config)
+    return sum(terms) do term
+        k = sum(stride * config[var] for (stride, var) in zip(term.strides, term.variables)) + 1
+        term.solution_sizes[k]
+    end
+end
+
 size_terms(problem::ConstraintSatisfactionProblem{T}) where T = size_terms(T, problem)
 function size_terms(::Type{T}, problem::ConstraintSatisfactionProblem) where T
     vars = variables(problem)
@@ -238,7 +315,7 @@ function size_terms(::Type{T}, problem::ConstraintSatisfactionProblem) where T
     for constraint in hard_constraints(problem)
         sizes = [nflv for _ in constraint.variables]
         solution_sizes = map(CartesianIndices(Tuple(sizes))) do idx
-            SolutionSize(zero(T), is_satisfied(typeof(problem), constraint, getindex.(Ref(flvs), idx.I)))
+            SolutionSize(zero(T), is_satisfied(constraint, idx.I .- 1))
         end
         strides = [nflv^i for i in 0:length(constraint.variables)-1]
         push!(terms, LocalSize(constraint.variables, flvs, strides, vec(solution_sizes)))
@@ -246,22 +323,12 @@ function size_terms(::Type{T}, problem::ConstraintSatisfactionProblem) where T
     for (i, constraint) in enumerate(local_solution_spec(problem))
         sizes = [nflv for _ in constraint.variables]
         solution_sizes = map(CartesianIndices(Tuple(sizes))) do idx
-            SolutionSize(T(solution_size(typeof(problem), constraint, getindex.(Ref(flvs), idx.I))), true)
+            SolutionSize(T(solution_size(constraint, getindex.(Ref(flvs), idx.I))), true)
         end
         strides = [nflv^i for i in 0:length(constraint.variables)-1]
         push!(terms, LocalSize(constraint.variables, flvs, strides, vec(solution_sizes)))
     end
     return terms
-end
-
-Base.@propagate_inbounds function size_eval_byid(terms::AbstractVector{<:LocalSize}, config_id)
-    sum(terms) do term
-        k = 1
-        for (stride, var) in zip(term.strides, term.variables)
-            k += stride * (config_id[var]-1)
-        end
-        term.solution_sizes[k]
-    end
 end
 
 """
@@ -308,17 +375,10 @@ function hard_constraints end
 macro nohard_constraints(problem)
     esc(quote
         function $ProblemReductions.hard_constraints(problem::$(problem))
-            return HardConstraint{Nothing}[]
+            return HardConstraint[]
         end
     end)
 end
-
-"""
-    is_satisfied(::Type{<:ConstraintSatisfactionProblem}, constraint::HardConstraint, config) -> Bool
-
-Check if the `constraint` is satisfied by the configuration `config`.
-"""
-function is_satisfied end
 
 """
     energy_mode(problem::AbstractProblem) -> EnergyMode

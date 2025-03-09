@@ -60,7 +60,7 @@ Base.:(==)(a::IndependentSet, b::IndependentSet) = a.graph == b.graph && a.weigh
 
 # Variables Interface
 num_variables(gp::IndependentSet) = nv(gp.graph)
-flavors(::Type{<:IndependentSet}) = (0, 1)
+num_flavors(::Type{<:IndependentSet}) = 2
 problem_size(c::IndependentSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
@@ -69,15 +69,14 @@ set_weights(c::IndependentSet, weights) = IndependentSet(c.graph, weights)
 
 # constraints interface
 function hard_constraints(c::IndependentSet)
-    return [HardConstraint(_vec(e), :independence) for e in edges(c.graph)]
+    return [HardConstraint(num_flavors(c), _vec(e), [_is_satisfied_independence(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
 end
-function is_satisfied(::Type{<:IndependentSet}, spec::HardConstraint, config)
-    @assert length(config) == num_variables(spec)
+function _is_satisfied_independence(config)
     return count(!iszero, config) <= 1
 end
 
 function local_solution_spec(c::IndependentSet)
-    return [LocalSolutionSpec([i], :num_vertex, w) for (w, i) in zip(weights(c), 1:nv(c.graph))]
+    return [LocalSolutionSpec(num_flavors(c), [i], [zero(w), w]) for (w, i) in zip(weights(c), 1:nv(c.graph))]
 end
 
 """

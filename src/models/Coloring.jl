@@ -44,7 +44,7 @@ problem_size(c::Coloring) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # variables interface
 num_variables(gp::Coloring{K}) where K = nv(gp.graph)
-flavors(::Type{<:Coloring{K}}) where K = ntuple(i->i-1, K) # colors
+num_flavors(::Type{<:Coloring{K}}) where K = K
 
 # weights interface
 weights(c::Coloring) = c.weights

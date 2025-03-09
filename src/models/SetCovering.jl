@@ -63,7 +63,7 @@ problem_size(c::SetCovering) = (; num_sets=length(c.sets), num_elements=length(c
 
 # variables interface
 num_variables(gp::SetCovering) = length(gp.sets)
-flavors(::Type{<:SetCovering}) = (0, 1) # whether the set is selected (1) or not (0)
+num_flavors(::Type{<:SetCovering}) = 2 # whether the set is selected (1) or not (0)
 
 # weights interface
 weights(c::SetCovering) = c.weights
@@ -71,25 +71,13 @@ set_weights(c::SetCovering, weights) = SetCovering(c.sets, weights)
 
 # constraints interface
 function hard_constraints(c::SetCovering)
-    return [HardConstraint(findall(s->v in s, c.sets), :cover) for v in c.elements]
+    return [HardConstraint(num_flavors(c), findall(s->v in s, c.sets), [_is_satisfied_cover(config) for config in combinations(num_flavors(c), length(findall(s->v in s, c.sets)))]) for v in c.elements]
 end
-function is_satisfied(::Type{<:SetCovering{T}}, spec::HardConstraint, config) where {T}
-    @assert length(config) == num_variables(spec)
+function _is_satisfied_cover(config)
     return count(isone, config) > 0
 end
-
-function local_solution_spec(c::SetCovering)
-    return [LocalSolutionSpec([i], :set, w) for (i, w) in zip(variables(c), weights(c))]
-end
-
-"""
-    solution_size(::Type{<:SetCovering}, spec::LocalSolutionSpec, config)
-
-For [`SetCovering`](@ref), the solution size of a configuration is the total weight of the sets that are selected.
-"""
-function solution_size(::Type{<:SetCovering{ET, T}}, spec::LocalSolutionSpec{WT}, config) where {ET, T, WT}
-    @assert length(config) == num_variables(spec)
-    return WT(first(config)) * spec.weight
+function local_solution_spec(c::SetCovering{T}) where T
+    return [LocalSolutionSpec(num_flavors(c), [i], [zero(T), w]) for (i, w) in zip(variables(c), weights(c))]
 end
 energy_mode(::Type{<:SetCovering}) = SmallerSizeIsBetter()
 

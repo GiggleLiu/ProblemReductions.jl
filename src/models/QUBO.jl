@@ -73,7 +73,7 @@ end
 
 # variables interface
 num_variables(c::QUBO) = size(c.matrix, 1)
-flavors(::Type{<:QUBO}) = (0, 1)
+num_flavors(::Type{<:QUBO}) = 2
 problem_size(c::QUBO) = (; num_variables=size(c.matrix, 1))
 
 function weights(c::QUBO)
@@ -84,10 +84,10 @@ function weights(c::QUBO)
 end
 
 # constraints interface
-function local_solution_spec(c::QUBO)
-    vcat(
-        [LocalSolutionSpec([i, j], :offdiagonal, c.matrix[i, j] + c.matrix[j, i]) for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
-        [LocalSolutionSpec([i], :diagonal, c.matrix[i, i]) for i in variables(c) if c.matrix[i, i] != 0]
+function local_solution_spec(c::QUBO{T}) where T
+    return vcat(
+        [LocalSolutionSpec(num_flavors(c), [i, j], [zero(T), zero(T), zero(T), c.matrix[i, j] + c.matrix[j, i]]) for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
+        [LocalSolutionSpec(num_flavors(c), [i], [zero(T), c.matrix[i, i]]) for i in variables(c) if c.matrix[i, i] != 0]
     )
 end
 @nohard_constraints QUBO

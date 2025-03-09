@@ -18,7 +18,7 @@ struct Matching{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
 end
 Base.:(==)(a::Matching, b::Matching) = a.graph == b.graph && a.weights == b.weights
 
-flavors(::Type{<:Matching}) = (0, 1)
+num_flavors(::Type{<:Matching}) = 2
 num_variables(gp::Matching) = ne(gp.graph)
 problem_size(c::Matching) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
@@ -29,17 +29,15 @@ set_weights(c::Matching, weights) = Matching(c.graph, weights)
 # constraints interface
 function hard_constraints(c::Matching)
     # edges sharing a vertex cannot be both in the matching
-    return [HardConstraint([i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)], :noshare) for v in vertices(c.graph)]
+    return [HardConstraint(num_flavors(c), [i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)], [_is_satisfied_noshare(config) for config in combinations(num_flavors(c), length([i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)]))]) for v in vertices(c.graph)]
 end
-
-function is_satisfied(::Type{<:Matching}, spec::HardConstraint, config)
-    @assert length(config) == num_variables(spec)
+function _is_satisfied_noshare(config)
     return count(isone, config) <= 1
 end
 
 function local_solution_spec(c::Matching)
     # as many edges as possible
-    return [LocalSolutionSpec([e], :num_edges, w) for (w, e) in zip(weights(c), variables(c))]
+    return [LocalSolutionSpec(num_flavors(c), [e], [zero(w), w]) for (w, e) in zip(weights(c), variables(c))]
 end
 
 """

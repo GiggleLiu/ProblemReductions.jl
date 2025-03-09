@@ -50,15 +50,15 @@ SpinGlass{SimpleGraph{Int64}, Int64, Vector{Int64}}(SimpleGraph{Int64}(4, [[2, 3
 julia> num_variables(spinglass)  # degrees of freedom
 4
 
-julia> flavors(spinglass)  # flavors of the spins
-(1, -1)
+julia> flavors(spinglass)  # flavors of the spins, 0 for up (+1), 1 for down (-1)
+(0, 1)
 
-julia> solution_size(spinglass, [-1, 1, 1, -1])  # size of a configuration
-SolutionSize{Int64}(-2, true)
+julia> solution_size(spinglass, [1, 0, 1, 1])  # size of a configuration
+SolutionSize{Int64}(2, true)
 
 julia> findbest(spinglass, BruteForce())  # solve the problem with brute force
 1-element Vector{Vector{Int64}}:
- [-1, 1, -1, -1]
+ [1, 0, 1, 1]
 ```
 """
 struct SpinGlass{GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
@@ -80,7 +80,8 @@ end
 
 # variables interface
 num_variables(gp::SpinGlass) = nv(gp.graph)
-flavors(::Type{<:SpinGlass}) = (1, -1)
+num_flavors(::Type{<:SpinGlass}) = 2
+flavor_names(::Type{<:SpinGlass}) = ['↑', '↓']
 problem_size(c::SpinGlass) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
@@ -89,17 +90,11 @@ set_weights(c::SpinGlass, weights) = SpinGlass(c.graph, weights[1:ne(c.graph)], 
 
 # constraints interface
 function local_solution_spec(sg::SpinGlass)
-    return vcat([LocalSolutionSpec(_vec(e), :edge, w) for (w, e) in zip(sg.J, edges(sg.graph))], [LocalSolutionSpec([v], :vertex, w) for (w, v) in zip(sg.h, vertices(sg.graph))])
+    return vcat([LocalSolutionSpec(num_flavors(sg), _vec(e), [_spin_glass_energy(w, config) for config in combinations(num_flavors(sg), length(_vec(e)))]) for (w, e) in zip(sg.J, edges(sg.graph))], [LocalSolutionSpec(num_flavors(sg), [v], [w, -w]) for (w, v) in zip(sg.h, vertices(sg.graph))])
 end
+function _spin_glass_energy(w::T, config) where T
+    return w * T(prod(c -> 1 - 2 * c, config))
+end
+
 @nohard_constraints SpinGlass
-
-"""
-    solution_size(::Type{<:SpinGlass}, spec::LocalSolutionSpec{WT}, config) where {WT}
-
-The solution size of a [`SpinGlass`](@ref) model is the energy of a configuration.
-"""
-function solution_size(::Type{<:SpinGlass}, spec::LocalSolutionSpec{WT}, config) where {WT}
-    @assert length(config) == num_variables(spec)
-    return WT(spec.specification == :edge ? prod(config) : first(config)) * spec.weight
-end
 energy_mode(::Type{<:SpinGlass}) = SmallerSizeIsBetter()

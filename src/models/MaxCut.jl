@@ -51,7 +51,7 @@ Base.:(==)(a::MaxCut, b::MaxCut) = a.graph == b.graph && a.weights == b.weights
 
 # varibles interface 
 num_variables(gp::MaxCut) = nv(gp.graph)
-flavors(::Type{<:MaxCut}) = (0, 1) #choose it or not
+num_flavors(::Type{<:MaxCut}) = 2 #choose it or not
 problem_size(c::MaxCut) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
                             
 # weights interface
@@ -60,7 +60,7 @@ set_weights(c::MaxCut, weights) = MaxCut(c.graph, weights)
 
 # constraints interface
 function local_solution_spec(c::MaxCut)
-    return [LocalSolutionSpec(_vec(e), :cut, w) for (w, e) in zip(weights(c), edges(c.graph))]
+    return [LocalSolutionSpec(num_flavors(c), _vec(e), [zero(w), w]) for (w, e) in zip(weights(c), edges(c.graph))]
 end
 
 """ 

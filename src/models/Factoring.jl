@@ -36,7 +36,7 @@ end
 
 # variables interface
 num_variables(f::Factoring) = f.m+f.n
-flavors(::Type{Factoring}) = (0, 1)
+num_flavors(::Type{Factoring}) = 2
 problem_size(f::Factoring) = (; num_bits_first=f.m, num_bits_second=f.n)
 
 # utilities

@@ -48,15 +48,15 @@ end
 
 num_variables(gp::PaintShop) = length(gp.sequence) ÷ 2
 symbols(gp::PaintShop) = unique(gp.sequence)
-flavors(::Type{<:PaintShop}) = (0, 1)
+num_flavors(::Type{<:PaintShop}) = 2
 problem_size(c::PaintShop) = (; sequence_length=length(c.sequence))
 Base.:(==)(a::PaintShop, b::PaintShop) = a.sequence == b.sequence && a.isfirst == b.isfirst
 
 # constraints interface
-function local_solution_spec(c::PaintShop)
+function local_solution_spec(c::PaintShop{T}) where T
     # constraints on alphabets with the same color
     syms = symbols(c)
-    return [LocalSolutionSpec([findfirst(==(c.sequence[i]), syms), findfirst(==(c.sequence[i+1]), syms)], (c.isfirst[i], c.isfirst[i+1]), 1) for i=1:length(c.sequence)-1]
+    return [LocalSolutionSpec(num_flavors(c), [findfirst(==(c.sequence[i]), syms), findfirst(==(c.sequence[i+1]), syms)], [zero(T), zero(T), 1]) for i=1:length(c.sequence)-1]
 end
 
 """

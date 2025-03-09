@@ -54,7 +54,7 @@ Base.:(==)(a::DominatingSet, b::DominatingSet) = ( a.graph == b.graph )
 
 # Variables Interface
 num_variables(gp::DominatingSet) = nv(gp.graph)
-flavors(::Type{<:DominatingSet}) = (0, 1)
+num_flavors(::Type{<:DominatingSet}) = 2
 problem_size(c::DominatingSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # Weights Interface
@@ -63,27 +63,19 @@ set_weights(c::DominatingSet, weights) = DominatingSet(c.graph, weights)
 
 # Constraints Interface
 function hard_constraints(c::DominatingSet)
-    return [HardConstraint(vcat(v, neighbors(c.graph, v)), :dominance) for v in vertices(c.graph)]
+    return map(vertices(c.graph)) do v
+        nbs = vcat(v, neighbors(c.graph, v))
+        HardConstraint(num_flavors(c), nbs, [_is_satisfied_dominance(config) for config in combinations(num_flavors(c), length(nbs))])
+    end
 end
-function is_satisfied(::Type{<:DominatingSet}, spec::HardConstraint, config)
-    @assert length(config) == num_variables(spec)
-    return count(isone, config) >= 1
-end
+# check if a configuration satisfies the dominance constraint
+_is_satisfied_dominance(config) = count(isone, config) >= 1
 
 function local_solution_spec(c::DominatingSet)
     # constraints on vertex and its neighbours
-    return [LocalSolutionSpec([v], :num_vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
+    return [LocalSolutionSpec(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 
-"""
-    solution_size(::Type{<:DominatingSet{GT, T}}, spec::LocalSolutionSpec{WT}, config) where {GT, T, WT}
-
-For [`DominatingSet`](@ref), the solution size of a configuration is the number of vertices in the dominating set.
-"""
-function solution_size(::Type{<:DominatingSet{GT, T}}, spec::LocalSolutionSpec{WT}, config) where {GT, T, WT}
-    @assert length(config) == num_variables(spec) == 1
-    return WT(first(config)) * spec.weight
-end
 energy_mode(::Type{<:DominatingSet}) = SmallerSizeIsBetter()
 
 """

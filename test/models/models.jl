@@ -1,4 +1,10 @@
-using Test
+using Test, ProblemReductions
+
+@testset "utils" begin
+    # 2 flavors, 3 variables
+    @test ProblemReductions.combinations(2, 3) == [[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0], [0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1]]
+    @test ProblemReductions.combinations(3, 2) == [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2]]
+end
 
 @testset "Circuit" begin
     include("Circuit.jl")

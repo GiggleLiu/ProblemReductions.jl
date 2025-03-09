@@ -52,7 +52,7 @@ end
     terms = ProblemReductions.size_terms(IS_01)
     @test length(terms) == 9
     for cfg in [[0, 1, 1, 0], [1, 0, 0, 1]]
-        e1 = ProblemReductions.size_eval_byid(terms, cfg .+ 1)
+        e1 = ProblemReductions._size_eval(terms, cfg)
         e2 = ProblemReductions.solution_size(IS_01, cfg)
         @test (e1 == e2) || (e1 > 1e4 && e2 > 1e4)
     end

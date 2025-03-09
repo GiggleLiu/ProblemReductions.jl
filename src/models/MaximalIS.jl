@@ -49,7 +49,7 @@ Base.:(==)(a::MaximalIS, b::MaximalIS) = a.graph == b.graph && a.weights == b.we
 
 # variables interface
 num_variables(gp::MaximalIS) = nv(gp.graph)
-flavors(::Type{<:MaximalIS}) = (0, 1)
+num_flavors(::Type{<:MaximalIS}) = 2
 problem_size(c::MaximalIS) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
@@ -57,16 +57,14 @@ weights(c::MaximalIS) = c.weights
 set_weights(c::MaximalIS, weights) = MaximalIS(c.graph, weights)
 
 function hard_constraints(c::MaximalIS)
-    return [HardConstraint(vcat(v, neighbors(c.graph, v)), :maximal_independence) for v in vertices(c.graph)]
+    return [HardConstraint(num_flavors(c), vcat(v, neighbors(c.graph, v)), [_is_satisfied_maximal_independence(config) for config in combinations(num_flavors(c), length(vcat(v, neighbors(c.graph, v))))]) for v in vertices(c.graph)]
 end
-function is_satisfied(::Type{<:MaximalIS}, spec::HardConstraint, config)
-    @assert length(config) == num_variables(spec)
-    nselect = count(!iszero, config)
-    return !(nselect == 0 || (nselect > 1 && !iszero(first(config))))
+function _is_satisfied_maximal_independence(config)
+    return (config[1] == 1 && all(i -> iszero(config[i]), 2:length(config))) || (config[1] == 0 && !all(i -> iszero(config[i]), 2:length(config)))
 end
 # constraints interface
 function local_solution_spec(c::MaximalIS)
-    return [LocalSolutionSpec([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
+    return [LocalSolutionSpec(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 
 """
