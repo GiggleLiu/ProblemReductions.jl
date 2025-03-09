@@ -71,7 +71,7 @@ end
     # d = x ∨ m2 - 1
     solution = solution_size(sat, [false, false, false, true, false, false, false])
     @test solution.is_valid
-    @test solution.size == 0
+    @test solution.size == sum(sat.weights)  # all satisfied
 end
 
 @testset "local_solution_spec" begin

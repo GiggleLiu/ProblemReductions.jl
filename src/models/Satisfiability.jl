@@ -118,7 +118,7 @@ We should note that all the SAT problem problem can be reduced to the 3-SAT prob
 Fields
 -------------------------------
 - `cnf` is a conjunctive normal form ([`CNF`](@ref)) for specifying the satisfiability problems.
-- `weights` are associated with clauses.
+- `weights` are associated with clauses. The solution size is the weighted sum of the number of satisfied assignments.
 
 Example
 -------------------------------
@@ -213,9 +213,9 @@ end
 
 function _satisfiability_constraint(expr, vars, config)
     assignment = Dict(zip(vars, config))
-    return !satisfiable(expr, assignment)
+    return satisfiable(expr, assignment)
 end
-energy_mode(::Type{<:AbstractSatisfiabilityProblem}) = SmallerSizeIsBetter()
+energy_mode(::Type{<:AbstractSatisfiabilityProblem}) = LargerSizeIsBetter()
 
 @nohard_constraints AbstractSatisfiabilityProblem
 

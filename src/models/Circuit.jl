@@ -199,6 +199,7 @@ Fields
 -------------------------------
 - `circuit::Circuit`: The circuit expression in simplified form.
 - `symbols::Vector{Symbol}`: The variables in the circuit.
+- `weights::AbstractVector`: The weights of the assignments. The solution size is the weighted sum of the number of satisfied assignments.
 
 Example
 -------------------------------
@@ -236,7 +237,7 @@ julia> flavors(sat)
 (0, 1)
 
 julia> solution_size(sat, [true, false, true, true, false, false, true])
-SolutionSize{Int64}(3, true)
+SolutionSize{Int64}(1, true)
 
 julia> findbest(sat, BruteForce())
 8-element Vector{Vector{Int64}}:
@@ -293,11 +294,11 @@ function _circuit_sat_constraint(expr::Assignment, config)
     dict = Dict(s=>Bool(c) for (s, c) in zip(symbols(expr), config))
     for o in expr.outputs
         @assert haskey(dict, o) "The output variable `$o` is not in the configuration"
-        dict[o] != evaluate_expr(expr.expr, dict) && return true  # not satisfied!
+        dict[o] != evaluate_expr(expr.expr, dict) && return false  # not satisfied!
     end
-    return false
+    return true
 end
-energy_mode(::Type{<:CircuitSAT}) = SmallerSizeIsBetter()
+energy_mode(::Type{<:CircuitSAT}) = LargerSizeIsBetter()
 
 function symbols(expr::Union{Assignment, BooleanExpr, Circuit})
     vars = Symbol[]

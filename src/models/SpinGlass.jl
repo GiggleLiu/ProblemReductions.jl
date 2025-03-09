@@ -8,6 +8,7 @@ Spin Glass is a type of disordered magnetic system that exhibits a glassy behavi
 H(G, \\sigma) = \\sum_{(i,j) \\in E} J_{ij} \\sigma_i \\sigma_j + \\sum_{i \\in V} h_i \\sigma_i
 ```
 where ``J_{ij} \\in \\mathbb{R}`` is the coupling strength between spins ``i`` and ``j``, ``h_i \\in \\mathbb{R}`` is the external field on spin ``i``, and ``\\sigma_i \\in \\{-1, 1\\}`` is the spin variable.
+The configuration of a solution is specified by a binary variable in (0, 1), where 0 and 1 are mapped to spins -1 and 1, respectively.
 
 This definition naturally extends to the case of a [`HyperGraph`](@ref):
 ```math
