@@ -27,7 +27,6 @@ using ProblemReductions, Test, Graphs
     end
 end
 
-
 @testset "size terms - spinglass" begin
     g01 = smallgraph(:diamond)
     sg = SpinGlass(g01, [1, -2, -2, 1, 2], [1, 1, -2, -2])

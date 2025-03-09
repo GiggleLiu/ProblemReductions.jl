@@ -49,12 +49,13 @@ end
 @testset "size terms" begin
     g01 = smallgraph(:diamond)
     IS_01 = IndependentSet(g01)
-    terms = ProblemReductions.size_terms(IS_01)
-    @test length(terms) == 9
+    cons = ProblemReductions.hard_constraints(IS_01)
+    terms = ProblemReductions.local_solution_size(IS_01)
+    @test length(terms) == 4
     for cfg in [[0, 1, 1, 0], [1, 0, 0, 1]]
-        e1 = ProblemReductions._size_eval(terms, cfg)
+        sz = ProblemReductions._size_eval(terms, cfg)
         e2 = ProblemReductions.solution_size(IS_01, cfg)
-        @test (e1 == e2) || (e1 > 1e4 && e2 > 1e4)
+        @test (sz == e2.size) || (!ProblemReductions._is_satisfied(cons, cfg) && !e2.is_valid)
     end
 end
 

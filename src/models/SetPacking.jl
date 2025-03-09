@@ -82,8 +82,8 @@ function _is_satisfied_set_packing(config)
     return count(isone, config) <= 1
 end
 
-function local_solution_spec(c::SetPacking{T}) where T
-    return [LocalSolutionSpec(num_flavors(c), [s], [zero(T), w]) for (w, s) in zip(weights(c), 1:length(c.sets))]
+function local_solution_size(c::SetPacking{T}) where T
+    return [LocalSolutionSize(num_flavors(c), [s], [zero(T), w]) for (w, s) in zip(weights(c), 1:length(c.sets))]
 end
 
 energy_mode(::Type{<:SetPacking}) = LargerSizeIsBetter()

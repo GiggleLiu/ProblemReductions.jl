@@ -35,9 +35,9 @@ function _is_satisfied_noshare(config)
     return count(isone, config) <= 1
 end
 
-function local_solution_spec(c::Matching)
+function local_solution_size(c::Matching)
     # as many edges as possible
-    return [LocalSolutionSpec(num_flavors(c), [e], [zero(w), w]) for (w, e) in zip(weights(c), variables(c))]
+    return [LocalSolutionSize(num_flavors(c), [i], [zero(w), w]) for (i, w) in enumerate(weights(c))]
 end
 energy_mode(::Type{<:Matching}) = LargerSizeIsBetter()
 

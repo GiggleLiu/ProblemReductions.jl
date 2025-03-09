@@ -71,9 +71,9 @@ end
 # check if a configuration satisfies the dominance constraint
 _is_satisfied_dominance(config) = count(isone, config) >= 1
 
-function local_solution_spec(c::DominatingSet)
+function local_solution_size(c::DominatingSet)
     # constraints on vertex and its neighbours
-    return [LocalSolutionSpec(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
+    return [LocalSolutionSize(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 
 energy_mode(::Type{<:DominatingSet}) = SmallerSizeIsBetter()

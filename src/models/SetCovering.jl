@@ -76,8 +76,8 @@ end
 function _is_satisfied_cover(config)
     return count(isone, config) > 0
 end
-function local_solution_spec(c::SetCovering{T}) where T
-    return [LocalSolutionSpec(num_flavors(c), [i], [zero(T), w]) for (i, w) in zip(variables(c), weights(c))]
+function local_solution_size(c::SetCovering{T}) where T
+    return [LocalSolutionSize(num_flavors(c), [i], [zero(T), w]) for (i, w) in zip(variables(c), weights(c))]
 end
 energy_mode(::Type{<:SetCovering}) = SmallerSizeIsBetter()
 

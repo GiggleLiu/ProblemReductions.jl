@@ -75,8 +75,8 @@ function _independence_constraint(config)
     return count(!iszero, config) <= 1
 end
 
-function local_solution_spec(c::IndependentSet)
-    return [LocalSolutionSpec(num_flavors(c), [i], [zero(w), w]) for (w, i) in zip(weights(c), 1:nv(c.graph))]
+function local_solution_size(c::IndependentSet)
+    return [LocalSolutionSize(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 energy_mode(::Type{<:IndependentSet}) = LargerSizeIsBetter()
 

@@ -53,12 +53,12 @@ problem_size(c::PaintShop) = (; sequence_length=length(c.sequence))
 Base.:(==)(a::PaintShop, b::PaintShop) = a.sequence == b.sequence && a.isfirst == b.isfirst
 
 # constraints interface
-function local_solution_spec(c::PaintShop{T}) where T
+function local_solution_size(c::PaintShop{T}) where T
     # constraints on alphabets with the same color
     syms = symbols(c)
     return map(1:length(c.sequence)-1) do i
         a, b = findfirst(==(c.sequence[i]), syms), findfirst(==(c.sequence[i+1]), syms)
-        LocalSolutionSpec(num_flavors(c), [a, b], [_paintshop_constraint(c.isfirst[i], c.isfirst[i+1], config) for config in combinations(num_flavors(c), 2)])
+        LocalSolutionSize(num_flavors(c), [a, b], [_paintshop_constraint(c.isfirst[i], c.isfirst[i+1], config) for config in combinations(num_flavors(c), 2)])
     end
 end
 

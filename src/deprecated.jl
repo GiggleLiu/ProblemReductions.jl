@@ -1,0 +1,1 @@
+@deprecate local_solution_spec local_solution_size

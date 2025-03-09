@@ -284,9 +284,9 @@ set_weights(c::CircuitSAT, weights) = CircuitSAT(c.circuit, weights, c.symbols)
 
 # constraints interface
 @nohard_constraints CircuitSAT
-function local_solution_spec(c::CircuitSAT)
+function local_solution_size(c::CircuitSAT)
     syms = symbols(c.circuit)
-    return [LocalSolutionSpec(num_flavors(c), [findfirst(==(s), syms) for s in symbols(expr)], [w * _circuit_sat_constraint(expr, config) for config in combinations(num_flavors(c), length(symbols(expr)))]) for (w, expr) in zip(c.weights, c.circuit.exprs)]
+    return [LocalSolutionSize(num_flavors(c), [findfirst(==(s), syms) for s in symbols(expr)], [w * _circuit_sat_constraint(expr, config) for config in combinations(num_flavors(c), length(symbols(expr)))]) for (w, expr) in zip(c.weights, c.circuit.exprs)]
 end
 
 function _circuit_sat_constraint(expr::Assignment, config)

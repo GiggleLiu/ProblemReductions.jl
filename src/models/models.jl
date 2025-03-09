@@ -41,7 +41,7 @@ The abstract base type of constraint satisfaction problems. `T` is the type of t
 - [`hard_constraints`](@ref), the specification of the hard constraints. Once the hard constraints are violated, the size goes to infinity.
 - [`is_satisfied`](@ref), check if the hard constraints are satisfied.
 
-- [`local_solution_spec`](@ref), the specification of the size terms as soft constraints, which is associated with weights.
+- [`local_solution_size`](@ref), the specification of the size terms as soft constraints, which is associated with weights.
 - [`weights`](@ref): The weights of the soft constraints.
 - [`set_weights`](@ref): Change the weights for the `problem` and return a new problem instance.
 - [`solution_size`](@ref), the size of the problem given a configuration.
@@ -99,25 +99,25 @@ Problem size defined on a subset of variables of a [`ConstraintSatisfactionProbl
 - `variables`: the indices of the variables involved in the constraint.
 - `specification`: a vector of size `num_flavors^length(variables)`, specifying the local solution sizes.
 """
-struct LocalSolutionSpec{T}
+struct LocalSolutionSize{T}
     num_flavors::Int
     variables::Vector{Int}
     specification::Vector{T}
 end
-num_variables(spec::LocalSolutionSpec) = length(spec.variables)
-function Base.show(io::IO, spec::LocalSolutionSpec{T}) where T
-    print(io, "LocalSolutionSpec{$T}\n")
+num_variables(spec::LocalSolutionSize) = length(spec.variables)
+function Base.show(io::IO, spec::LocalSolutionSize{T}) where T
+    print(io, "LocalSolutionSize{$T}\n")
     data = hcat(collect(combinations(spec.num_flavors, length(spec.variables))), spec.specification)
     header = ["Variables: $(spec.variables)", "Size"]
     pretty_table(io, data, header=header, alignment=:c)
 end
-Base.show(io::IO, ::MIME"text/plain", spec::LocalSolutionSpec) = show(io, spec)
+Base.show(io::IO, ::MIME"text/plain", spec::LocalSolutionSize) = show(io, spec)
 """
-    solution_size(spec::LocalSolutionSpec{WT}, config) where {WT}
+    solution_size(spec::LocalSolutionSize{WT}, config) where {WT}
 
 The local solution size of a local solution configuration.
 """
-function solution_size(spec::LocalSolutionSpec{WT}, config) where {WT}
+function solution_size(spec::LocalSolutionSize{WT}, config) where {WT}
     @assert length(config) == num_variables(spec) "The length of the configuration must be equal to the number of variables in the constraint, got $(length(config)) and $(num_variables(spec))"
     @assert all(x -> 0 <= x <= spec.num_flavors-1, config) "The configuration must be a vector of integers in the range of 0 to $(spec.num_flavors-1)"
     strides = [spec.num_flavors^i for i in 0:length(spec.variables)-1]
@@ -265,70 +265,42 @@ end
 Base.:(==)(s1::SolutionSize, s2::SolutionSize) = s1.size == s2.size && s1.is_valid == s2.is_valid
 Base.isapprox(s1::SolutionSize, s2::SolutionSize; kwargs...) = isapprox(s1.size, s2.size; kwargs...) && s1.is_valid == s2.is_valid
 
-struct LocalSize{LT, N, F, T}
-    variables::Vector{LT}
-    flavors::NTuple{N, F}
-    strides::Vector{Int}
-    solution_sizes::Vector{SolutionSize{T}}
-end
-function Base.show(io::IO, term::LocalSize)
-    println(io, """LocalSize""")
-    entries = []
-    sizes = repeat([length(term.flavors)], length(term.variables))
-    for (idx, size) in zip(CartesianIndices(Tuple(sizes)), term.solution_sizes)
-        push!(entries, [getindex.(Ref(term.flavors), idx.I)..., size.is_valid ? "$(size.size)" : "-"])
-    end
-	pretty_table(io, vcat([reshape(row, 1, :) for row in entries]...); header=[string.(term.variables)..., "solution size"])
-	return nothing
-end
-Base.show(io::IO, ::MIME"text/plain", term::LocalSize) = show(io, term)
-
-
 """
     solution_size(problem::AbstractProblem, config) -> SolutionSize
 
-Size of the `problem` given the configuration `config`.
+Size of the `problem` given the configuration `config`. If you have multiple configurations, use `ProblemReductions.solution_size_multiple` instead for better performance.
 """
 function solution_size(problem::ConstraintSatisfactionProblem, config)
-    terms = size_terms(problem)
-    return _size_eval(terms, config)
+    return first(solution_size_multiple(problem, (config,)))
 end
-function solution_size_multiple(problem::ConstraintSatisfactionProblem, configs)
-    terms = size_terms(problem)
+
+"""
+    solution_size_multiple(problem::ConstraintSatisfactionProblem, configs) -> Vector{SolutionSize}
+
+Size of the `problem` given multiple configurations.
+"""
+function solution_size_multiple(problem::ConstraintSatisfactionProblem{T}, configs) where T
+    cons = hard_constraints(problem)
+    engs = local_solution_size(problem)
     return map(configs) do config
-        _size_eval(terms, config)
+        if _is_satisfied(cons, config)
+            return SolutionSize(_size_eval(engs, config), true)
+        else
+            return SolutionSize(zero(T), false)
+        end
     end
 end
-Base.@propagate_inbounds function _size_eval(terms::AbstractVector{<:LocalSize}, config)
-    return sum(terms) do term
-        k = sum(stride * config[var] for (stride, var) in zip(term.strides, term.variables)) + 1
-        return term.solution_sizes[k]
+Base.@propagate_inbounds function _is_satisfied(terms::AbstractVector{HardConstraint}, config)
+    return all(terms) do term
+        is_satisfied(term, config[term.variables])
     end
 end
 
-size_terms(problem::ConstraintSatisfactionProblem{T}) where T = size_terms(T, problem)
-function size_terms(::Type{T}, problem::ConstraintSatisfactionProblem) where T
-    vars = variables(problem)
-    flvs = flavors(problem)
-    nflv = length(flvs)
-    terms = LocalSize{eltype(vars), length(flvs), eltype(flvs), T}[]
-    for constraint in hard_constraints(problem)
-        sizes = [nflv for _ in constraint.variables]
-        solution_sizes = map(CartesianIndices(Tuple(sizes))) do idx
-            SolutionSize(zero(T), is_satisfied(constraint, idx.I .- 1))
-        end
-        strides = [nflv^i for i in 0:length(constraint.variables)-1]
-        push!(terms, LocalSize(constraint.variables, flvs, strides, vec(solution_sizes)))
+Base.@propagate_inbounds function _size_eval(terms::AbstractVector{LocalSolutionSize{WT}}, config) where WT
+    return sum(terms) do term
+        strides = [term.num_flavors^i for i in 0:length(term.variables)-1]
+        term.specification[sum(i->strides[i] .* config[term.variables[i]], 1:length(term.variables)) + 1]
     end
-    for (i, constraint) in enumerate(local_solution_spec(problem))
-        sizes = [nflv for _ in constraint.variables]
-        solution_sizes = map(CartesianIndices(Tuple(sizes))) do idx
-            SolutionSize(T(solution_size(constraint, getindex.(Ref(flvs), idx.I))), true)
-        end
-        strides = [nflv^i for i in 0:length(constraint.variables)-1]
-        push!(terms, LocalSize(constraint.variables, flvs, strides, vec(solution_sizes)))
-    end
-    return terms
 end
 
 """
@@ -359,11 +331,11 @@ Base.getindex(::UnitWeight, i) = 1
 Base.size(w::UnitWeight) = (w.n,)
 
 """
-    local_solution_spec(problem::AbstractProblem) -> Vector{LocalSolutionSpec}
+    local_solution_size(problem::AbstractProblem) -> Vector{LocalSolutionSize}
 
 The constraints related to the size of the problem. Each term is associated with weights.
 """
-function local_solution_spec end
+function local_solution_size end
 
 """
     hard_constraints(problem::AbstractProblem) -> Vector{HardConstraint}

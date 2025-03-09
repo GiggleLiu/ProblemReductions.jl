@@ -90,8 +90,8 @@ weights(gp::SpinGlass) = vcat(gp.J, gp.h)
 set_weights(c::SpinGlass, weights) = SpinGlass(c.graph, weights[1:ne(c.graph)], weights[ne(c.graph)+1:end])
 
 # constraints interface
-function local_solution_spec(sg::SpinGlass)
-    return vcat([LocalSolutionSpec(num_flavors(sg), _vec(e), [_spin_glass_energy(w, config) for config in combinations(num_flavors(sg), length(_vec(e)))]) for (w, e) in zip(sg.J, edges(sg.graph))], [LocalSolutionSpec(num_flavors(sg), [v], [w, -w]) for (w, v) in zip(sg.h, vertices(sg.graph))])
+function local_solution_size(sg::SpinGlass)
+    return vcat([LocalSolutionSize(num_flavors(sg), _vec(e), [_spin_glass_energy(w, config) for config in combinations(num_flavors(sg), length(_vec(e)))]) for (w, e) in zip(sg.J, edges(sg.graph))], [LocalSolutionSize(num_flavors(sg), [v], [w, -w]) for (w, v) in zip(sg.h, vertices(sg.graph))])
 end
 function _spin_glass_energy(w::T, config) where T
     return w * T(prod(c -> 1 - 2 * c, config))

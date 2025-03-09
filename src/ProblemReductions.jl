@@ -32,7 +32,7 @@ export MaximalIS
 export PaintShop
 
 # rules
-export target_problem, AbstractProblem, ConstraintSatisfactionProblem, solution_size, SolutionSize
+export target_problem, AbstractProblem, ConstraintSatisfactionProblem, solution_size, solution_size_multiple, SolutionSize
 export energy, energy_mode, LargerSizeIsBetter, SmallerSizeIsBetter
 export AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduce_size
 export LogicGadget, truth_table

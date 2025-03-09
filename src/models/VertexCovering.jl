@@ -72,8 +72,8 @@ end
 function _vertex_covering(config)
     return any(!iszero, config)
 end
-function local_solution_spec(c::VertexCovering)
-    return [LocalSolutionSpec(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
+function local_solution_size(c::VertexCovering)
+    return [LocalSolutionSize(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 energy_mode(::Type{<:VertexCovering}) = SmallerSizeIsBetter()
 
