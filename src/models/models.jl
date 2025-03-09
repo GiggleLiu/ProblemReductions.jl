@@ -302,7 +302,7 @@ end
 Base.@propagate_inbounds function _size_eval(terms::AbstractVector{<:LocalSize}, config)
     return sum(terms) do term
         k = sum(stride * config[var] for (stride, var) in zip(term.strides, term.variables)) + 1
-        term.solution_sizes[k]
+        return term.solution_sizes[k]
     end
 end
 

@@ -56,19 +56,16 @@ Base.:(==)(a::PaintShop, b::PaintShop) = a.sequence == b.sequence && a.isfirst =
 function local_solution_spec(c::PaintShop{T}) where T
     # constraints on alphabets with the same color
     syms = symbols(c)
-    return [LocalSolutionSpec(num_flavors(c), [findfirst(==(c.sequence[i]), syms), findfirst(==(c.sequence[i+1]), syms)], [zero(T), zero(T), 1]) for i=1:length(c.sequence)-1]
+    return map(1:length(c.sequence)-1) do i
+        a, b = findfirst(==(c.sequence[i]), syms), findfirst(==(c.sequence[i+1]), syms)
+        LocalSolutionSpec(num_flavors(c), [a, b], [_paintshop_constraint(c.isfirst[i], c.isfirst[i+1], config) for config in combinations(num_flavors(c), 2)])
+    end
 end
 
-"""
-    solution_size(::Type{<:PaintShop{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-
-For [`PaintShop`](@ref), the solution size of a configuration is the number of color switches between adjacent cars.
-"""
-function solution_size(::Type{<:PaintShop{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-    @assert length(config) == num_variables(spec) == 2
-    isfirst1, isfirst2 = spec.specification
+# config is a boolean vector, false for red, true for blue
+function _paintshop_constraint(isfirst1, isfirst2, config)
     c1, c2 = config
-    return (c1 == c2) == (isfirst1 == isfirst2) ? zero(WT) : spec.weight
+    return (c1 == c2) == (isfirst1 == isfirst2) ? false : true
 end
 energy_mode(::Type{<:PaintShop}) = SmallerSizeIsBetter()
 

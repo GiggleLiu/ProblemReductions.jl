@@ -67,24 +67,13 @@ set_weights(c::VertexCovering, weights) = VertexCovering(c.graph, weights)
 
 # constraints interface
 function hard_constraints(c::VertexCovering)
-    return [HardConstraint(_vec(e), :cover) for e in edges(c.graph)]
+    return [HardConstraint(num_flavors(c), _vec(e), [_vertex_covering(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
 end
-function is_satisfied(::Type{<:VertexCovering}, spec::HardConstraint, config)
-    @assert length(config) == num_variables(spec)
+function _vertex_covering(config)
     return any(!iszero, config)
 end
 function local_solution_spec(c::VertexCovering)
-    return [LocalSolutionSpec([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
-end
-
-"""
-    solution_size(::Type{<:VertexCovering{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-
-The solution size of a [`VertexCovering`](@ref) model is the sum of the weights of the selected vertices.
-"""
-function solution_size(::Type{<:VertexCovering{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-    @assert length(config) == num_variables(spec)
-    return WT(first(config)) * spec.weight
+    return [LocalSolutionSpec(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 energy_mode(::Type{<:VertexCovering}) = SmallerSizeIsBetter()
 

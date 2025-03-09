@@ -207,20 +207,13 @@ function local_solution_spec(c::AbstractSatisfiabilityProblem)
     vars = symbols(c)
     return map(zip(clauses(c), weights(c))) do (cl, w)
         idx = [findfirst(==(v), vars) for v in symbols(cl)]
-        LocalSolutionSpec(idx, vars[idx] => cl, w)
+        LocalSolutionSpec(num_flavors(c), idx, [w * _satisfiability_constraint(cl, vars[idx], config) for config in combinations(num_flavors(c), length(idx))])
     end
 end
 
-"""
-    solution_size(::Type{<:AbstractSatisfiabilityProblem}, spec::LocalSolutionSpec, config)
-
-For [`AbstractSatisfiabilityProblem`](@ref), the solution size of a configuration is the number of violated clauses.
-"""
-function solution_size(::Type{<:AbstractSatisfiabilityProblem{S, T}}, spec::LocalSolutionSpec{WT}, config) where {S, T, WT}
-    @assert length(config) == num_variables(spec)
-    vars, expr = spec.specification
+function _satisfiability_constraint(expr, vars, config)
     assignment = Dict(zip(vars, config))
-    return !satisfiable(expr, assignment) ? spec.weight : zero(WT)
+    return !satisfiable(expr, assignment)
 end
 energy_mode(::Type{<:AbstractSatisfiabilityProblem}) = SmallerSizeIsBetter()
 

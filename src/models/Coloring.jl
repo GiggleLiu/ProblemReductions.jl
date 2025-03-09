@@ -54,20 +54,14 @@ set_weights(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
 @nohard_constraints Coloring
 function local_solution_spec(c::Coloring)
     # constraints on edges
-    return [LocalSolutionSpec(_vec(e), :coloring, w) for (w, e) in zip(weights(c), edges(c.graph))]
+    return [LocalSolutionSpec(num_flavors(c), _vec(e), [w * _coloring_constraint(config) for config in combinations(num_flavors(c), 2)]) for (w, e) in zip(weights(c), edges(c.graph))]
 end
-
-"""
-    solution_size(::Type{<:Coloring{K, T}}, spec::LocalSolutionSpec{WT}, config) where {K, T, WT}
-
-For [`Coloring`](@ref), the solution size of a configuration is the number of violated coloring constraints.
-"""
-function solution_size(::Type{<:Coloring{K, T}}, spec::LocalSolutionSpec{WT}, config) where {K, T, WT}
-    @assert length(config) == num_variables(spec)
+# return true if the coloring is valid
+function _coloring_constraint(config)
     a, b = config
-    return a == b ? spec.weight : zero(WT)
+    return a == b ? false : true
 end
-energy_mode(::Type{<:Coloring}) = SmallerSizeIsBetter()
+energy_mode(::Type{<:Coloring}) = LargerSizeIsBetter()
 
 """
     is_vertex_coloring(graph::SimpleGraph, config)

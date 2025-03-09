@@ -60,18 +60,11 @@ set_weights(c::MaxCut, weights) = MaxCut(c.graph, weights)
 
 # constraints interface
 function local_solution_spec(c::MaxCut)
-    return [LocalSolutionSpec(num_flavors(c), _vec(e), [zero(w), w]) for (w, e) in zip(weights(c), edges(c.graph))]
+    return [LocalSolutionSpec(num_flavors(c), _vec(e), [w * _cut_size(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for (w, e) in zip(weights(c), edges(c.graph))]
 end
-
-""" 
-    solution_size(::Type{<:MaxCut{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-
-For [`MaxCut`](@ref), the solution size of a configuration is the number of violated cut constraints.
-"""
-function solution_size(::Type{<:MaxCut{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-    @assert length(config) == num_variables(spec)
+function _cut_size(config)
     a, b = config
-    return (a != b) ? spec.weight : zero(WT)
+    return (a != b) ? true : false
 end
 energy_mode(::Type{<:MaxCut}) = LargerSizeIsBetter()
 

@@ -84,6 +84,7 @@ function extract_symbols!(ex::Assignment, vars::Vector{Symbol})
     append!(vars, ex.outputs)
     extract_symbols!(ex.expr, vars)
 end
+num_variables(ex::Assignment) = length(symbols(ex))
 
 function evaluate_expr(exprs::Vector{Assignment}, dict::Dict{Symbol, Bool})
     for ex in exprs
@@ -284,23 +285,17 @@ set_weights(c::CircuitSAT, weights) = CircuitSAT(c.circuit, weights, c.symbols)
 @nohard_constraints CircuitSAT
 function local_solution_spec(c::CircuitSAT)
     syms = symbols(c.circuit)
-    return [LocalSolutionSpec([findfirst(==(s), syms) for s in symbols(expr)], symbols(expr)=>expr, w) for (w, expr) in zip(c.weights, c.circuit.exprs)]
+    return [LocalSolutionSpec(num_flavors(c), [findfirst(==(s), syms) for s in symbols(expr)], [w * _circuit_sat_constraint(expr, config) for config in combinations(num_flavors(c), length(symbols(expr)))]) for (w, expr) in zip(c.weights, c.circuit.exprs)]
 end
 
-"""
-    solution_size(::Type{<:CircuitSAT{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-
-For [`CircuitSAT`](@ref), the solution size of a configuration is the number of violated constraints.
-"""
-function solution_size(::Type{<:CircuitSAT{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-    @assert length(config) == num_variables(spec)
-    syms, ex = spec.specification
-    dict = Dict(syms[i]=>Bool(c) for (i, c) in enumerate(config))
-    for o in ex.outputs
+function _circuit_sat_constraint(expr::Assignment, config)
+    @assert length(config) == num_variables(expr)
+    dict = Dict(s=>Bool(c) for (s, c) in zip(symbols(expr), config))
+    for o in expr.outputs
         @assert haskey(dict, o) "The output variable `$o` is not in the configuration"
-        dict[o] != evaluate_expr(ex.expr, dict) && return spec.weight  # not satisfied!
+        dict[o] != evaluate_expr(expr.expr, dict) && return true  # not satisfied!
     end
-    return zero(WT)
+    return false
 end
 energy_mode(::Type{<:CircuitSAT}) = SmallerSizeIsBetter()
 

@@ -26,7 +26,7 @@ using Test, ProblemReductions, Graphs
 
     # solution_size
     solution = solution_size(c,[0, 1, 2, 0])
-    @test solution.size == 1
+    @test solution.size == 3
     @test solution.is_valid
     @test is_vertex_coloring(g, [0, 1, 2, 0]) == false
 end

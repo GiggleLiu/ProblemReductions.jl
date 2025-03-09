@@ -39,16 +39,6 @@ function local_solution_spec(c::Matching)
     # as many edges as possible
     return [LocalSolutionSpec(num_flavors(c), [e], [zero(w), w]) for (w, e) in zip(weights(c), variables(c))]
 end
-
-"""
-    solution_size(::Type{<:Matching{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-
-For [`Matching`](@ref), the solution size of a configuration is the number of edges in the matching.
-"""
-function solution_size(::Type{<:Matching{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-    @assert length(config) == num_variables(spec) == 1
-    return WT(first(config)) * spec.weight
-end
 energy_mode(::Type{<:Matching}) = LargerSizeIsBetter()
 
 """

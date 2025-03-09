@@ -69,24 +69,14 @@ set_weights(c::IndependentSet, weights) = IndependentSet(c.graph, weights)
 
 # constraints interface
 function hard_constraints(c::IndependentSet)
-    return [HardConstraint(num_flavors(c), _vec(e), [_is_satisfied_independence(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
+    return [HardConstraint(num_flavors(c), _vec(e), [_independence_constraint(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
 end
-function _is_satisfied_independence(config)
+function _independence_constraint(config)
     return count(!iszero, config) <= 1
 end
 
 function local_solution_spec(c::IndependentSet)
     return [LocalSolutionSpec(num_flavors(c), [i], [zero(w), w]) for (w, i) in zip(weights(c), 1:nv(c.graph))]
-end
-
-"""
-    solution_size(::Type{<:IndependentSet{GT, T}}, spec::LocalSolutionSpec{WT}, config) where {GT, T, WT}
-
-For [`IndependentSet`](@ref), the solution size of a configuration is the weight of vertices in the independent set.
-"""
-function solution_size(::Type{<:IndependentSet{GT, T}}, spec::LocalSolutionSpec{WT}, config) where {GT, T, WT}
-    @assert length(config) == num_variables(spec) == 1
-    return WT(first(config)) * spec.weight
 end
 energy_mode(::Type{<:IndependentSet}) = LargerSizeIsBetter()
 

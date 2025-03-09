@@ -19,7 +19,7 @@ function reduceto(::Type{SpinGlass{<:SimpleGraph}}, maxcut::MaxCut)
     return ReductionMaxCutToSpinGlass(sg)
 end 
 
-extract_solution(::ReductionMaxCutToSpinGlass, sol) = sol .== -1
+extract_solution(::ReductionMaxCutToSpinGlass, sol) = sol
 
 """
 $TYPEDEF
@@ -60,7 +60,7 @@ function reduceto(::Type{<:MaxCut}, sg::SpinGlass{<:SimpleGraph})
 end
 
 function extract_solution(res::ReductionSpinGlassToMaxCut, sol)
-    res.ancilla == 0 && return 1 .- 2 .* sol # no ancilla
-    sol = sol[res.ancilla] == 0 ? 1 .- 2 .* sol : 2 .* sol .- 1  # the last index is the ancilla
+    res.ancilla == 0 && return sol # no ancilla
+    sol = sol[res.ancilla] == 0 ? sol : one(eltype(sol)) .- sol  # the last index is the ancilla
     return deleteat!(copy(sol), res.ancilla)
 end

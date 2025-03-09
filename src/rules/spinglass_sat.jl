@@ -42,7 +42,7 @@ end
 function extract_solution(res::ReductionCircuitToSpinGlass, sol)
     out = zeros(eltype(sol), res.num_source_vars)
     for (k, v) in enumerate(res.variables)
-        out[k] = sol[v] == -1
+        out[k] = sol[v]
     end
     return out
 end 

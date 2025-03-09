@@ -67,15 +67,6 @@ function local_solution_spec(c::MaximalIS)
     return [LocalSolutionSpec(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 
-"""
-    solution_size(::Type{<:MaximalIS{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-
-For [`MaximalIS`](@ref), the solution size of a configuration is the number of vertices in the maximal independent set.
-"""
-function solution_size(::Type{<:MaximalIS{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-    @assert length(config) == num_variables(spec) == 1
-    return WT(first(config)) * spec.weight
-end
 energy_mode(::Type{<:MaximalIS}) = LargerSizeIsBetter()
 
 """

@@ -92,18 +92,4 @@ function local_solution_spec(c::QUBO{T}) where T
 end
 @nohard_constraints QUBO
 
-"""
-    solution_size(::Type{<:QUBO}, spec::LocalSolutionSpec, config)
-
-For [`QUBO`](@ref), the solution size of a configuration is the energy of the QUBO problem.
-"""
-function solution_size(::Type{<:QUBO}, spec::LocalSolutionSpec, config)
-    @assert length(config) == num_variables(spec)
-    if spec.specification == :offdiagonal
-        a, b = config
-        return a * b * spec.weight
-    else
-        return first(config) * spec.weight
-    end
-end
 energy_mode(::Type{<:QUBO}) = SmallerSizeIsBetter()
