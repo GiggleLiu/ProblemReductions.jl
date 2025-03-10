@@ -51,7 +51,6 @@ using Test, ProblemReductions, Graphs
     # test findbest function
     @test findbest(IS_01, BruteForce()) == [[1, 0, 0, 1], [0, 1, 0, 1]] # "1" is superior to "0"
     @test Set( findbest(IS_03, BruteForce()) ) == Set( [[1, 0, 1, 0, 1], [1, 0, 0, 1, 1]] )
-    @test configuration_space_size(IS_01) ≈ 4
 end
 
 @testset "size terms" begin

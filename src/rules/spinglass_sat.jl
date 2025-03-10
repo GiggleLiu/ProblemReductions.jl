@@ -282,7 +282,6 @@ Compute the truth table of a logic gadget.
 """
 function truth_table(ga::LogicGadget; variables=1:num_variables(ga.problem), solver=BruteForce())
     res = findbest(ga.problem, solver)
-    logic_res = map(resi->flavor_to_logical.(typeof(ga.problem), resi), res)
-    dict = infer_logic(logic_res, ga.inputs, ga.outputs)
+    dict = infer_logic(res, ga.inputs, ga.outputs)
     return dict2table(variables[ga.inputs], variables[ga.outputs], dict)
 end

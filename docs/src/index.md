@@ -56,13 +56,6 @@ ProblemReductions.concrete_subtypes(AbstractProblem)
 ```
 Please check [Problems zoo](@ref) and our paper [arXiv:2501.00227](https://arxiv.org/abs/2501.00227) for more their definitions and properties.
 
-```@repl reduction_graph
-using ProblemReductions, Graphs
-problem = IndependentSet(smallgraph(:diamond))
-ProblemReductions.objectives(problem)
-ProblemReductions.constraints(problem)
-```
-
 ### Graph Topology
 
 Model problems are often defined on graphs. When limiting a model problem to a specific graph topology, the hardness of the problem can be drastically different.

@@ -4,14 +4,15 @@
 The abstract base type of computational problems.
 
 ### Required interfaces
-- [`variables`](@ref), the degrees of freedoms in the computational problem.
-- [`flavors`](@ref), the flavors (domain) of a degree of freedom.
-- [`solution_size`](@ref), the size (the lower the better) of the input configuration.
-- [`problem_size`](@ref), the size of the computational problem. e.g. for a graph, it could be `(n_vertices=?, n_edges=?)`.
-
-### Optional interfaces
 - [`num_variables`](@ref), the number of variables in the computational problem.
 - [`num_flavors`](@ref), the number of flavors (domain) of a degree of freedom.
+- [`solution_size`](@ref), the size (the lower the better) of the input configuration.
+- [`problem_size`](@ref), the size of the computational problem. e.g. for a graph, it could be `(n_vertices=?, n_edges=?)`.
+- [`energy_mode`](@ref), the definition of the energy function, which can be `LargerSizeIsBetter` or `SmallerSizeIsBetter`.
+
+### Derived interfaces
+- [`variables`](@ref), the degrees of freedoms in the computational problem.
+- [`flavors`](@ref), the flavors (domain) of a degree of freedom.
 - [`findbest`](@ref), find the best configurations of the input problem.
 """
 abstract type AbstractProblem end
@@ -39,13 +40,14 @@ The abstract base type of constraint satisfaction problems. `T` is the type of t
 
 ### Required interfaces
 - [`constraints`](@ref), the specification of the constraints. Once the constraints are violated, the size goes to infinity.
-- [`is_satisfied`](@ref), check if the constraints are satisfied.
-
 - [`objectives`](@ref), the specification of the size terms as soft constraints, which is associated with weights.
+
+### Optional interfaces
 - [`weights`](@ref): The weights of the soft constraints.
 - [`set_weights`](@ref): Change the weights for the `problem` and return a new problem instance.
-- [`solution_size`](@ref), the size of the problem given a configuration.
-- [`energy_mode`](@ref), the definition of the energy function, which can be `LargerSizeIsBetter` or `SmallerSizeIsBetter`.
+
+### Derived interfaces
+- [`is_satisfied`](@ref), check if the constraints are satisfied.
 """
 abstract type ConstraintSatisfactionProblem{T} <: AbstractProblem end
 
@@ -235,23 +237,6 @@ function config2name(problem::AbstractProblem, config)
 end
 
 """
-    flavor_to_logical(::Type{T}, flavor) -> T
-
-Convert the flavor to a logical value.
-"""
-function flavor_to_logical(::Type{T}, flavor) where T
-    flvs = flavors(T)
-    @assert length(flvs) == 2 "The number of flavors must be 2, got: $(length(flvs))"
-    if flavor == flvs[1]
-        return false
-    elseif flavor == flvs[2]
-        return true
-    else
-        error("The flavor must be one of the flavors $(flvs), got: $(flavor)")
-    end
-end
-
-"""
     num_flavors(::Type{<:AbstractProblem}) -> Int
     num_flavors(::GT) where GT<:AbstractProblem -> Int
 
@@ -312,15 +297,6 @@ Base.@propagate_inbounds function _size_eval(terms::AbstractVector{LocalSolution
 end
 
 """
-$TYPEDSIGNATURES
-
-Return the log2 size of the configuration space of the problem.
-"""
-function configuration_space_size(problem::AbstractProblem)
-    return log2(num_flavors(problem)) * num_variables(problem)
-end
-
-"""
     findbest(problem::AbstractProblem, method) -> Vector
 
 Find the best configurations of the `problem` using the `method`.
@@ -339,7 +315,7 @@ Base.getindex(::UnitWeight, i) = 1
 Base.size(w::UnitWeight) = (w.n,)
 
 """
-    objectives(problem::AbstractProblem) -> Vector{LocalSolutionSize}
+    objectives(problem::AbstractProblem) -> Vector{<:LocalSolutionSize}
 
 The constraints related to the size of the problem. Each term is associated with weights.
 """
