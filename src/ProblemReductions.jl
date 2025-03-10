@@ -11,7 +11,7 @@ export @bit_str
 export TruthTable
 export HyperGraph, UnitDiskGraph, GridGraph, PlanarGraph, SimpleGraph
 export @bv_str, StaticElementVector, StaticBitVector, statictrues, staticfalses, onehotv
-export num_variables, num_flavors, variables, flavors, weights, set_weights, is_weighted, size, weight_type, problem_size, configuration_space_size
+export num_variables, num_flavors, variables, flavors, flavor_names, weights, set_weights, is_weighted, size, weight_type, problem_size
 export UnitWeight
 
 # models
@@ -32,7 +32,7 @@ export MaximalIS
 export PaintShop
 
 # rules
-export target_problem, AbstractProblem, ConstraintSatisfactionProblem, solution_size, SolutionSize
+export target_problem, AbstractProblem, ConstraintSatisfactionProblem, solution_size, solution_size_multiple, SolutionSize, objectives, constraints, energy_mode
 export energy, energy_mode, LargerSizeIsBetter, SmallerSizeIsBetter
 export AbstractReductionResult, reduceto, extract_solution, extract_multiple_solutions, reduce_size
 export LogicGadget, truth_table

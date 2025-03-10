@@ -8,6 +8,7 @@ Spin Glass is a type of disordered magnetic system that exhibits a glassy behavi
 H(G, \\sigma) = \\sum_{(i,j) \\in E} J_{ij} \\sigma_i \\sigma_j + \\sum_{i \\in V} h_i \\sigma_i
 ```
 where ``J_{ij} \\in \\mathbb{R}`` is the coupling strength between spins ``i`` and ``j``, ``h_i \\in \\mathbb{R}`` is the external field on spin ``i``, and ``\\sigma_i \\in \\{-1, 1\\}`` is the spin variable.
+The configuration of a solution is specified by a binary variable in (0, 1), where 0 and 1 are mapped to spins -1 and 1, respectively.
 
 This definition naturally extends to the case of a [`HyperGraph`](@ref):
 ```math
@@ -50,15 +51,15 @@ SpinGlass{SimpleGraph{Int64}, Int64, Vector{Int64}}(SimpleGraph{Int64}(4, [[2, 3
 julia> num_variables(spinglass)  # degrees of freedom
 4
 
-julia> flavors(spinglass)  # flavors of the spins
-(1, -1)
+julia> flavors(spinglass)  # flavors of the spins, 0 for up (+1), 1 for down (-1)
+(0, 1)
 
-julia> solution_size(spinglass, [-1, 1, 1, -1])  # size of a configuration
+julia> solution_size(spinglass, [1, 0, 0, 1])  # size of a configuration
 SolutionSize{Int64}(-2, true)
 
 julia> findbest(spinglass, BruteForce())  # solve the problem with brute force
 1-element Vector{Vector{Int64}}:
- [-1, 1, -1, -1]
+ [1, 0, 1, 1]
 ```
 """
 struct SpinGlass{GT<:AbstractGraph, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
@@ -80,7 +81,8 @@ end
 
 # variables interface
 num_variables(gp::SpinGlass) = nv(gp.graph)
-flavors(::Type{<:SpinGlass}) = (1, -1)
+num_flavors(::Type{<:SpinGlass}) = 2
+flavor_names(::Type{<:SpinGlass}) = ['↑', '↓']
 problem_size(c::SpinGlass) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
@@ -88,18 +90,12 @@ weights(gp::SpinGlass) = vcat(gp.J, gp.h)
 set_weights(c::SpinGlass, weights) = SpinGlass(c.graph, weights[1:ne(c.graph)], weights[ne(c.graph)+1:end])
 
 # constraints interface
-function local_solution_spec(sg::SpinGlass)
-    return vcat([LocalSolutionSpec(_vec(e), :edge, w) for (w, e) in zip(sg.J, edges(sg.graph))], [LocalSolutionSpec([v], :vertex, w) for (w, v) in zip(sg.h, vertices(sg.graph))])
+function objectives(sg::SpinGlass)
+    return vcat([LocalSolutionSize(num_flavors(sg), _vec(e), [_spin_glass_energy(w, config) for config in combinations(num_flavors(sg), length(_vec(e)))]) for (w, e) in zip(sg.J, edges(sg.graph))], [LocalSolutionSize(num_flavors(sg), [v], [w, -w]) for (w, v) in zip(sg.h, vertices(sg.graph))])
 end
-@nohard_constraints SpinGlass
-
-"""
-    solution_size(::Type{<:SpinGlass}, spec::LocalSolutionSpec{WT}, config) where {WT}
-
-The solution size of a [`SpinGlass`](@ref) model is the energy of a configuration.
-"""
-function solution_size(::Type{<:SpinGlass}, spec::LocalSolutionSpec{WT}, config) where {WT}
-    @assert length(config) == num_variables(spec)
-    return WT(spec.specification == :edge ? prod(config) : first(config)) * spec.weight
+function _spin_glass_energy(w::T, config) where T
+    return w * T(prod(c -> 1 - 2 * c, config))
 end
+
+@noconstraints SpinGlass
 energy_mode(::Type{<:SpinGlass}) = SmallerSizeIsBetter()

@@ -60,7 +60,7 @@ Base.:(==)(a::IndependentSet, b::IndependentSet) = a.graph == b.graph && a.weigh
 
 # Variables Interface
 num_variables(gp::IndependentSet) = nv(gp.graph)
-flavors(::Type{<:IndependentSet}) = (0, 1)
+num_flavors(::Type{<:IndependentSet}) = 2
 problem_size(c::IndependentSet) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 # weights interface
@@ -68,26 +68,15 @@ weights(c::IndependentSet) = c.weights
 set_weights(c::IndependentSet, weights) = IndependentSet(c.graph, weights)
 
 # constraints interface
-function hard_constraints(c::IndependentSet)
-    return [HardConstraint(_vec(e), :independence) for e in edges(c.graph)]
+function constraints(c::IndependentSet)
+    return [LocalConstraint(num_flavors(c), _vec(e), [_independence_constraint(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
 end
-function is_satisfied(::Type{<:IndependentSet}, spec::HardConstraint, config)
-    @assert length(config) == num_variables(spec)
+function _independence_constraint(config)
     return count(!iszero, config) <= 1
 end
 
-function local_solution_spec(c::IndependentSet)
-    return [LocalSolutionSpec([i], :num_vertex, w) for (w, i) in zip(weights(c), 1:nv(c.graph))]
-end
-
-"""
-    solution_size(::Type{<:IndependentSet{GT, T}}, spec::LocalSolutionSpec{WT}, config) where {GT, T, WT}
-
-For [`IndependentSet`](@ref), the solution size of a configuration is the weight of vertices in the independent set.
-"""
-function solution_size(::Type{<:IndependentSet{GT, T}}, spec::LocalSolutionSpec{WT}, config) where {GT, T, WT}
-    @assert length(config) == num_variables(spec) == 1
-    return WT(first(config)) * spec.weight
+function objectives(c::IndependentSet)
+    return [LocalSolutionSize(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 energy_mode(::Type{<:IndependentSet}) = LargerSizeIsBetter()
 

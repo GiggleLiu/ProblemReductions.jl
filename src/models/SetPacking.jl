@@ -63,39 +63,29 @@ problem_size(c::SetPacking) = (; num_elements = length(c.elements), num_sets = l
 
 # Variables Interface
 num_variables(c::SetPacking) = length(c.sets)
-flavors(::Type{<:SetPacking}) = (0, 1)
+num_flavors(::Type{<:SetPacking}) = 2
 
 weights(c::SetPacking) = c.weights
 set_weights(c::SetPacking, weights::Vector{T}) where {T} = SetPacking(c.sets, weights)
 
 # constraints interface
-function hard_constraints(c::SetPacking)  # sets sharing the same element
+function constraints(c::SetPacking)  # sets sharing the same element
     d = Dict{eltype(c.elements), Vector{Int}}()
     for (i, set) in enumerate(c.sets)
         for e in set
             push!(get!(()->Int[], d, e), i)
         end
     end
-    return [HardConstraint(v, :independence) for v in values(d)]
+    return [LocalConstraint(num_flavors(c), v, [_is_satisfied_set_packing(config) for config in combinations(num_flavors(c), length(v))]) for v in values(d)]
 end
-function is_satisfied(::Type{<:SetPacking}, spec::HardConstraint, config)
-    @assert length(config) == num_variables(spec)
+function _is_satisfied_set_packing(config)
     return count(isone, config) <= 1
 end
 
-function local_solution_spec(c::SetPacking)  # sets sharing the same element
-    return [LocalSolutionSpec([s], :set, w) for (w, s) in zip(weights(c), 1:length(c.sets))]
+function objectives(c::SetPacking{T}) where T
+    return [LocalSolutionSize(num_flavors(c), [s], [zero(T), w]) for (w, s) in zip(weights(c), 1:length(c.sets))]
 end
 
-"""
-    solution_size(::Type{<:SetPacking}, spec::LocalSolutionSpec, config)
-
-For [`SetPacking`](@ref), the solution size of a configuration is the total weight of the sets that are selected.
-"""
-function solution_size(::Type{<:SetPacking}, spec::LocalSolutionSpec{WT}, config) where {WT}
-    @assert length(config) == num_variables(spec) == 1
-    return WT(first(config)) * spec.weight
-end
 energy_mode(::Type{<:SetPacking}) = LargerSizeIsBetter()
 
 """
