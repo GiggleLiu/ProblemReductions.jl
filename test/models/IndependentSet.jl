@@ -28,6 +28,14 @@ using Test, ProblemReductions, Graphs
     @test problem_size(IS_01) == (; num_vertices = 4, num_edges = 4)
     @test problem_size(IS_03) == (; num_vertices = 5, num_edges = 2)
 
+    # show constraints
+    cons = ProblemReductions.constraints(IS_01)
+    @test length(cons) == ne(g01)
+    sizes = ProblemReductions.local_solution_size(IS_01)
+    @test length(sizes) == nv(g01)
+    @info "constraints: $cons"
+    @info "sizes: $sizes"
+
     # variables
     @test variables(IS_01) == [1, 2, 3, 4]
     @test num_variables(IS_01) == 4

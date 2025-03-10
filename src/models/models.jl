@@ -58,11 +58,17 @@ A constraint for specifying a [`ConstraintSatisfactionProblem`](@ref), which is 
 - `num_flavors`: the number of flavors (domain) of a degree of freedom.
 - `variables`: the indices of the variables involved in the constraint.
 - `specification`: a boolean vector of length `num_flavors^length(variables)`, specifying whether a configuration is valid.
+- `strides`: the strides of the variables, to index the specification vector.
 """
 struct Constraint
     num_flavors::Int
     variables::Vector{Int}
     specification::Vector{Bool}
+    strides::Vector{Int}
+end
+function Constraint(num_flavors::Int, variables::Vector{Int}, specification::Vector{Bool})
+    strides = [num_flavors^i for i in 0:(length(variables)-1)]
+    return Constraint(num_flavors, variables, specification, strides)
 end
 num_variables(spec::Constraint) = length(spec.variables)
 function combinations(num_flavors::Int, num_variables::Int)
@@ -71,8 +77,8 @@ function combinations(num_flavors::Int, num_variables::Int)
 end
 function Base.show(io::IO, spec::Constraint)
     print(io, "Constraint\n")
-    data = hcat(collect(combinations(spec.num_flavors, spec.num_variables)), spec.specification)
-    header = ["Config", "Valid"]
+    data = hcat(collect(combinations(spec.num_flavors, length(spec.variables))), spec.specification)
+    header = ["Variables: $(spec.variables)", "Valid"]
     pretty_table(io, data, header=header, alignment=:c)
 end
 Base.show(io::IO, ::MIME"text/plain", spec::Constraint) = show(io, spec)
@@ -85,8 +91,7 @@ Check if the `constraint` is satisfied by the configuration `config`.
 function is_satisfied(constraint::Constraint, config)
     @assert length(config) == num_variables(constraint) "The length of the configuration must be equal to the number of variables in the constraint, got $(length(config)) and $(num_variables(constraint))"
     @assert all(x -> 0 <= x <= constraint.num_flavors-1, config) "The configuration must be a vector of integers in the range of 0 to $(constraint.num_flavors-1)"
-    strides = [constraint.num_flavors^i for i in 0:length(constraint.variables)-1]
-    k = sum(stride * c for (stride, c, var) in zip(strides, config, constraint.variables)) + 1
+    k = sum(stride * c for (stride, c, var) in zip(constraint.strides, config, constraint.variables)) + 1
     return constraint.specification[k]
 end
 function is_satisfied(problem::ConstraintSatisfactionProblem, config)
@@ -102,11 +107,17 @@ Problem size defined on a subset of variables of a [`ConstraintSatisfactionProbl
 - `num_flavors`: the number of flavors (domain) of a degree of freedom.
 - `variables`: the indices of the variables involved in the constraint.
 - `specification`: a vector of size `num_flavors^length(variables)`, specifying the local solution sizes.
+- `strides`: the strides of the variables, to index the specification vector.
 """
 struct LocalSolutionSize{T}
     num_flavors::Int
     variables::Vector{Int}
     specification::Vector{T}
+    strides::Vector{Int}
+end
+function LocalSolutionSize(num_flavors::Int, variables::Vector{Int}, specification::Vector{T}) where T
+    strides = [num_flavors^i for i in 0:(length(variables)-1)]
+    return LocalSolutionSize(num_flavors, variables, specification, strides)
 end
 num_variables(spec::LocalSolutionSize) = length(spec.variables)
 function Base.show(io::IO, spec::LocalSolutionSize{T}) where T
@@ -124,8 +135,7 @@ The local solution size of a local solution configuration.
 function solution_size(spec::LocalSolutionSize{WT}, config) where {WT}
     @assert length(config) == num_variables(spec) "The length of the configuration must be equal to the number of variables in the constraint, got $(length(config)) and $(num_variables(spec))"
     @assert all(x -> 0 <= x <= spec.num_flavors-1, config) "The configuration must be a vector of integers in the range of 0 to $(spec.num_flavors-1)"
-    strides = [spec.num_flavors^i for i in 0:length(spec.variables)-1]
-    k = sum(stride * c for (stride, c, var) in zip(strides, config, spec.variables)) + 1
+    k = sum(stride * c for (stride, c, var) in zip(spec.strides, config, spec.variables)) + 1
     return spec.specification[k]
 end
 
@@ -294,8 +304,11 @@ end
 
 Base.@propagate_inbounds function _size_eval(terms::AbstractVector{LocalSolutionSize{WT}}, config) where WT
     return sum(terms) do term
-        strides = [term.num_flavors^i for i in 0:length(term.variables)-1]
-        term.specification[sum(i->strides[i] .* config[term.variables[i]], 1:length(term.variables)) + 1]
+        idx = 1  # NOTE: this is faster than mapreduce, or sum. Do not change it back.
+        for i in 1:length(term.variables)
+            idx += term.strides[i] * config[term.variables[i]]
+        end
+        return term.specification[idx]
     end
 end
 
