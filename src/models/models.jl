@@ -41,7 +41,7 @@ The abstract base type of constraint satisfaction problems. `T` is the type of t
 - [`constraints`](@ref), the specification of the constraints. Once the constraints are violated, the size goes to infinity.
 - [`is_satisfied`](@ref), check if the constraints are satisfied.
 
-- [`local_solution_size`](@ref), the specification of the size terms as soft constraints, which is associated with weights.
+- [`objectives`](@ref), the specification of the size terms as soft constraints, which is associated with weights.
 - [`weights`](@ref): The weights of the soft constraints.
 - [`set_weights`](@ref): Change the weights for the `problem` and return a new problem instance.
 - [`solution_size`](@ref), the size of the problem given a configuration.
@@ -60,35 +60,35 @@ A constraint for specifying a [`ConstraintSatisfactionProblem`](@ref), which is 
 - `specification`: a boolean vector of length `num_flavors^length(variables)`, specifying whether a configuration is valid.
 - `strides`: the strides of the variables, to index the specification vector.
 """
-struct Constraint
+struct LocalConstraint
     num_flavors::Int
     variables::Vector{Int}
     specification::Vector{Bool}
     strides::Vector{Int}
 end
-function Constraint(num_flavors::Int, variables::Vector{Int}, specification::Vector{Bool})
+function LocalConstraint(num_flavors::Int, variables::Vector{Int}, specification::Vector{Bool})
     strides = [num_flavors^i for i in 0:(length(variables)-1)]
-    return Constraint(num_flavors, variables, specification, strides)
+    return LocalConstraint(num_flavors, variables, specification, strides)
 end
-num_variables(spec::Constraint) = length(spec.variables)
+num_variables(spec::LocalConstraint) = length(spec.variables)
 function combinations(num_flavors::Int, num_variables::Int)
     strides = [num_flavors^i for i in 0:(num_variables-1)]
     return [mod.(i .÷ strides, num_flavors) for i in 0:(num_flavors^num_variables-1)]
 end
-function Base.show(io::IO, spec::Constraint)
-    print(io, "Constraint\n")
+function Base.show(io::IO, spec::LocalConstraint)
+    print(io, "LocalConstraint on $(spec.variables)\n")
     data = hcat(collect(combinations(spec.num_flavors, length(spec.variables))), spec.specification)
-    header = ["Variables: $(spec.variables)", "Valid"]
+    header = ["Configuration", "Valid"]
     pretty_table(io, data, header=header, alignment=:c)
 end
-Base.show(io::IO, ::MIME"text/plain", spec::Constraint) = show(io, spec)
+Base.show(io::IO, ::MIME"text/plain", spec::LocalConstraint) = show(io, spec)
 """
-    is_satisfied(constraint::Constraint, config) -> Bool
+    is_satisfied(constraint::LocalConstraint, config) -> Bool
     is_satisfied(problem::ConstraintSatisfactionProblem, config) -> Bool
 
 Check if the `constraint` is satisfied by the configuration `config`.
 """
-function is_satisfied(constraint::Constraint, config)
+function is_satisfied(constraint::LocalConstraint, config)
     @assert length(config) == num_variables(constraint) "The length of the configuration must be equal to the number of variables in the constraint, got $(length(config)) and $(num_variables(constraint))"
     @assert all(x -> 0 <= x <= constraint.num_flavors-1, config) "The configuration must be a vector of integers in the range of 0 to $(constraint.num_flavors-1)"
     k = sum(stride * c for (stride, c, var) in zip(constraint.strides, config, constraint.variables)) + 1
@@ -121,9 +121,9 @@ function LocalSolutionSize(num_flavors::Int, variables::Vector{Int}, specificati
 end
 num_variables(spec::LocalSolutionSize) = length(spec.variables)
 function Base.show(io::IO, spec::LocalSolutionSize{T}) where T
-    print(io, "LocalSolutionSize{$T}\n")
+    print(io, "LocalSolutionSize{$T} on $(spec.variables)\n")
     data = hcat(collect(combinations(spec.num_flavors, length(spec.variables))), spec.specification)
-    header = ["Variables: $(spec.variables)", "Size"]
+    header = ["Configuration", "Size"]
     pretty_table(io, data, header=header, alignment=:c)
 end
 Base.show(io::IO, ::MIME"text/plain", spec::LocalSolutionSize) = show(io, spec)
@@ -294,7 +294,7 @@ Size of the `problem` given multiple configurations.
 """
 function solution_size_multiple(problem::ConstraintSatisfactionProblem{T}, configs) where T
     cons = constraints(problem)
-    engs = local_solution_size(problem)
+    engs = objectives(problem)
     return map(configs) do config
         is_valid = all(term -> is_satisfied(term, config[term.variables]), cons)
         return SolutionSize(_size_eval(engs, config), is_valid)
@@ -339,14 +339,14 @@ Base.getindex(::UnitWeight, i) = 1
 Base.size(w::UnitWeight) = (w.n,)
 
 """
-    local_solution_size(problem::AbstractProblem) -> Vector{LocalSolutionSize}
+    objectives(problem::AbstractProblem) -> Vector{LocalSolutionSize}
 
 The constraints related to the size of the problem. Each term is associated with weights.
 """
-function local_solution_size end
+function objectives end
 
 """
-    constraints(problem::AbstractProblem) -> Vector{Constraint}
+    constraints(problem::AbstractProblem) -> Vector{LocalConstraint}
 
 The constraints of the problem.
 """
@@ -355,7 +355,7 @@ function constraints end
 macro noconstraints(problem)
     esc(quote
         function $ProblemReductions.constraints(problem::$(problem))
-            return Constraint[]
+            return LocalConstraint[]
         end
     end)
 end

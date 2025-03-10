@@ -84,7 +84,7 @@ function weights(c::QUBO)
 end
 
 # constraints interface
-function local_solution_size(c::QUBO{T}) where T
+function objectives(c::QUBO{T}) where T
     return vcat(
         [LocalSolutionSize(num_flavors(c), [i, j], [zero(T), zero(T), zero(T), c.matrix[i, j] + c.matrix[j, i]]) for i in variables(c), j in variables(c) if i < j && (c.matrix[i, j] != 0 || c.matrix[j, i] != 0)],
         [LocalSolutionSize(num_flavors(c), [i], [zero(T), c.matrix[i, i]]) for i in variables(c) if c.matrix[i, i] != 0]

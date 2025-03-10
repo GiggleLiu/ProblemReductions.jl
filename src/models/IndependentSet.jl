@@ -69,13 +69,13 @@ set_weights(c::IndependentSet, weights) = IndependentSet(c.graph, weights)
 
 # constraints interface
 function constraints(c::IndependentSet)
-    return [Constraint(num_flavors(c), _vec(e), [_independence_constraint(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
+    return [LocalConstraint(num_flavors(c), _vec(e), [_independence_constraint(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
 end
 function _independence_constraint(config)
     return count(!iszero, config) <= 1
 end
 
-function local_solution_size(c::IndependentSet)
+function objectives(c::IndependentSet)
     return [LocalSolutionSize(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 energy_mode(::Type{<:IndependentSet}) = LargerSizeIsBetter()

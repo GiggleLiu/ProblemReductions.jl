@@ -59,7 +59,7 @@ weights(c::MaxCut) = c.weights
 set_weights(c::MaxCut, weights) = MaxCut(c.graph, weights)
 
 # constraints interface
-function local_solution_size(c::MaxCut)
+function objectives(c::MaxCut)
     return [LocalSolutionSize(num_flavors(c), _vec(e), [w * _cut_size(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for (w, e) in zip(weights(c), edges(c.graph))]
 end
 function _cut_size(config)

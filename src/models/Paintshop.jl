@@ -53,7 +53,7 @@ problem_size(c::PaintShop) = (; sequence_length=length(c.sequence))
 Base.:(==)(a::PaintShop, b::PaintShop) = a.sequence == b.sequence && a.isfirst == b.isfirst
 
 # constraints interface
-function local_solution_size(c::PaintShop{T}) where T
+function objectives(c::PaintShop{T}) where T
     # constraints on alphabets with the same color
     syms = symbols(c)
     return map(1:length(c.sequence)-1) do i

@@ -203,7 +203,7 @@ weights(c::KSatisfiability) = c.weights
 set_weights(c::KSatisfiability{K}, weights::AbstractVector{WT}) where {K, WT} = KSatisfiability{K}(c.symbols, c.cnf, weights, c.allow_less)
 
 # constraints interface
-function local_solution_size(c::AbstractSatisfiabilityProblem)
+function objectives(c::AbstractSatisfiabilityProblem)
     vars = symbols(c)
     return map(zip(clauses(c), weights(c))) do (cl, w)
         idx = [findfirst(==(v), vars) for v in symbols(cl)]

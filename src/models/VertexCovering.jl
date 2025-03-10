@@ -67,12 +67,12 @@ set_weights(c::VertexCovering, weights) = VertexCovering(c.graph, weights)
 
 # constraints interface
 function constraints(c::VertexCovering)
-    return [Constraint(num_flavors(c), _vec(e), [_vertex_covering(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
+    return [LocalConstraint(num_flavors(c), _vec(e), [_vertex_covering(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
 end
 function _vertex_covering(config)
     return any(!iszero, config)
 end
-function local_solution_size(c::VertexCovering)
+function objectives(c::VertexCovering)
     return [LocalSolutionSize(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 energy_mode(::Type{<:VertexCovering}) = SmallerSizeIsBetter()

@@ -76,13 +76,13 @@ function constraints(c::SetPacking)  # sets sharing the same element
             push!(get!(()->Int[], d, e), i)
         end
     end
-    return [Constraint(num_flavors(c), v, [_is_satisfied_set_packing(config) for config in combinations(num_flavors(c), length(v))]) for v in values(d)]
+    return [LocalConstraint(num_flavors(c), v, [_is_satisfied_set_packing(config) for config in combinations(num_flavors(c), length(v))]) for v in values(d)]
 end
 function _is_satisfied_set_packing(config)
     return count(isone, config) <= 1
 end
 
-function local_solution_size(c::SetPacking{T}) where T
+function objectives(c::SetPacking{T}) where T
     return [LocalSolutionSize(num_flavors(c), [s], [zero(T), w]) for (w, s) in zip(weights(c), 1:length(c.sets))]
 end
 

@@ -284,7 +284,7 @@ set_weights(c::CircuitSAT, weights) = CircuitSAT(c.circuit, weights, c.symbols)
 
 # constraints interface
 @noconstraints CircuitSAT
-function local_solution_size(c::CircuitSAT)
+function objectives(c::CircuitSAT)
     syms = symbols(c.circuit)
     return [LocalSolutionSize(num_flavors(c), [findfirst(==(s), syms) for s in symbols(expr)], [w * _circuit_sat_constraint(expr, config) for config in combinations(num_flavors(c), length(symbols(expr)))]) for (w, expr) in zip(c.weights, c.circuit.exprs)]
 end

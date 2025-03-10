@@ -31,7 +31,7 @@ using Test, ProblemReductions, Graphs
     # show constraints
     cons = ProblemReductions.constraints(IS_01)
     @test length(cons) == ne(g01)
-    sizes = ProblemReductions.local_solution_size(IS_01)
+    sizes = ProblemReductions.objectives(IS_01)
     @test length(sizes) == nv(g01)
     @info "constraints: $cons"
     @info "sizes: $sizes"
@@ -58,7 +58,7 @@ end
     g01 = smallgraph(:diamond)
     IS_01 = IndependentSet(g01)
     cons = ProblemReductions.constraints(IS_01)
-    terms = ProblemReductions.local_solution_size(IS_01)
+    terms = ProblemReductions.objectives(IS_01)
     @test length(terms) == 4
     for cfg in [[0, 1, 1, 0], [1, 0, 0, 1]]
         sz = ProblemReductions._size_eval(terms, cfg)

@@ -31,7 +31,7 @@ end
     g01 = smallgraph(:diamond)
     sg = SpinGlass(g01, [1, -2, -2, 1, 2], [1, 1, -2, -2])
     cons = ProblemReductions.constraints(sg)
-    terms = ProblemReductions.local_solution_size(sg)
+    terms = ProblemReductions.objectives(sg)
     for cfg in [ProblemReductions.name2config(sg, ['↓', '↑', '↑', '↓']), ProblemReductions.name2config(sg, ['↑', '↓', '↓', '↑'])]
         @test ProblemReductions._size_eval(terms, cfg) == ProblemReductions.solution_size(sg, cfg).size
         @test ProblemReductions.is_satisfied(sg, cfg) == ProblemReductions.solution_size(sg, cfg).is_valid

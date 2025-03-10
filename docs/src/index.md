@@ -54,7 +54,14 @@ The required interfaces are specified in [`AbstractProblem`](@ref). The followin
 ```@repl reduction_graph
 ProblemReductions.concrete_subtypes(AbstractProblem)
 ```
-Please check [Problems zoo](@ref) for more details.
+Please check [Problems zoo](@ref) and our paper [arXiv:2501.00227](https://arxiv.org/abs/2501.00227) for more their definitions and properties.
+
+```@repl reduction_graph
+using ProblemReductions, Graphs
+problem = IndependentSet(smallgraph(:diamond))
+ProblemReductions.objectives(problem)
+ProblemReductions.constraints(problem)
+```
 
 ### Graph Topology
 

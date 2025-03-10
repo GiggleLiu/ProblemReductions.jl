@@ -65,13 +65,13 @@ set_weights(c::DominatingSet, weights) = DominatingSet(c.graph, weights)
 function constraints(c::DominatingSet)
     return map(vertices(c.graph)) do v
         nbs = vcat(v, neighbors(c.graph, v))
-        Constraint(num_flavors(c), nbs, [_is_satisfied_dominance(config) for config in combinations(num_flavors(c), length(nbs))])
+        LocalConstraint(num_flavors(c), nbs, [_is_satisfied_dominance(config) for config in combinations(num_flavors(c), length(nbs))])
     end
 end
 # check if a configuration satisfies the dominance constraint
 _is_satisfied_dominance(config) = count(isone, config) >= 1
 
-function local_solution_size(c::DominatingSet)
+function objectives(c::DominatingSet)
     # constraints on vertex and its neighbours
     return [LocalSolutionSize(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end

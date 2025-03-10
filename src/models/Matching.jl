@@ -29,13 +29,13 @@ set_weights(c::Matching, weights) = Matching(c.graph, weights)
 # constraints interface
 function constraints(c::Matching)
     # edges sharing a vertex cannot be both in the matching
-    return [Constraint(num_flavors(c), [i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)], [_is_satisfied_noshare(config) for config in combinations(num_flavors(c), length([i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)]))]) for v in vertices(c.graph)]
+    return [LocalConstraint(num_flavors(c), [i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)], [_is_satisfied_noshare(config) for config in combinations(num_flavors(c), length([i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)]))]) for v in vertices(c.graph)]
 end
 function _is_satisfied_noshare(config)
     return count(isone, config) <= 1
 end
 
-function local_solution_size(c::Matching)
+function objectives(c::Matching)
     # as many edges as possible
     return [LocalSolutionSize(num_flavors(c), [i], [zero(w), w]) for (i, w) in enumerate(weights(c))]
 end

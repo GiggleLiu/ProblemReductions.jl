@@ -57,13 +57,13 @@ weights(c::MaximalIS) = c.weights
 set_weights(c::MaximalIS, weights) = MaximalIS(c.graph, weights)
 
 function constraints(c::MaximalIS)
-    return [Constraint(num_flavors(c), vcat(v, neighbors(c.graph, v)), [_is_satisfied_maximal_independence(config) for config in combinations(num_flavors(c), length(vcat(v, neighbors(c.graph, v))))]) for v in vertices(c.graph)]
+    return [LocalConstraint(num_flavors(c), vcat(v, neighbors(c.graph, v)), [_is_satisfied_maximal_independence(config) for config in combinations(num_flavors(c), length(vcat(v, neighbors(c.graph, v))))]) for v in vertices(c.graph)]
 end
 function _is_satisfied_maximal_independence(config)
     return (config[1] == 1 && all(i -> iszero(config[i]), 2:length(config))) || (config[1] == 0 && !all(i -> iszero(config[i]), 2:length(config)))
 end
 # constraints interface
-function local_solution_size(c::MaximalIS)
+function objectives(c::MaximalIS)
     return [LocalSolutionSize(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 
