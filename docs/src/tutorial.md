@@ -65,7 +65,7 @@ ProblemReductions.findbest(problem, BruteForce()) # Find the best configuration 
 ```
 
 #### Remarks
-- Configuration Format: Solutions are represented as vectors of 0s and 1s, where each element represents a variable's state.
+- Configuration Format: Solutions are represented as vectors of integers in the range of `0:num_flavors(problem)-1`, where each element represents a variable's state.
 - Optimization: The [`findbest`](@ref) method allows you to find optimal solutions using different algorithms (like [`BruteForce`](@ref) in this example). Alternatively, you can use the `GTNSolver` in the `GenericTensorNetworks` package to find optimal solutions using tensor network methods.
 
 This API provides a comprehensive toolkit for defining, manipulating, and solving constraint satisfaction problems in Julia.
