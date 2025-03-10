@@ -1,7 +1,5 @@
 using Test, ProblemReductions, Graphs
 
-# create a graph
-
 @testset "coloring" begin
     # constructor function
     @test flavors(Coloring{3}) == (0, 1, 2)
@@ -28,6 +26,21 @@ using Test, ProblemReductions, Graphs
     solution = solution_size(c,[0, 1, 2, 0])
     @test solution.size == 3
     @test solution.is_valid
-    @test is_vertex_coloring(g, [0, 1, 2, 0]) == false
+    @test !is_vertex_coloring(g, [0, 1, 2, 0])
 end
 
+
+@testset "coloring - SAT" begin
+    g = SimpleGraph(4)
+    add_edge!(g, 1, 2)
+    add_edge!(g, 2, 3)
+    add_edge!(g, 3, 4)
+    add_edge!(g, 4, 1)
+    c = Coloring{3}(g; use_constraints=true)
+    @test !ProblemReductions.is_satisfied(c, [0, 1, 2, 0])
+    @test ProblemReductions.is_satisfied(c, [0, 1, 2, 1])
+
+    c = Coloring{3}(g; use_constraints=false)
+    @test ProblemReductions.is_satisfied(c, [0, 1, 2, 0])
+    @test ProblemReductions.is_satisfied(c, [0, 1, 2, 1])
+end

@@ -1,5 +1,6 @@
 using ProblemReductions, Test, Graphs
 using ProblemReductions: KSatisfiability,clauses
+
 @testset "satisfiability" begin
     bv1 = BoolVar("x")
     bv2 = BoolVar("y")
@@ -30,6 +31,7 @@ using ProblemReductions: KSatisfiability,clauses
     cfg = [0, 0, 1, 0]
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(sat_test.cnf, assignment) == false
+    @test ProblemReductions.is_satisfied(sat_test, cfg) == true   # this is true because we are not using constraints
     @test solution_size(sat_test, cfg) == SolutionSize(sum(ProblemReductions.weights(sat_test))-1, true)
 
     res = findbest(sat_test, BruteForce())
@@ -52,4 +54,15 @@ using ProblemReductions: KSatisfiability,clauses
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(ksat_test.cnf, assignment) == true
     @test solution_size(ksat_test, cfg) == SolutionSize(sum(ProblemReductions.weights(ksat_test)), true)
+end
+
+@testset "k-satisfiability - sat" begin
+    cnf = CNF([CNFClause([BoolVar("x"), BoolVar("y"), BoolVar("z")])])
+    ksat = KSatisfiability{3}(cnf; use_constraints=true)
+    @test ProblemReductions.is_satisfied(ksat, [1, 1, 1])
+    @test !ProblemReductions.is_satisfied(ksat, [0, 0, 0])
+
+    sat = Satisfiability(cnf; use_constraints=true)
+    @test ProblemReductions.is_satisfied(sat, [1, 1, 1])
+    @test !ProblemReductions.is_satisfied(sat, [0, 0, 0])
 end

@@ -102,16 +102,19 @@ end
 
 The abstract type for [`Satisfiability`](@ref) and [`KSatisfiability`](@ref).
 """
-abstract type AbstractSatisfiabilityProblem{S, T} <: ConstraintSatisfactionProblem{T} end
+abstract type AbstractSatisfiabilityProblem{S, T, OBJ} <: ConstraintSatisfactionProblem{T} end
 
 """
 $TYPEDEF
+    Satisfiability(cnf::CNF{S}, weights::AbstractVector=UnitWeight(length(cnf.clauses)); use_constraints::Bool=false) where {S}
 
 Satisfiability (also called SAT) problem is to find the boolean assignment that satisfies a Conjunctive Normal Form (CNF). A tipical CNF would look like:
 ```math
 \\left(l_{11} \\vee \\ldots \\vee l_{1 n_1}\\right) \\wedge \\ldots \\wedge\\left(l_{m 1} \\vee \\ldots \\vee l_{m n_m}\\right)
 ```
 where literals are joint by ``\\vee`` to for ``m`` clauses and clauses are joint by ``\\wedge`` to form a CNF.
+The satisfiability problem is to find the assignment that maximizes the number of satisfied clauses if `use_constraints` is `false`,
+otherwise, the goal is to find one assignment that can satisfy the CNF.
 
 We should note that all the SAT problem problem can be reduced to the 3-SAT problem and it can be proved that 3-SAT is NP-complete.
 
@@ -145,17 +148,19 @@ julia> sat_test = Satisfiability(cnf_test)
 Satisfiability{String, Int64, UnitWeight}(["x", "y", "z", "w"], [1, 1], (x ∨ y ∨ z) ∧ (w ∨ x ∨ ¬x))
 ```
 """
-struct Satisfiability{S, T, WT<:AbstractArray{T}} <:AbstractSatisfiabilityProblem{S, T}
+struct Satisfiability{S, T, WT<:AbstractArray{T}, OBJ} <:AbstractSatisfiabilityProblem{S, T, OBJ}
     symbols::Vector{S}
     weights::WT
     cnf::CNF{S}
-    function Satisfiability(symbols::Vector{S}, cnf::CNF{S}, weights::WT) where {S, T, WT<:AbstractArray{T}}
+    function Satisfiability{OBJ}(symbols::Vector{S}, cnf::CNF{S}, weights::WT) where {S, T, WT<:AbstractArray{T}, OBJ}
         @assert length(weights) == length(cnf.clauses) "length of weights must be equal to the number of clauses $(length(cnf.clauses)), got: $(length(weights))"
-        new{S, T, WT}(symbols, weights, cnf)
+        @assert OBJ == EXTREMA || weights isa UnitWeight "Only unit weights are supported for SAT objective type."
+        new{S, T, WT, OBJ}(symbols, weights, cnf)
     end
 end
-function Satisfiability(cnf::CNF{S}, weights::AbstractVector=UnitWeight(length(cnf.clauses))) where {S}
-    Satisfiability(symbols(cnf), cnf, weights)
+function Satisfiability(cnf::CNF{S}, weights::AbstractVector=UnitWeight(length(cnf.clauses)); use_constraints::Bool=false) where {S}
+    OBJ = use_constraints ? SAT : EXTREMA
+    Satisfiability{OBJ}(symbols(cnf), cnf, weights)
 end
 clauses(c::Satisfiability) = c.cnf.clauses
 num_variables(c::Satisfiability) = length(c.symbols)
@@ -163,12 +168,15 @@ symbols(c::Satisfiability) = c.symbols
 Base.:(==)(x::Satisfiability, y::Satisfiability) = x.cnf == y.cnf && x.weights == y.weights && x.symbols == y.symbols
 
 weights(c::Satisfiability) = c.weights
-set_weights(c::Satisfiability, weights::AbstractVector) = Satisfiability(c.symbols, c.cnf, weights)
+set_weights(c::Satisfiability{S, T, WT, EXTREMA}, weights::AbstractVector) where {S, T, WT} = Satisfiability{EXTREMA}(c.symbols, c.cnf, weights)
 
 """
 $TYPEDEF
+    KSatisfiability{K}(cnf::CNF{S}, weights::WT=UnitWeight(length(cnf.clauses)); allow_less::Bool=false, use_constraints::Bool=false)
 
-The satisfiability problem for k-SAT, where the goal is to find an assignment that satisfies the CNF.
+The satisfiability problem for k-SAT.
+The goal is to find an assignment that maximizes the number of satisfied clauses if `use_constraints` is `false`,
+otherwise, the goal is to find one assignment that can satisfy the CNF.
 
 ### Fields
 - `symbols::Vector{T}`: The symbols in the CNF.
@@ -176,18 +184,20 @@ The satisfiability problem for k-SAT, where the goal is to find an assignment th
 - `weights`: the weights associated with clauses.
 - `allow_less::Bool`: whether to allow less than `k` literals in a clause.
 """
-struct KSatisfiability{K, S, T, WT<:AbstractArray{T}} <:AbstractSatisfiabilityProblem{S, T}
+struct KSatisfiability{K, S, T, WT<:AbstractArray{T}, OBJ} <:AbstractSatisfiabilityProblem{S, T, OBJ}
     symbols::Vector{S}
     cnf::CNF{S}
     weights::WT
     allow_less::Bool
-    function KSatisfiability{K}(symbols::Vector{S}, cnf::CNF{S}, weights::WT, allow_less::Bool) where {K, S, T, WT<:AbstractVector{T}}
+    function KSatisfiability{K, OBJ}(symbols::Vector{S}, cnf::CNF{S}, weights::WT, allow_less::Bool) where {K, S, T, WT<:AbstractVector{T}, OBJ}
         @assert is_kSAT(cnf, K; allow_less) "The CNF is not a $K-SAT problem"
-        new{K, S, T, WT}(symbols, cnf, weights, allow_less)
+        @assert OBJ == EXTREMA || weights isa UnitWeight "Only unit weights are supported for SAT objective type."
+        new{K, S, T, WT, OBJ}(symbols, cnf, weights, allow_less)
     end
 end
-function KSatisfiability{K}(cnf::CNF{S}, weights::WT=UnitWeight(length(cnf.clauses)); allow_less::Bool=false) where {K, S, WT<:AbstractVector}
-    KSatisfiability{K}(symbols(cnf), cnf, weights, allow_less)
+function KSatisfiability{K}(cnf::CNF{S}, weights::WT=UnitWeight(length(cnf.clauses)); allow_less::Bool=false, use_constraints::Bool=false) where {K, S, WT<:AbstractVector}
+    OBJ = use_constraints ? SAT : EXTREMA
+    KSatisfiability{K, OBJ}(symbols(cnf), cnf, weights, allow_less)
 end
 get_k(::Type{<:KSatisfiability{K}}) where K = K
 Base.:(==)(x::KSatisfiability, y::KSatisfiability) = x.cnf == y.cnf && x.weights == y.weights && x.allow_less == y.allow_less
@@ -200,24 +210,32 @@ problem_size(c::AbstractSatisfiabilityProblem) = (; num_claues = length(clauses(
 num_flavors(::Type{<:AbstractSatisfiabilityProblem}) = 2  # false, true
 
 weights(c::KSatisfiability) = c.weights
-set_weights(c::KSatisfiability{K}, weights::AbstractVector{WT}) where {K, WT} = KSatisfiability{K}(c.symbols, c.cnf, weights, c.allow_less)
+set_weights(c::KSatisfiability{K, S, T, WT, EXTREMA}, weights::AbstractVector) where {K, S, T, WT} = KSatisfiability{K, EXTREMA}(c.symbols, c.cnf, weights, c.allow_less)
 
-# constraints interface
-function objectives(c::AbstractSatisfiabilityProblem)
+# constraints interface (EXTREMA)
+function objectives(c::AbstractSatisfiabilityProblem{S, T, EXTREMA}) where {S, T}
     vars = symbols(c)
     return map(zip(clauses(c), weights(c))) do (cl, w)
         idx = [findfirst(==(v), vars) for v in symbols(cl)]
         LocalSolutionSize(num_flavors(c), idx, [w * _satisfiability_constraint(cl, vars[idx], config) for config in combinations(num_flavors(c), length(idx))])
     end
 end
-
 function _satisfiability_constraint(expr, vars, config)
     assignment = Dict(zip(vars, config))
     return satisfiable(expr, assignment)
 end
+@noconstraints AbstractSatisfiabilityProblem{S, T, EXTREMA} where {S, T}
 energy_mode(::Type{<:AbstractSatisfiabilityProblem}) = LargerSizeIsBetter()
 
-@noconstraints AbstractSatisfiabilityProblem
+# constraints interface (SAT)
+function constraints(c::AbstractSatisfiabilityProblem{S, T, SAT}) where {S, T}
+    vars = symbols(c)
+    return map(zip(clauses(c), weights(c))) do (cl, w)
+        idx = [findfirst(==(v), vars) for v in symbols(cl)]
+        LocalConstraint(num_flavors(c), idx, [_satisfiability_constraint(cl, vars[idx], config) for config in combinations(num_flavors(c), length(idx))])
+    end
+end
+objectives(::AbstractSatisfiabilityProblem{S, T, SAT}) where {S, T} = LocalSolutionSize{T}[]
 
 """
     satisfiable(expr, config::AbstractDict{T}) where T

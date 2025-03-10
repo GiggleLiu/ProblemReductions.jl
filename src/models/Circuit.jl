@@ -192,8 +192,11 @@ end
 # --------- CircuitSAT --------------
 """
 $TYPEDEF
+    CircuitSAT(circuit::Circuit; use_constraints::Bool=false)
 
 Circuit satisfiability problem, where the goal is to find an assignment that satisfies the circuit.
+The objective is to maximize the number of satisfied assignments if `use_constraints` is `false`,
+otherwise, the objective is to find one assignments that can satisfy the circuit.
 
 Fields
 -------------------------------
@@ -251,22 +254,24 @@ julia> findbest(sat, BruteForce())
  [1, 1, 1, 1, 0, 1, 1]
 ```
 """
-struct CircuitSAT{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
+struct CircuitSAT{T, WT<:AbstractVector{T}, OBJ} <: ConstraintSatisfactionProblem{T}
     circuit::Circuit
     symbols::Vector{Symbol}
     weights::WT
-    function CircuitSAT(circuit::Circuit, symbols::Vector{Symbol}, weights::AbstractVector{T}) where {T}
+    function CircuitSAT{OBJ}(circuit::Circuit, symbols::Vector{Symbol}, weights::AbstractVector{T}) where {T, OBJ}
         @assert length(weights) == length(circuit.exprs)
-        new{T, typeof(weights)}(circuit, symbols, weights)
+        @assert OBJ == EXTREMA || weights isa UnitWeight "Only unit weights are supported for SAT objective type."
+        new{T, typeof(weights), OBJ}(circuit, symbols, weights)
     end
 end
-function CircuitSAT(circuit::Circuit)
+function CircuitSAT(circuit::Circuit; use_constraints::Bool=false)
+    OBJ = use_constraints ? SAT : EXTREMA
     simplified = simple_form(circuit)
     vars = symbols(simplified)
-    CircuitSAT(simplified, vars, UnitWeight(length(simplified.exprs)))
+    CircuitSAT{OBJ}(simplified, vars, UnitWeight(length(simplified.exprs)))
 end
 function Base.show(io::IO, x::CircuitSAT)
-    println(io, "CircuitSAT:")
+    println(io, "$(typeof(x)):")
     print_statements(io, x.circuit.exprs)
     println(io)
     print(io, "Symbols: ", x.symbols)
@@ -280,14 +285,20 @@ problem_size(c::CircuitSAT) = (; num_exprs=length(c.circuit.exprs), num_variable
 
 # weights interface
 weights(sat::CircuitSAT) = sat.weights
-set_weights(c::CircuitSAT, weights) = CircuitSAT(c.circuit, weights, c.symbols)
+set_weights(c::CircuitSAT{T, WT, EXTREMA}, weights) where {T, WT} = CircuitSAT{EXTREMA}(c.circuit, c.symbols, weights)
 
-# constraints interface
-@noconstraints CircuitSAT
-function objectives(c::CircuitSAT)
+# constraints interface (EXTREMA)
+@noconstraints CircuitSAT{T, WT, EXTREMA} where {T, WT}
+function objectives(c::CircuitSAT{T, WT, EXTREMA}) where {T, WT}
     syms = symbols(c.circuit)
     return [LocalSolutionSize(num_flavors(c), [findfirst(==(s), syms) for s in symbols(expr)], [w * _circuit_sat_constraint(expr, config) for config in combinations(num_flavors(c), length(symbols(expr)))]) for (w, expr) in zip(c.weights, c.circuit.exprs)]
 end
+# constraints interface (SAT)
+function constraints(c::CircuitSAT{T, WT, SAT}) where {T, WT}
+    syms = symbols(c.circuit)
+    return [LocalConstraint(num_flavors(c), [findfirst(==(s), syms) for s in symbols(expr)], [_circuit_sat_constraint(expr, config) for config in combinations(num_flavors(c), length(symbols(expr)))]) for expr in c.circuit.exprs]
+end
+objectives(::CircuitSAT{T, WT, SAT}) where {T, WT} = LocalSolutionSize{T}[]
 
 function _circuit_sat_constraint(expr::Assignment, config)
     @assert length(config) == num_variables(expr)

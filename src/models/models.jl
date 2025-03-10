@@ -97,7 +97,7 @@ function is_satisfied(constraint::LocalConstraint, config)
     return constraint.specification[k]
 end
 function is_satisfied(problem::ConstraintSatisfactionProblem, config)
-    return all(c->is_satisfied(c, config), constraints(problem))
+    return all(c->is_satisfied(c, config[c.variables]), constraints(problem))
 end
 
 """
@@ -287,7 +287,7 @@ function solution_size_multiple(problem::ConstraintSatisfactionProblem{T}, confi
 end
 
 Base.@propagate_inbounds function _size_eval(terms::AbstractVector{LocalSolutionSize{WT}}, config) where WT
-    return sum(terms) do term
+    return sum(terms; init=zero(WT)) do term
         idx = 1  # NOTE: this is faster than mapreduce, or sum. Do not change it back.
         for i in 1:length(term.variables)
             idx += term.strides[i] * config[term.variables[i]]
@@ -335,6 +335,8 @@ macro noconstraints(problem)
         end
     end)
 end
+
+@enum ObjectiveType SAT EXTREMA
 
 """
     energy_mode(problem::AbstractProblem) -> EnergyMode

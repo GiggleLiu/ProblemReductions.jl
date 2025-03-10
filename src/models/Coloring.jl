@@ -1,6 +1,6 @@
 """
 $(TYPEDEF)
-    Coloring{K}(graph; weights=UnitWeight(nv(graph)))
+    Coloring{K}(graph; weights=UnitWeight(nv(graph)), use_constraints::Bool=false)
 
 The Vertex Coloring (Coloring) problem is defined on a simple graph. Given k kinds of colors, we need to determine whether we can color all vertices on the graph such that no two adjacent vertices share the same color.
 
@@ -31,13 +31,18 @@ julia> is_vertex_coloring(coloring.graph,[1,2,3,1,3,2,1,2,3,1]) #random assignme
 false
 ```
 """
-struct Coloring{K, T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
+struct Coloring{K, T, WT<:AbstractVector{T}, OBJ} <: ConstraintSatisfactionProblem{T}
     graph::SimpleGraph{Int64}
     weights::WT
-    function Coloring{K}(graph::SimpleGraph{Int64}, weights::AbstractVector{T}=UnitWeight(ne(graph))) where {K, T}
+    function Coloring{K, OBJ}(graph::SimpleGraph{Int64}, weights::AbstractVector{T}=UnitWeight(ne(graph))) where {K, T, OBJ}
         @assert length(weights) == ne(graph) "length of weights must be equal to the number of edges $(ne(graph)), got: $(length(weights))"
-        new{K, T, typeof(weights)}(graph, weights)
+        @assert OBJ == EXTREMA || weights isa UnitWeight "Only unit weights are supported for SAT objective type."
+        new{K, T, typeof(weights), OBJ}(graph, weights)
     end
+end
+function Coloring{K}(graph::SimpleGraph{Int64}, weights::AbstractVector=UnitWeight(ne(graph)); use_constraints::Bool=false) where K
+    OBJ = use_constraints ? SAT : EXTREMA
+    return Coloring{K, OBJ}(graph, weights)
 end
 Base.:(==)(a::Coloring, b::Coloring) = a.graph == b.graph && a.weights == b.weights
 problem_size(c::Coloring) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
@@ -48,19 +53,26 @@ num_flavors(::Type{<:Coloring{K}}) where K = K
 
 # weights interface
 weights(c::Coloring) = c.weights
-set_weights(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
+set_weights(c::Coloring{K, T, WT, EXTREMA}, weights::AbstractVector) where {K, T, WT} = Coloring{K, EXTREMA}(c.graph, weights)
 
-# constraints interface
-@noconstraints Coloring
-function objectives(c::Coloring)
+# constraints interface (EXTREMA)
+@noconstraints Coloring{K, T, WT, EXTREMA} where {K, T, WT}
+function objectives(c::Coloring{K, T, WT, EXTREMA}) where {K, T, WT}
     # constraints on edges
     return [LocalSolutionSize(num_flavors(c), _vec(e), [w * _coloring_constraint(config) for config in combinations(num_flavors(c), 2)]) for (w, e) in zip(weights(c), edges(c.graph))]
 end
-# return true if the coloring is valid
-function _coloring_constraint(config)
+function _coloring_constraint(config) # return true if the coloring is valid
     a, b = config
     return a == b ? false : true
 end
+
+# constraints interface (SAT)
+function constraints(c::Coloring{K, T, WT, SAT}) where {K, T, WT}
+    # constraints on edges
+    return [LocalConstraint(num_flavors(c), _vec(e), [_coloring_constraint(config) for config in combinations(num_flavors(c), 2)]) for e in edges(c.graph)]
+end
+objectives(::Coloring{K, T, WT, SAT}) where {K, T, WT} = LocalSolutionSize{T}[]
+
 energy_mode(::Type{<:Coloring}) = LargerSizeIsBetter()
 
 """
