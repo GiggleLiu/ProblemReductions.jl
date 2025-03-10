@@ -91,6 +91,7 @@ end
         c = true
     end
     sat = CircuitSAT(circuit)
+    @test flavors(sat) == (0, 1)
     @test findbest(sat, BruteForce()) == [[1, 1, 1]]
 
     circuit2 = @circuit begin

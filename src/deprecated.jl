@@ -9,4 +9,4 @@
     return vcat(cons, sizes)
 end
 
-@deprecate id_to_config(problem::ConstraintSatisfactionProblem, config) problem isa SpinGlass ? (1 .- 2 .* (config .- 1)) : config .- 1
+@deprecate id_to_config(problem::ConstraintSatisfactionProblem, config) config .- 1

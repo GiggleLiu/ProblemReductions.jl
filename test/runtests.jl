@@ -26,5 +26,9 @@ end
     include("reduction_path.jl")
 end
 
+@testset "deprecated" begin
+    include("deprecated.jl")
+end
+
 DocMeta.setdocmeta!(ProblemReductions, :DocTestSetup, :(using ProblemReductions); recursive=true)
 Documenter.doctest(ProblemReductions; manual=false, fix=false)

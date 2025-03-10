@@ -258,7 +258,6 @@ end
 Returns the number of flavors (domain) of a degree of freedom.
 """
 num_flavors(::GT) where GT<:AbstractProblem = num_flavors(GT)
-num_flavors(::Type{GT}) where GT<:AbstractProblem = length(flavors(GT))
 
 """
 $TYPEDEF
