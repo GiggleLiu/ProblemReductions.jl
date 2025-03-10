@@ -145,7 +145,7 @@ julia> cnf_test = CNF([clause1, clause2])
 (x ∨ y ∨ z) ∧ (w ∨ x ∨ ¬x)
 
 julia> sat_test = Satisfiability(cnf_test)
-Satisfiability{String, Int64, UnitWeight}(["x", "y", "z", "w"], [1, 1], (x ∨ y ∨ z) ∧ (w ∨ x ∨ ¬x))
+Satisfiability{String, Int64, UnitWeight, ProblemReductions.EXTREMA}(["x", "y", "z", "w"], [1, 1], (x ∨ y ∨ z) ∧ (w ∨ x ∨ ¬x))
 ```
 """
 struct Satisfiability{S, T, WT<:AbstractArray{T}, OBJ} <:AbstractSatisfiabilityProblem{S, T, OBJ}

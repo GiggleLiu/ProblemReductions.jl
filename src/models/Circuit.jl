@@ -219,12 +219,12 @@ Circuit:
 | d = ∨(x, ∧(c, ¬(z)))
 
 julia> sat = CircuitSAT(circuit)
-CircuitSAT:
+CircuitSAT{Int64, UnitWeight, ProblemReductions.EXTREMA}:
 | c = ∧(x, y)
-| ##var#354 = ¬(z)
-| ##var#353 = ∧(c, ##var#354)
-| d = ∨(x, ##var#353)
-Symbols: [:c, :x, :y, Symbol("##var#354"), :z, Symbol("##var#353"), :d]
+| ##var#236 = ¬(z)
+| ##var#235 = ∧(c, ##var#236)
+| d = ∨(x, ##var#235)
+Symbols: [:c, :x, :y, Symbol("##var#236"), :z, Symbol("##var#235"), :d]
 
 julia> sat.symbols
 7-element Vector{Symbol}:

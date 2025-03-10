@@ -19,7 +19,7 @@ julia> g = smallgraph(:petersen) # define a simple graph, petersen as example
 {10, 15} undirected simple Int64 graph
 
 julia> coloring = Coloring{3}(g)  # 3 colors
-Coloring{3, Int64, UnitWeight}(SimpleGraph{Int64}(15, [[2, 5, 6], [1, 3, 7], [2, 4, 8], [3, 5, 9], [1, 4, 10], [1, 8, 9], [2, 9, 10], [3, 6, 10], [4, 6, 7], [5, 7, 8]]), [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+Coloring{3, Int64, UnitWeight, ProblemReductions.EXTREMA}(SimpleGraph{Int64}(15, [[2, 5, 6], [1, 3, 7], [2, 4, 8], [3, 5, 9], [1, 4, 10], [1, 8, 9], [2, 9, 10], [3, 6, 10], [4, 6, 7], [5, 7, 8]]), [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
 julia> variables(coloring)
 1:10
