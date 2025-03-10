@@ -27,9 +27,9 @@ weights(c::Matching) = c.weights
 set_weights(c::Matching, weights) = Matching(c.graph, weights)
 
 # constraints interface
-function hard_constraints(c::Matching)
+function constraints(c::Matching)
     # edges sharing a vertex cannot be both in the matching
-    return [HardConstraint(num_flavors(c), [i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)], [_is_satisfied_noshare(config) for config in combinations(num_flavors(c), length([i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)]))]) for v in vertices(c.graph)]
+    return [Constraint(num_flavors(c), [i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)], [_is_satisfied_noshare(config) for config in combinations(num_flavors(c), length([i for (i, e) in enumerate(edges(c.graph)) if contains(e, v)]))]) for v in vertices(c.graph)]
 end
 function _is_satisfied_noshare(config)
     return count(isone, config) <= 1

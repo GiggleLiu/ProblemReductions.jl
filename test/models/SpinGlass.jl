@@ -30,9 +30,11 @@ end
 @testset "size terms - spinglass" begin
     g01 = smallgraph(:diamond)
     sg = SpinGlass(g01, [1, -2, -2, 1, 2], [1, 1, -2, -2])
-    terms = ProblemReductions.size_terms(sg)
+    cons = ProblemReductions.constraints(sg)
+    terms = ProblemReductions.local_solution_size(sg)
     for cfg in [ProblemReductions.name2config(sg, ['↓', '↑', '↑', '↓']), ProblemReductions.name2config(sg, ['↑', '↓', '↓', '↑'])]
-        @test ProblemReductions._size_eval(terms, cfg) == ProblemReductions.solution_size(sg, cfg)
+        @test ProblemReductions._size_eval(terms, cfg) == ProblemReductions.solution_size(sg, cfg).size
+        @test ProblemReductions.is_satisfied(sg, cfg) == ProblemReductions.solution_size(sg, cfg).is_valid
     end
     @test energy(sg, ProblemReductions.name2config(sg, ['↓', '↑', '↑', '↓'])) == -4
 end

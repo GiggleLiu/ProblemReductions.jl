@@ -217,7 +217,7 @@ function _satisfiability_constraint(expr, vars, config)
 end
 energy_mode(::Type{<:AbstractSatisfiabilityProblem}) = LargerSizeIsBetter()
 
-@nohard_constraints AbstractSatisfiabilityProblem
+@noconstraints AbstractSatisfiabilityProblem
 
 """
     satisfiable(expr, config::AbstractDict{T}) where T

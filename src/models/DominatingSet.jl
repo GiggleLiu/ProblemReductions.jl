@@ -62,10 +62,10 @@ weights(c::DominatingSet) = c.weights
 set_weights(c::DominatingSet, weights) = DominatingSet(c.graph, weights)
 
 # Constraints Interface
-function hard_constraints(c::DominatingSet)
+function constraints(c::DominatingSet)
     return map(vertices(c.graph)) do v
         nbs = vcat(v, neighbors(c.graph, v))
-        HardConstraint(num_flavors(c), nbs, [_is_satisfied_dominance(config) for config in combinations(num_flavors(c), length(nbs))])
+        Constraint(num_flavors(c), nbs, [_is_satisfied_dominance(config) for config in combinations(num_flavors(c), length(nbs))])
     end
 end
 # check if a configuration satisfies the dominance constraint

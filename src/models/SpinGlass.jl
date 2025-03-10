@@ -97,5 +97,5 @@ function _spin_glass_energy(w::T, config) where T
     return w * T(prod(c -> 1 - 2 * c, config))
 end
 
-@nohard_constraints SpinGlass
+@noconstraints SpinGlass
 energy_mode(::Type{<:SpinGlass}) = SmallerSizeIsBetter()

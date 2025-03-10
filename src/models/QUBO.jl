@@ -90,6 +90,6 @@ function local_solution_size(c::QUBO{T}) where T
         [LocalSolutionSize(num_flavors(c), [i], [zero(T), c.matrix[i, i]]) for i in variables(c) if c.matrix[i, i] != 0]
     )
 end
-@nohard_constraints QUBO
+@noconstraints QUBO
 
 energy_mode(::Type{<:QUBO}) = SmallerSizeIsBetter()

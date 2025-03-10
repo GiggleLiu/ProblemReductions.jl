@@ -68,7 +68,7 @@ function _cut_size(config)
 end
 energy_mode(::Type{<:MaxCut}) = LargerSizeIsBetter()
 
-@nohard_constraints MaxCut
+@noconstraints MaxCut
 
 """
     cut_size(g::AbstractGraph, config; weights=UnitWeight(ne(g)))

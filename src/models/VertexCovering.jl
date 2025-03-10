@@ -66,8 +66,8 @@ weights(c::VertexCovering) = c.weights
 set_weights(c::VertexCovering, weights) = VertexCovering(c.graph, weights)
 
 # constraints interface
-function hard_constraints(c::VertexCovering)
-    return [HardConstraint(num_flavors(c), _vec(e), [_vertex_covering(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
+function constraints(c::VertexCovering)
+    return [Constraint(num_flavors(c), _vec(e), [_vertex_covering(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
 end
 function _vertex_covering(config)
     return any(!iszero, config)

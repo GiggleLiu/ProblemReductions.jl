@@ -51,7 +51,7 @@ weights(c::Coloring) = c.weights
 set_weights(c::Coloring{K}, weights) where K = Coloring{K}(c.graph, weights)
 
 # constraints interface
-@nohard_constraints Coloring
+@noconstraints Coloring
 function local_solution_size(c::Coloring)
     # constraints on edges
     return [LocalSolutionSize(num_flavors(c), _vec(e), [w * _coloring_constraint(config) for config in combinations(num_flavors(c), 2)]) for (w, e) in zip(weights(c), edges(c.graph))]

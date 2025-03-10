@@ -69,7 +69,7 @@ function _paintshop_constraint(isfirst1, isfirst2, config)
 end
 energy_mode(::Type{<:PaintShop}) = SmallerSizeIsBetter()
 
-@nohard_constraints PaintShop
+@noconstraints PaintShop
 
 """
     paint_shop_coloring_from_config(p::PaintShop, config)

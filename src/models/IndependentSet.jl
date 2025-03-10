@@ -68,8 +68,8 @@ weights(c::IndependentSet) = c.weights
 set_weights(c::IndependentSet, weights) = IndependentSet(c.graph, weights)
 
 # constraints interface
-function hard_constraints(c::IndependentSet)
-    return [HardConstraint(num_flavors(c), _vec(e), [_independence_constraint(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
+function constraints(c::IndependentSet)
+    return [Constraint(num_flavors(c), _vec(e), [_independence_constraint(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
 end
 function _independence_constraint(config)
     return count(!iszero, config) <= 1

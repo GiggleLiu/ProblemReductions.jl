@@ -70,8 +70,8 @@ weights(c::SetCovering) = c.weights
 set_weights(c::SetCovering, weights) = SetCovering(c.sets, weights)
 
 # constraints interface
-function hard_constraints(c::SetCovering)
-    return [HardConstraint(num_flavors(c), findall(s->v in s, c.sets), [_is_satisfied_cover(config) for config in combinations(num_flavors(c), length(findall(s->v in s, c.sets)))]) for v in c.elements]
+function constraints(c::SetCovering)
+    return [Constraint(num_flavors(c), findall(s->v in s, c.sets), [_is_satisfied_cover(config) for config in combinations(num_flavors(c), length(findall(s->v in s, c.sets)))]) for v in c.elements]
 end
 function _is_satisfied_cover(config)
     return count(isone, config) > 0

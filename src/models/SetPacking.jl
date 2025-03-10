@@ -69,14 +69,14 @@ weights(c::SetPacking) = c.weights
 set_weights(c::SetPacking, weights::Vector{T}) where {T} = SetPacking(c.sets, weights)
 
 # constraints interface
-function hard_constraints(c::SetPacking)  # sets sharing the same element
+function constraints(c::SetPacking)  # sets sharing the same element
     d = Dict{eltype(c.elements), Vector{Int}}()
     for (i, set) in enumerate(c.sets)
         for e in set
             push!(get!(()->Int[], d, e), i)
         end
     end
-    return [HardConstraint(num_flavors(c), v, [_is_satisfied_set_packing(config) for config in combinations(num_flavors(c), length(v))]) for v in values(d)]
+    return [Constraint(num_flavors(c), v, [_is_satisfied_set_packing(config) for config in combinations(num_flavors(c), length(v))]) for v in values(d)]
 end
 function _is_satisfied_set_packing(config)
     return count(isone, config) <= 1
