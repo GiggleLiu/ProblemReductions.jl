@@ -15,7 +15,7 @@ using Test, ProblemReductions, Graphs
     @test reduceto(SpinGlass{<:SimpleGraph}, mc) == res
     @test reduceto(SpinGlass{<:SimpleGraph}, mc).spinglass == SpinGlass(g, [1, 3, 1, 4], zeros(Int, 4))
     @test findbest(mc, BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
-    @test sort(findbest(target_problem(reduceto(SpinGlass{<:SimpleGraph}, mc)), BruteForce())) == sort([[1, 1, -1, 1], [1, -1, -1, 1], [-1, 1, 1, -1], [-1, -1, 1, -1]]) # in lexicographic order
+    @test sort(findbest(target_problem(reduceto(SpinGlass{<:SimpleGraph}, mc)), BruteForce())) == sort([[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]]) # in lexicographic order
 end
 
 @testset "spinglass -> maxcut" begin
@@ -30,7 +30,7 @@ end
     @test target_problem(res) == res.maxcut
     @test reduceto(MaxCut, sg) == res
     @test reduceto(MaxCut, sg) == ReductionSpinGlassToMaxCut(MaxCut(g1, [1, 3, 1, 4]),0)
-    @test findbest(sg, BruteForce()) == [[1, 1, -1, 1], [1, -1, -1, 1], [-1, 1, 1, -1], [-1, -1, 1, -1]] # in lexicographic order
+    @test findbest(sg, BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
     @test findbest(res.maxcut, BruteForce()) == [[0, 0, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 1]] # in lexicographic order
 
     gadget = spinglass_gadget(Val{:⊻}())

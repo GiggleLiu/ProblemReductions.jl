@@ -1,5 +1,6 @@
 using ProblemReductions, Test, Graphs
 using ProblemReductions: KSatisfiability,clauses
+
 @testset "satisfiability" begin
     bv1 = BoolVar("x")
     bv2 = BoolVar("y")
@@ -25,12 +26,13 @@ using ProblemReductions: KSatisfiability,clauses
     cfg = [1, 1, 1, 1]
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(sat_test.cnf, assignment) == true
-    @test solution_size(sat_test, cfg) == SolutionSize(0, true)
+    @test solution_size(sat_test, cfg) == SolutionSize(sum(ProblemReductions.weights(sat_test)), true)
 
     cfg = [0, 0, 1, 0]
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(sat_test.cnf, assignment) == false
-    @test solution_size(sat_test, cfg) == SolutionSize(1, true)
+    @test ProblemReductions.is_satisfied(sat_test, cfg) == true   # this is true because we are not using constraints
+    @test solution_size(sat_test, cfg) == SolutionSize(sum(ProblemReductions.weights(sat_test))-1, true)
 
     res = findbest(sat_test, BruteForce())
     @test length(res) == 14
@@ -42,7 +44,7 @@ using ProblemReductions: KSatisfiability,clauses
     copied = set_weights(deepcopy(ksat_test), randn(length(ProblemReductions.weights(ksat_test))))
     @test ksat_test != copied
     @test ksat_test == ProblemReductions.set_weights(copied, ProblemReductions.weights(ksat_test))
-    @show ProblemReductions.size_terms(ksat_test)
+    @show ProblemReductions.objectives(ksat_test)
     @test clauses(ksat_test) == cnf_test.clauses
     @test ksat_test isa KSatisfiability
     @test ProblemReductions.symbols(ksat_test) == vars
@@ -51,5 +53,16 @@ using ProblemReductions: KSatisfiability,clauses
     cfg = [0, 1, 0, 1]
     assignment = Dict(zip(vars, cfg))
     @test satisfiable(ksat_test.cnf, assignment) == true
-    @test solution_size(ksat_test, cfg) == SolutionSize(0, true)
+    @test solution_size(ksat_test, cfg) == SolutionSize(sum(ProblemReductions.weights(ksat_test)), true)
+end
+
+@testset "k-satisfiability - sat" begin
+    cnf = CNF([CNFClause([BoolVar("x"), BoolVar("y"), BoolVar("z")])])
+    ksat = KSatisfiability{3}(cnf; use_constraints=true)
+    @test ProblemReductions.is_satisfied(ksat, [1, 1, 1])
+    @test !ProblemReductions.is_satisfied(ksat, [0, 0, 0])
+
+    sat = Satisfiability(cnf; use_constraints=true)
+    @test ProblemReductions.is_satisfied(sat, [1, 1, 1])
+    @test !ProblemReductions.is_satisfied(sat, [0, 0, 0])
 end

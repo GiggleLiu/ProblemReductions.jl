@@ -28,6 +28,7 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Examples" => [
+            "tutorial.md",
             "generated/Ising.md",
             "rules/spinglass_sat.md",
             "rules/independentset_setpacking.md"

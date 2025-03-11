@@ -84,6 +84,7 @@ function extract_symbols!(ex::Assignment, vars::Vector{Symbol})
     append!(vars, ex.outputs)
     extract_symbols!(ex.expr, vars)
 end
+num_variables(ex::Assignment) = length(symbols(ex))
 
 function evaluate_expr(exprs::Vector{Assignment}, dict::Dict{Symbol, Bool})
     for ex in exprs
@@ -191,13 +192,17 @@ end
 # --------- CircuitSAT --------------
 """
 $TYPEDEF
+    CircuitSAT(circuit::Circuit; use_constraints::Bool=false)
 
 Circuit satisfiability problem, where the goal is to find an assignment that satisfies the circuit.
+The objective is to maximize the number of satisfied assignments if `use_constraints` is `false`,
+otherwise, the objective is to find one assignments that can satisfy the circuit.
 
 Fields
 -------------------------------
 - `circuit::Circuit`: The circuit expression in simplified form.
 - `symbols::Vector{Symbol}`: The variables in the circuit.
+- `weights::AbstractVector`: The weights of the assignments. The solution size is the weighted sum of the number of satisfied assignments.
 
 Example
 -------------------------------
@@ -214,12 +219,12 @@ Circuit:
 | d = ∨(x, ∧(c, ¬(z)))
 
 julia> sat = CircuitSAT(circuit)
-CircuitSAT:
+CircuitSAT{Int64, UnitWeight, ProblemReductions.EXTREMA}:
 | c = ∧(x, y)
-| ##var#354 = ¬(z)
-| ##var#353 = ∧(c, ##var#354)
-| d = ∨(x, ##var#353)
-Symbols: [:c, :x, :y, Symbol("##var#354"), :z, Symbol("##var#353"), :d]
+| ##var#236 = ¬(z)
+| ##var#235 = ∧(c, ##var#236)
+| d = ∨(x, ##var#235)
+Symbols: [:c, :x, :y, Symbol("##var#236"), :z, Symbol("##var#235"), :d]
 
 julia> sat.symbols
 7-element Vector{Symbol}:
@@ -235,7 +240,7 @@ julia> flavors(sat)
 (0, 1)
 
 julia> solution_size(sat, [true, false, true, true, false, false, true])
-SolutionSize{Int64}(3, true)
+SolutionSize{Int64}(1, true)
 
 julia> findbest(sat, BruteForce())
 8-element Vector{Vector{Int64}}:
@@ -249,22 +254,24 @@ julia> findbest(sat, BruteForce())
  [1, 1, 1, 1, 0, 1, 1]
 ```
 """
-struct CircuitSAT{T, WT<:AbstractVector{T}} <: ConstraintSatisfactionProblem{T}
+struct CircuitSAT{T, WT<:AbstractVector{T}, OBJ} <: ConstraintSatisfactionProblem{T}
     circuit::Circuit
     symbols::Vector{Symbol}
     weights::WT
-    function CircuitSAT(circuit::Circuit, symbols::Vector{Symbol}, weights::AbstractVector{T}) where {T}
+    function CircuitSAT{OBJ}(circuit::Circuit, symbols::Vector{Symbol}, weights::AbstractVector{T}) where {T, OBJ}
         @assert length(weights) == length(circuit.exprs)
-        new{T, typeof(weights)}(circuit, symbols, weights)
+        @assert OBJ == EXTREMA || weights isa UnitWeight "Only unit weights are supported for SAT objective type."
+        new{T, typeof(weights), OBJ}(circuit, symbols, weights)
     end
 end
-function CircuitSAT(circuit::Circuit)
+function CircuitSAT(circuit::Circuit; use_constraints::Bool=false)
+    OBJ = use_constraints ? SAT : EXTREMA
     simplified = simple_form(circuit)
     vars = symbols(simplified)
-    CircuitSAT(simplified, vars, UnitWeight(length(simplified.exprs)))
+    CircuitSAT{OBJ}(simplified, vars, UnitWeight(length(simplified.exprs)))
 end
 function Base.show(io::IO, x::CircuitSAT)
-    println(io, "CircuitSAT:")
+    println(io, "$(typeof(x)):")
     print_statements(io, x.circuit.exprs)
     println(io)
     print(io, "Symbols: ", x.symbols)
@@ -273,36 +280,36 @@ Base.show(io::IO, ::MIME"text/plain", x::CircuitSAT) = show(io, x)
 
 # variables interface
 num_variables(c::CircuitSAT) = length(c.symbols)
-flavors(::Type{<:CircuitSAT}) = (0, 1)
+num_flavors(::Type{<:CircuitSAT}) = 2
 problem_size(c::CircuitSAT) = (; num_exprs=length(c.circuit.exprs), num_variables=length(c.symbols))
 
 # weights interface
 weights(sat::CircuitSAT) = sat.weights
-set_weights(c::CircuitSAT, weights) = CircuitSAT(c.circuit, weights, c.symbols)
+set_weights(c::CircuitSAT{T, WT, EXTREMA}, weights) where {T, WT} = CircuitSAT{EXTREMA}(c.circuit, c.symbols, weights)
 
-# constraints interface
-@nohard_constraints CircuitSAT
-function local_solution_spec(c::CircuitSAT)
+# constraints interface (EXTREMA)
+@noconstraints CircuitSAT{T, WT, EXTREMA} where {T, WT}
+function objectives(c::CircuitSAT{T, WT, EXTREMA}) where {T, WT}
     syms = symbols(c.circuit)
-    return [LocalSolutionSpec([findfirst(==(s), syms) for s in symbols(expr)], symbols(expr)=>expr, w) for (w, expr) in zip(c.weights, c.circuit.exprs)]
+    return [LocalSolutionSize(num_flavors(c), [findfirst(==(s), syms) for s in symbols(expr)], [w * _circuit_sat_constraint(expr, config) for config in combinations(num_flavors(c), length(symbols(expr)))]) for (w, expr) in zip(c.weights, c.circuit.exprs)]
 end
+# constraints interface (SAT)
+function constraints(c::CircuitSAT{T, WT, SAT}) where {T, WT}
+    syms = symbols(c.circuit)
+    return [LocalConstraint(num_flavors(c), [findfirst(==(s), syms) for s in symbols(expr)], [_circuit_sat_constraint(expr, config) for config in combinations(num_flavors(c), length(symbols(expr)))]) for expr in c.circuit.exprs]
+end
+objectives(::CircuitSAT{T, WT, SAT}) where {T, WT} = LocalSolutionSize{T}[]
 
-"""
-    solution_size(::Type{<:CircuitSAT{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-
-For [`CircuitSAT`](@ref), the solution size of a configuration is the number of violated constraints.
-"""
-function solution_size(::Type{<:CircuitSAT{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-    @assert length(config) == num_variables(spec)
-    syms, ex = spec.specification
-    dict = Dict(syms[i]=>Bool(c) for (i, c) in enumerate(config))
-    for o in ex.outputs
+function _circuit_sat_constraint(expr::Assignment, config)
+    @assert length(config) == num_variables(expr)
+    dict = Dict(s=>Bool(c) for (s, c) in zip(symbols(expr), config))
+    for o in expr.outputs
         @assert haskey(dict, o) "The output variable `$o` is not in the configuration"
-        dict[o] != evaluate_expr(ex.expr, dict) && return spec.weight  # not satisfied!
+        dict[o] != evaluate_expr(expr.expr, dict) && return false  # not satisfied!
     end
-    return zero(WT)
+    return true
 end
-energy_mode(::Type{<:CircuitSAT}) = SmallerSizeIsBetter()
+energy_mode(::Type{<:CircuitSAT}) = LargerSizeIsBetter()
 
 function symbols(expr::Union{Assignment, BooleanExpr, Circuit})
     vars = Symbol[]

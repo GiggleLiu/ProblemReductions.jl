@@ -4,17 +4,17 @@ using ProblemReductions.BitBasis
 
 @testset "gates" begin
     res = findbest(spinglass_gadget(:∧).problem, BruteForce())
-    @test collect.(sort(res)) == sort([[1, 1, 1], [1, -1, 1], [-1, 1, 1], [-1, -1, -1]])
+    @test collect.(sort(res)) == sort([[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 1]])
     tt = truth_table(spinglass_gadget(:∧))
     @test length(tt) == 4
     @test tt[bit"00"] == tt[bit"01"] == tt[bit"10"] == bit"0"
     @test tt[bit"11"] == bit"1"
 
     res = findbest(spinglass_gadget(:∨).problem, BruteForce())
-    @test collect.(sort(res)) == sort([[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, -1]])
+    @test collect.(sort(res)) == sort([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
 
     res = findbest(spinglass_gadget(:¬).problem, BruteForce())
-    @test collect.(sort(res)) == sort([[1, -1], [-1, 1]])
+    @test collect.(sort(res)) == sort([[0, 1], [1, 0]])
 
     tt = truth_table(spinglass_gadget(:⊻))
     @test tt[bit"00"] == tt[bit"11"] == bit"0"
@@ -40,7 +40,6 @@ end
     @test length(tt) == 16
     ProblemReductions.set_input!(arr, [0, 1, 0, 1])  # 2 x 2 == 4
     res = findbest(arr.problem, BruteForce())
-    res = map(resi->map(==(-1), resi), res)
     @test ProblemReductions.infer_logic(res, arr.inputs, arr.outputs) == Dict([0, 1, 0, 1] => [0, 0, 1, 0])
 end
 
