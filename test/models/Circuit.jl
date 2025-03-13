@@ -71,7 +71,7 @@ end
     # d = x ∨ m2 - 1
     solution = solution_size(sat, [false, false, false, true, false, false, false])
     @test solution.is_valid
-    @test solution.size == 0
+    @test solution.size == sum(sat.weights)  # all satisfied
 end
 
 @testset "local_solution_spec" begin
@@ -91,12 +91,27 @@ end
         c = true
     end
     sat = CircuitSAT(circuit)
+    @test flavors(sat) == (0, 1)
     @test findbest(sat, BruteForce()) == [[1, 1, 1]]
+    @test ProblemReductions.is_satisfied(sat, ones(Int, num_variables(sat)))
+    @test ProblemReductions.is_satisfied(sat, zeros(Int, num_variables(sat)))
 
     circuit2 = @circuit begin
         c = x ∧ y
         c = 1
     end
     sat = CircuitSAT(circuit)
+    @test findbest(sat, BruteForce()) == [[1, 1, 1]]
+end
+
+@testset "circuit sat - SAT" begin
+    circuit = @circuit begin
+        c = x ∧ y
+        c = true
+    end
+    sat = CircuitSAT(circuit; use_constraints=true)
+    @test ProblemReductions.is_satisfied(sat, ones(Int, num_variables(sat)))
+    @test !ProblemReductions.is_satisfied(sat, zeros(Int, num_variables(sat)))
+    @test flavors(sat) == (0, 1)
     @test findbest(sat, BruteForce()) == [[1, 1, 1]]
 end

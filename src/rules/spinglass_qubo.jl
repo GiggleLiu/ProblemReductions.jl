@@ -18,7 +18,7 @@ function reduceto(::Type{<:SpinGlass{<:SimpleGraph}}, qubo::QUBO)
     sg = spin_glass_from_matrix(2 * qubo.matrix, (-).(vec(sum(qubo.matrix, dims=1))) .- vec(sum(qubo.matrix, dims=2)))
     return ReductionQUBOToSpinGlass(sg)
 end 
-extract_solution(::ReductionQUBOToSpinGlass, sol) = sol .== -1
+extract_solution(::ReductionQUBOToSpinGlass, sol) = sol
 
 """
 $TYPEDEF
@@ -47,4 +47,4 @@ function reduceto(::Type{<:QUBO}, sg::SpinGlass{<:SimpleGraph})
     return ReductionSpinGlassToQUBO(QUBO(matrix))
 end
 
-extract_solution(::ReductionSpinGlassToQUBO, sol) = 1 .- 2 .* sol 
+extract_solution(::ReductionSpinGlassToQUBO, sol) = sol 

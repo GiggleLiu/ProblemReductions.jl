@@ -58,7 +58,7 @@ Base.:(==)(a::VertexCovering, b::VertexCovering) = a.graph == b.graph && a.weigh
 
 # variables interface
 num_variables(gp::VertexCovering) = nv(gp.graph)
-flavors(::Type{<:VertexCovering}) = (0, 1) # whether the vertex is selected (1) or not (0)
+num_flavors(::Type{<:VertexCovering}) = 2 # whether the vertex is selected (1) or not (0)
 problem_size(c::VertexCovering) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 
 #weights interface 
@@ -66,25 +66,14 @@ weights(c::VertexCovering) = c.weights
 set_weights(c::VertexCovering, weights) = VertexCovering(c.graph, weights)
 
 # constraints interface
-function hard_constraints(c::VertexCovering)
-    return [HardConstraint(_vec(e), :cover) for e in edges(c.graph)]
+function constraints(c::VertexCovering)
+    return [LocalConstraint(num_flavors(c), _vec(e), [_vertex_covering(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for e in edges(c.graph)]
 end
-function is_satisfied(::Type{<:VertexCovering}, spec::HardConstraint, config)
-    @assert length(config) == num_variables(spec)
+function _vertex_covering(config)
     return any(!iszero, config)
 end
-function local_solution_spec(c::VertexCovering)
-    return [LocalSolutionSpec([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
-end
-
-"""
-    solution_size(::Type{<:VertexCovering{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-
-The solution size of a [`VertexCovering`](@ref) model is the sum of the weights of the selected vertices.
-"""
-function solution_size(::Type{<:VertexCovering{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-    @assert length(config) == num_variables(spec)
-    return WT(first(config)) * spec.weight
+function objectives(c::VertexCovering)
+    return [LocalSolutionSize(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
 energy_mode(::Type{<:VertexCovering}) = SmallerSizeIsBetter()
 

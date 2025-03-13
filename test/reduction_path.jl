@@ -27,7 +27,6 @@ end
     factoring = Factoring(2, 1, 3)
     res = reduceto(paths[1], factoring)
     @test target_problem(res) isa SpinGlass
-    @test configuration_space_size(target_problem(res)) ≈ 25
     sol = findbest(target_problem(res), BruteForce())
     @test all(solution_size.(Ref(factoring), extract_solution.(Ref(res), sol)) .== Ref(SolutionSize(0, true)))
 end

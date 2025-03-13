@@ -48,31 +48,28 @@ end
 
 num_variables(gp::PaintShop) = length(gp.sequence) ÷ 2
 symbols(gp::PaintShop) = unique(gp.sequence)
-flavors(::Type{<:PaintShop}) = (0, 1)
+num_flavors(::Type{<:PaintShop}) = 2
 problem_size(c::PaintShop) = (; sequence_length=length(c.sequence))
 Base.:(==)(a::PaintShop, b::PaintShop) = a.sequence == b.sequence && a.isfirst == b.isfirst
 
 # constraints interface
-function local_solution_spec(c::PaintShop)
+function objectives(c::PaintShop{T}) where T
     # constraints on alphabets with the same color
     syms = symbols(c)
-    return [LocalSolutionSpec([findfirst(==(c.sequence[i]), syms), findfirst(==(c.sequence[i+1]), syms)], (c.isfirst[i], c.isfirst[i+1]), 1) for i=1:length(c.sequence)-1]
+    return map(1:length(c.sequence)-1) do i
+        a, b = findfirst(==(c.sequence[i]), syms), findfirst(==(c.sequence[i+1]), syms)
+        LocalSolutionSize(num_flavors(c), [a, b], [_paintshop_constraint(c.isfirst[i], c.isfirst[i+1], config) for config in combinations(num_flavors(c), 2)])
+    end
 end
 
-"""
-    solution_size(::Type{<:PaintShop{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-
-For [`PaintShop`](@ref), the solution size of a configuration is the number of color switches between adjacent cars.
-"""
-function solution_size(::Type{<:PaintShop{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-    @assert length(config) == num_variables(spec) == 2
-    isfirst1, isfirst2 = spec.specification
+# config is a boolean vector, false for red, true for blue
+function _paintshop_constraint(isfirst1, isfirst2, config)
     c1, c2 = config
-    return (c1 == c2) == (isfirst1 == isfirst2) ? zero(WT) : spec.weight
+    return (c1 == c2) == (isfirst1 == isfirst2) ? false : true
 end
 energy_mode(::Type{<:PaintShop}) = SmallerSizeIsBetter()
 
-@nohard_constraints PaintShop
+@noconstraints PaintShop
 
 """
     paint_shop_coloring_from_config(p::PaintShop, config)

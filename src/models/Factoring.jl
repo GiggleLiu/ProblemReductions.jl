@@ -36,18 +36,19 @@ end
 
 # variables interface
 num_variables(f::Factoring) = f.m+f.n
-flavors(::Type{Factoring}) = (0, 1)
+num_flavors(::Type{Factoring}) = 2
 problem_size(f::Factoring) = (; num_bits_first=f.m, num_bits_second=f.n)
 
 # utilities
-function solution_size_byid(f::Factoring, config_ids)
-    @assert all(id->length(id) == num_variables(f), config_ids)
-    return Iterators.map(config_ids) do id
-        input1 = BitStr(id[1:f.m] .- 1).buf
-        input2 = BitStr(id[f.m+1:f.m+f.n] .- 1).buf
+function solution_size_multiple(f::Factoring, configs)
+    @assert all(config->length(config) == num_variables(f), configs)
+    return map(configs) do config
+        input1 = BitStr(config[1:f.m]).buf
+        input2 = BitStr(config[f.m+1:f.m+f.n]).buf
         return (input1 * input2 == f.input ? SolutionSize(0, true) : SolutionSize(0, false))
     end
 end
+solution_size(f::Factoring, config) = first(solution_size_multiple(f, [config]))
 energy_mode(::Type{<:Factoring}) = SmallerSizeIsBetter()
 
 pack_bits(bits) = sum(i->isone(bits[i]) ? 2^(i-1) : 0, 1:length(bits))

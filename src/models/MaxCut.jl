@@ -51,7 +51,7 @@ Base.:(==)(a::MaxCut, b::MaxCut) = a.graph == b.graph && a.weights == b.weights
 
 # varibles interface 
 num_variables(gp::MaxCut) = nv(gp.graph)
-flavors(::Type{<:MaxCut}) = (0, 1) #choose it or not
+num_flavors(::Type{<:MaxCut}) = 2 #choose it or not
 problem_size(c::MaxCut) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
                             
 # weights interface
@@ -59,23 +59,16 @@ weights(c::MaxCut) = c.weights
 set_weights(c::MaxCut, weights) = MaxCut(c.graph, weights)
 
 # constraints interface
-function local_solution_spec(c::MaxCut)
-    return [LocalSolutionSpec(_vec(e), :cut, w) for (w, e) in zip(weights(c), edges(c.graph))]
+function objectives(c::MaxCut)
+    return [LocalSolutionSize(num_flavors(c), _vec(e), [w * _cut_size(config) for config in combinations(num_flavors(c), length(_vec(e)))]) for (w, e) in zip(weights(c), edges(c.graph))]
 end
-
-""" 
-    solution_size(::Type{<:MaxCut{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-
-For [`MaxCut`](@ref), the solution size of a configuration is the number of violated cut constraints.
-"""
-function solution_size(::Type{<:MaxCut{T}}, spec::LocalSolutionSpec{WT}, config) where {T, WT}
-    @assert length(config) == num_variables(spec)
+function _cut_size(config)
     a, b = config
-    return (a != b) ? spec.weight : zero(WT)
+    return (a != b) ? true : false
 end
 energy_mode(::Type{<:MaxCut}) = LargerSizeIsBetter()
 
-@nohard_constraints MaxCut
+@noconstraints MaxCut
 
 """
     cut_size(g::AbstractGraph, config; weights=UnitWeight(ne(g)))
