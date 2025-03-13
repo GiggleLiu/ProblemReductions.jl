@@ -24,8 +24,11 @@ struct BinaryMatrixFactorization<: AbstractProblem
 end
 Base.:(==)(a::BinaryMatrixFactorization, b::BinaryMatrixFactorization) = a.A == b.A && a.k == b.k
 
+variables(bmf::BinaryMatrixFactorization) = [i for i in 1:size(bmf.A,1) * bmf.k + size(bmf.A,2) * bmf.k]
 num_variables(bmf::BinaryMatrixFactorization) = size(bmf.A,1) * bmf.k + size(bmf.A,2) * bmf.k
 flavors(::Type{<:BinaryMatrixFactorization}) = (0, 1)
+num_flavors(::Type{<:BinaryMatrixFactorization}) = 2
+
 problem_size(bmf::BinaryMatrixFactorization) = (; num_rows=size(bmf.A,1), num_cols=size(bmf.A,2), k=bmf.k)
 function solution_size(bmf::BinaryMatrixFactorization,b::AbstractMatrix,c::AbstractMatrix) 
    # Hamming Distance is used to described the solution size, the smaller the better
@@ -48,22 +51,5 @@ function is_binary_matrix_factorization(bmf::BinaryMatrixFactorization, b::Abstr
     return solution_size(bmf,b,c) == 0
 end
 
-"""
-function findbest(bmf::BinaryMatrixFactorization, ::BruteForce)
-    n_rows, n_cols = size(bmf.A)
-    best = (fill(0, n_rows, bmf.k), fill(0, bmf.k, n_cols))
-    best_energy = solution_size(bmf, best)
-    for b in Iterators.product(fill(0:1, n_rows, bmf.k)...)
-        for c in Iterators.product(fill(0:1, bmf.k, n_cols)...)
-            energy = solution_size(bmf,best(1),best(2))
-            if energy < best_energy
-                best = (b,c)
-                best_energy = energy
-            end
-        end
-    end
-    return best
-end 
-"""
 
 
