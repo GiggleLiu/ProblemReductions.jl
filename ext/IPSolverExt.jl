@@ -8,6 +8,14 @@ using Combinatorics
 include("combinations.jl")
 include("hypercube.jl")
 function Base.findmin(problem::AbstractProblem, solver::IPSolver)
+    return _find(problem, solver,true)
+end
+function Base.findmax(problem::AbstractProblem, solver::IPSolver)
+    return _find(problem, solver,false)
+end
+
+# tag: true for min, false for max
+function _find(problem::AbstractProblem, solver::IPSolver,tag::Bool)
     @assert num_flavors(problem) == 2 "findmin only supports boolean variables"
     cons = constraints(problem)
     nsc = ProblemReductions.num_variables(problem)
@@ -38,7 +46,7 @@ function Base.findmin(problem::AbstractProblem, solver::IPSolver)
                 JuMP.@constraint(model, sum(j-> x[con.variables[j]]*ie.hp.coefficients[j] , 1:length(con.variables)) >= ie.hp.offset)
             elseif ie.symb == 3
                 JuMP.@constraint(model, sum(j-> x[con.variables[j]]*ie.hp.coefficients[j] , 1:length(con.variables)) <= ie.hp.offset-1e-2)
-            elseif ie.symb == 4
+            else
                 JuMP.@constraint(model, sum(j-> x[con.variables[j]]*ie.hp.coefficients[j] , 1:length(con.variables)) >= ie.hp.offset+1e-2)
             end
         end
@@ -46,9 +54,10 @@ function Base.findmin(problem::AbstractProblem, solver::IPSolver)
     
     obj_sum = 0
     for obj in objs
-        obj_sum += x[obj.variables[1]]*obj.specification[1] + (1-x[obj.variables[1]])*obj.specification[2]
+        obj_sum += (1-x[obj.variables[1]])*obj.specification[1] + x[obj.variables[1]]*obj.specification[2]
     end
-    JuMP.@objective(model,Min, obj_sum)
+
+    tag ? JuMP.@objective(model,  Min, obj_sum) : JuMP.@objective(model,  Max, obj_sum)
 
     JuMP.optimize!(model)
     @assert JuMP.is_solved_and_feasible(model)

@@ -60,7 +60,6 @@ function HyperPlane(points::Vector{HyperCubePoint{N}}) where {N}
         return HyperPlane(((A \ ones(N))...,),1.0)
     elseif rank(A) == N-1
         q,r = qr(A)
-        # display(r)
         i = findfirst(x -> abs.(x) .< 1e-10, diag(r))
         j = findfirst(vec(all(x -> abs.(x) .< 1e-10,r, dims=2)))
         if isnothing(j)
@@ -69,8 +68,6 @@ function HyperPlane(points::Vector{HyperCubePoint{N}}) where {N}
         r[j,i] = 1.0
         b = zeros(N)
         b[j] = 1.0
-        # display(r)
-        # display(b)
         return HyperPlane(((r \ b)...,),0.0)
     else
         return nothing

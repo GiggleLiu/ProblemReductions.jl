@@ -2,6 +2,7 @@ using Test
 using JuMP
 using ProblemReductions
 using SCIP
+using Graphs
 
 @testset "IPSolverExt" begin
     # Test exact_set_cover with HiGHS optimizer
@@ -15,11 +16,6 @@ using SCIP
     result = Ext.minimal_set_cover(coverset, subsets, optimizer)
     @test result == [1, 2, 4] || result == [1, 3, 4]
 end
-
-using Graphs
-graph = smallgraph(:petersen)
-problem = MaximalIS(graph)
-findmin(problem, IPSolver(SCIP.Optimizer,20,false))
 
 @testset "HyperPoint" begin
     Ext = Base.get_extension(ProblemReductions, :IPSolverExt)
@@ -92,4 +88,13 @@ end
     @test hc.on == [1,2,7,8]
     @test hc.above == [5,6]
     @test hc.below == [3,4]
+end
+
+@testset "IPSolver" begin
+    graph = smallgraph(:petersen)
+    problem = MaximalIS(graph)
+    @test findmin(problem, IPSolver(SCIP.Optimizer,20,false)) ∈ findmin(problem, BruteForce())
+
+    problem = IndependentSet(graph)
+    @test findmax(problem, IPSolver(SCIP.Optimizer,20,false)) ∈ findmax(problem, BruteForce())
 end
