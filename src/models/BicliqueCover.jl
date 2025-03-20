@@ -49,10 +49,16 @@ end
 function _biclique_cover(config)
     return all(!iszero, config)
 end
-function objectives(c::BicliqueCover)
-    return [LocalSolutionSize(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
+# solution_size function for BicliqueCover, the solution size is the sum of the weights of the bicliques
+function solution_size_multiple(c::BicliqueCover, configs)
+    @assert all(length(config) <= c.k for config in configs)
+    return map(configs) do config
+        return SolutionSize(sum(i -> biclique_size(c,i),config), is_biclique_cover(c,config))
+    end
 end
+solution_size(c::BicliqueCover, config) = first(solution_size_multiple(c, [config]))
 energy_mode(::Type{<:BicliqueCover}) = SmallerSizeIsBetter()
+biclique_size(c::BicliqueCover,cfg::Vector{Int64}) = sum((i*weight for (i, weight) in zip(cfg, c.weights))) # helper function to calculate the size of a biclique
 
 function is_satisfied(c::BicliqueCover, config::Vector{Vector{Int64}}) 
     for cs in constraints(c)

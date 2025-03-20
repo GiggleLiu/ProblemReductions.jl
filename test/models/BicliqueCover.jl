@@ -25,6 +25,6 @@ using Test, ProblemReductions, Graphs
     @test is_biclique_cover(bc, [[1,1,0,1,1,0],[0,0,1,0,0,1]]) == true
     @test is_biclique_cover(bc, [[1,1,0,1,1,0],[0,0,1,0,0,0]]) == false
     @test ProblemReductions.is_satisfied(bc,[[1,1,0,1,1,0],[0,0,1,0,0,1]]) == true
-    @test solution_size(bc, [[1,1,0,1,1,0],[0,0,1,0,0,1]]) == Solution_Size(2, true)
-    @test solution_size(bc, [[1,1,0,1,1,0],[0,0,1,0,0,0]]) == Solution_Size(2, false)
+    @test solution_size(bc, [[1,1,0,1,1,0],[0,0,1,0,0,1]]) == ProblemReductions.SolutionSize(6, true)
+    @test solution_size(bc, [[1,1,0,1,1,0],[0,0,1,0,0,0]]) == ProblemReductions.SolutionSize(5, false)
 end
