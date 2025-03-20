@@ -9,6 +9,7 @@ struct BicliqueCover{T,WT} <: ConstraintSatisfactionProblem{T}
     weights::WT
     # when initialize the problem, ensure the first part of the vertices are in U, following the vertices of V
     function BicliqueCover(graph::SimpleGraph{Int64},k::Int64,weights::AbstractVector{T}=UnitWeight(nv(graph))) where {T}
+        @assert Graphs.is_bipartite(graph) "The graph is not bipartite"
         new{T,typeof(weights)}(graph,k,weights)
     end
 end
@@ -32,6 +33,7 @@ problem_size(c::BicliqueCover) = (; num_vertices=nv(c.graph), num_edges=ne(c.gra
 # each vertex is assigned to a biclique, with k bicliques, variables(c::BicliqueCover) = fill(1,c.k * nv(c.graph)) 
 num_variables(c::BicliqueCover) = nv(c.graph) * c.k
 flavors(::Type{<:BicliqueCover}) = (0,1)
+num_flavors(c::BicliqueCover) = 2
 
 # Weights Interface
 weights(bc::BicliqueCover) = bc.weights
@@ -40,38 +42,38 @@ function set_weights(bc::BicliqueCover, new_weights)
     return BicliqueCover(bc.graph,bc.k,new_weights)
 end
 
-# Constraint Interface
-function hard_constraints(bc::BicliqueCover)
-    return [HardConstraint(_vec(e), :cover) for e in edges(bc.graph)]
+# constraints interface
+function constraints(c::BicliqueCover)
+    return [LocalConstraint(num_flavors(c), _vec(e), vec([_biclique_cover(config) for config in collect(Iterators.product([[0,1] for i in 1:length(_vec(e))]...))])) for e in edges(c.graph)]
 end
-
-function is_satisfied(::Type{<:BicliqueCover}, spec::HardConstraint, config)
-   # discuss
+function _biclique_cover(config)
+    return all(!iszero, config)
 end
-
-function local_solution_spec(c::BicliqueCover)
-    return [LocalSolutionSpec([v], :vertex, w) for (w, v) in zip(weights(c), vertices(c.graph))]
+function objectives(c::BicliqueCover)
+    return [LocalSolutionSize(num_flavors(c), [v], [zero(w), w]) for (w, v) in zip(weights(c), vertices(c.graph))]
 end
-
-"""
-    solution_size(c::BicliqueCover, spec::LocalSolutionSpec, config)
-The solution size of a [`BicliqueCover`](@ref) model is the sum of the weights of the selected bicliques.
-
-has problem implementing
-"""
-function solution_size(::Type{<:BicliqueCover{WT,T}}, spec::LocalSolutionSpec,config::AbstractVector{Int64}) where {WT,T}
-    @assert length(config) == nv(c.graph) * c.k "config length mismatch"
-    bicliques = [Set(findall(x->x==1,config[(i-1)*c.k+1:i*c.k])) for i in 1:nv(c.graph)]
-    return sum(WT(length(b))*spec.weight for b in bicliques)
-end
-function solution_size(c::BicliqueCover,config::AbstractVector{Int64})
-    return solution_size(c,local_solution_spec(c),config)
-end
-
 energy_mode(::Type{<:BicliqueCover}) = SmallerSizeIsBetter()
 
-# discuss
-function is_biclique_cover(bc::BicliqueCover, config)
+function is_satisfied(c::BicliqueCover, config::Vector{Vector{Int64}}) 
+    for cs in constraints(c)
+        (src,dst) = cs.variables
+        validity = any(config -> is_satisfied(cs,[config[src],config[dst]]), config)
+        if !validity
+            return false
+        end
+    end
     return true
 end
+
+# return true if the configuration is a biclique cover
+function is_biclique_cover(bc::BicliqueCover, config)
+    return is_satisfied(bc,config)
+end
+
+# return true if the configuration is a k-biclique cover
+function is_k_biclique_cover(bc::BicliqueCover, config)
+    return length(config) <= bc.k && is_biclique_cover(bc,config)
+end
+
+
 

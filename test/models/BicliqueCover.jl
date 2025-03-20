@@ -18,5 +18,13 @@ using Test, ProblemReductions, Graphs
     @test problem_size(bc) == (num_vertices=6, num_edges=5, k=2)
     bc_matrix = ProblemReductions.biclique_cover_from_matrix([1 1 0;1 1 0;0 0 1],2,UnitWeight(6))
     @test bc_matrix == bc
-    # constraints interfaces are not implemented and tested yet
+    # constraints interfaces
+    #@test constraints(bc)[1] == ProblemReductions.LocalConstraint(2, [1, 4], [false,false,false,true])
+    #@test objectives(bc) == [LocalSolutionSize(2, [1, 2, 3, 4, 5, 6], [0, 1, 2, 3, 4, 5])]
+    #@test energy_mode(BicliqueCover) == SmallerSizeIsBetter()
+    @test is_biclique_cover(bc, [[1,1,0,1,1,0],[0,0,1,0,0,1]]) == true
+    @test is_biclique_cover(bc, [[1,1,0,1,1,0],[0,0,1,0,0,0]]) == false
+    @test ProblemReductions.is_satisfied(bc,[[1,1,0,1,1,0],[0,0,1,0,0,1]]) == true
+    @test solution_size(bc, [[1,1,0,1,1,0],[0,0,1,0,0,1]]) == Solution_Size(2, true)
+    @test solution_size(bc, [[1,1,0,1,1,0],[0,0,1,0,0,0]]) == Solution_Size(2, false)
 end
