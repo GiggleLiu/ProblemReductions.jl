@@ -3,19 +3,17 @@ $TYPEDEF
     BicliqueCover{K}(graph::SimpleGraph{Int64}, k::Int64,weights::WT)
 The Biclique Cover problem is defined on a bipartite simple graph. Given a bipartite graph, the goal is to find a set of bicliques that cover all the edges in the graph. A biclique is a complete bipartite subgraph, denoted by G = (U ∪ V, E), where U and V are the two disjoint sets of vertices, and all pairs of vertices from U and V are connected by an edge, i.e., (u, v) ∈ E for all u ∈ U and v ∈ V. What's more, each bipartite simple graph could be identified by an adjacent matrix, where the rows and columns are the vertices in U and V, respectively. 
 """
-struct BicliqueCover{T,WT} <: ConstraintSatisfactionProblem{T}
+struct BicliqueCover{Int64} <: ConstraintSatisfactionProblem{Int64}
     graph::SimpleGraph{Int64}
     k::Int64
-    weights::WT
     # when initialize the problem, ensure the first part of the vertices are in U, following the vertices of V
-    function BicliqueCover(graph::SimpleGraph{Int64},k::Int64,weights::AbstractVector{T}=UnitWeight(nv(graph))) where {T}
+    function BicliqueCover(graph::SimpleGraph{Int64},k::Int64)
         @assert Graphs.is_bipartite(graph) "The graph is not bipartite"
-        new{T,typeof(weights)}(graph,k,weights)
+        new{Int64}(graph,k)
     end
 end
 
-function biclique_cover_from_matrix(A::AbstractMatrix{Int64},k::Int64,weights::AbstractVector{T}=UnitWeight(size(A,1) + size(A,2))) where {T}
-    @assert length(weights) == size(A,1) + size(A,2) "Expected $(size(A,1)+size(A,2)) weights, got $(length(weights))"
+function biclique_cover_from_matrix(A::AbstractMatrix{Int64},k::Int64)
     graph = SimpleGraph(size(A,1)+size(A,2))
     for i in [i for i in 1:size(A,1)]
         for j in [j for j in 1:size(A,2)]
@@ -24,9 +22,9 @@ function biclique_cover_from_matrix(A::AbstractMatrix{Int64},k::Int64,weights::A
             end
         end
     end
-    return BicliqueCover(graph,k,weights)
+    return BicliqueCover(graph,k)
 end
-Base.:(==)(a::BicliqueCover, b::BicliqueCover) = a.graph == b.graph && a.k == b.k && a.weights == b.weights
+Base.:(==)(a::BicliqueCover, b::BicliqueCover) = a.graph == b.graph && a.k == b.k
 problem_size(c::BicliqueCover) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph), k=c.k)
 
 # Variables Interface
@@ -34,13 +32,6 @@ problem_size(c::BicliqueCover) = (; num_vertices=nv(c.graph), num_edges=ne(c.gra
 num_variables(c::BicliqueCover) = nv(c.graph) * c.k
 flavors(::Type{<:BicliqueCover}) = (0,1)
 num_flavors(c::BicliqueCover) = 2
-
-# Weights Interface
-weights(bc::BicliqueCover) = bc.weights
-function set_weights(bc::BicliqueCover, new_weights)
-    @assert length(new_weights) == nv(bc.graph) "Expected $(nv(bc.graph)) weights, got $(length(new_weights))"
-    return BicliqueCover(bc.graph,bc.k,new_weights)
-end
 
 # constraints interface
 function constraints(c::BicliqueCover)
@@ -53,12 +44,11 @@ end
 function solution_size_multiple(c::BicliqueCover, configs)
     @assert all(length(config) <= c.k for config in configs)
     return map(configs) do config
-        return SolutionSize(sum(i -> biclique_size(c,i),config), is_biclique_cover(c,config))
+        return SolutionSize(sum(i -> count(k -> k ==1, i),config), is_biclique_cover(c,config))
     end
 end
 solution_size(c::BicliqueCover, config) = first(solution_size_multiple(c, [config]))
 energy_mode(::Type{<:BicliqueCover}) = SmallerSizeIsBetter()
-biclique_size(c::BicliqueCover,cfg::Vector{Int64}) = sum((i*weight for (i, weight) in zip(cfg, c.weights))) # helper function to calculate the size of a biclique
 
 function is_satisfied(c::BicliqueCover, config::Vector{Vector{Int64}}) 
     for cs in constraints(c)
