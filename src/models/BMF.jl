@@ -16,9 +16,9 @@ The Boolean Matrix Factorization (BMF) problem is defined on a binary matrix A i
 - [`findbest`](@ref), find the best configurations of the input problem.
 """
 struct BinaryMatrixFactorization<: AbstractProblem
-    A::AbstractMatrix
+    A::BitMatrix
     k::Int
-    function BinaryMatrixFactorization(A::AbstractMatrix, k::Int) where K
+    function BinaryMatrixFactorization(A::BitMatrix, k::Int) where K
         new(A, k)
     end
 end
@@ -26,28 +26,26 @@ Base.:(==)(a::BinaryMatrixFactorization, b::BinaryMatrixFactorization) = a.A == 
 
 variables(bmf::BinaryMatrixFactorization) = [i for i in 1:size(bmf.A,1) * bmf.k + size(bmf.A,2) * bmf.k]
 num_variables(bmf::BinaryMatrixFactorization) = size(bmf.A,1) * bmf.k + size(bmf.A,2) * bmf.k
-flavors(::Type{<:BinaryMatrixFactorization}) = (0, 1)
 num_flavors(::Type{<:BinaryMatrixFactorization}) = 2
 
 problem_size(bmf::BinaryMatrixFactorization) = (; num_rows=size(bmf.A,1), num_cols=size(bmf.A,2), k=bmf.k)
-function solution_size(bmf::BinaryMatrixFactorization,b::AbstractMatrix,c::AbstractMatrix) 
+function solution_size(bmf::BinaryMatrixFactorization,b::BitMatrix,c::BitMatrix) 
    # Hamming Distance is used to described the solution size, the smaller the better
     return sum(bmf.A .!= boolean_product(b,c,bmf.k))
 end
 
-function boolean_product(A::AbstractMatrix, B::AbstractMatrix,k)
+function boolean_product(A::BitMatrix, B::BitMatrix,k)
     @assert size(A,2) == size(B,1) == k "Dimension mismatch"
-    @assert isbitstype(eltype(A)) && isbitstype(eltype(B)) "Only binary matrices are supported"
     C = zeros(size(A,1), size(B,2))
     for i in 1:size(A,1), j in 1:size(B,2)
-        C[i,j] = any(x -> x==1,A[i,:] .* B[:,j])
+        C[i,j] = any(k -> A[i,k] * B[k,j] == 1, 1:size(A,2))
     end
     return C 
 end
 
 energy_mode(::Type{<:BinaryMatrixFactorization}) = SmallerSizeIsBetter()
 
-function is_binary_matrix_factorization(bmf::BinaryMatrixFactorization, b::AbstractMatrix, c::AbstractMatrix)
+function is_binary_matrix_factorization(bmf::BinaryMatrixFactorization, b::BitMatrix, c::BitMatrix)
     return solution_size(bmf,b,c) == 0
 end
 
