@@ -30,6 +30,7 @@ export Factoring, is_factoring
 export Matching, is_matching
 export MaximalIS
 export PaintShop
+export BinaryMatrixFactorization, is_binary_matrix_factorization
 
 # rules
 export target_problem, AbstractProblem, ConstraintSatisfactionProblem, solution_size, solution_size_multiple, SolutionSize, objectives, constraints, energy_mode
