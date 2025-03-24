@@ -6,19 +6,19 @@ The Biclique Cover problem is defined on a bipartite simple graph. Given a bipar
 """
 struct BicliqueCover{Int64} <: ConstraintSatisfactionProblem{Int64}
     graph::SimpleGraph{Int64}
-    set1::Vector{Int64}
-    set2::Vector{Int64}
+    part1::Vector{Int64}
     k::Int64
     # when initialize the problem, ensure the first part of the vertices are in U, following the vertices of V
-    function BicliqueCover(graph::SimpleGraph{Int64},set1::Vector{Int64},k::Int64)
-        @assert Graphs.is_bipartite(graph) "The graph is not bipartite"
-        new{Int64}(graph,k)
+    function BicliqueCover(graph::SimpleGraph{Int64}, part1::Vector{Int64}, k::Int64)
+        @assert is_bipartite(graph, part1) "The graph is not bipartite"
+        new{Int64}(graph, part1, k)
     end
 end
 
 # Constructor for BicliqueCover from a adjacent matrix
 function biclique_cover_from_matrix(A::AbstractMatrix{Int64},k::Int64)
     graph = SimpleGraph(size(A,1)+size(A,2))
+    part1 = [i for i in 1:size(A,1)]
     for i in [i for i in 1:size(A,1)]
         for j in [j for j in 1:size(A,2)]
             if A[i,j] == 1
@@ -26,9 +26,10 @@ function biclique_cover_from_matrix(A::AbstractMatrix{Int64},k::Int64)
             end
         end
     end
-    return BicliqueCover(graph,k)
+    @assert is_bipartite(graph, part1) "The graph is not bipartite"
+    return BicliqueCover(graph, part1, k)
 end
-Base.:(==)(a::BicliqueCover, b::BicliqueCover) = a.graph == b.graph && a.k == b.k
+Base.:(==)(a::BicliqueCover, b::BicliqueCover) = a.graph == b.graph && a.k == b.k && a.part1 == b.part1
 problem_size(c::BicliqueCover) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph), k=c.k)
 
 # Variables Interface
@@ -56,7 +57,7 @@ energy_mode(::Type{<:BicliqueCover}) = SmallerSizeIsBetter()
 function is_satisfied(c::BicliqueCover, config::Vector{Vector{Int64}}) 
     for cs in constraints(c)
         (src,dst) = cs.variables
-        validity = any(config -> is_satisfied(cs,[config[src],config[dst]]), config)
+        validity = any(config -> is_biclique(config,c) && is_satisfied(cs,[config[src],config[dst]]), config)
         if !validity
             return false
         end
@@ -74,5 +75,22 @@ function is_k_biclique_cover(bc::BicliqueCover, config)
     return length(config) <= bc.k && is_biclique_cover(bc,config)
 end
 
+# check if the original graph is bipartite
+function is_bipartite(graph::SimpleGraph{Int64}, part1::Vector{Int64})
+    part2 = [i for i in 1:nv(graph) if !(i in part1)]
+    for edg in edges(graph)
+        if (edg.src in part1 && edg.dst in part1) || (edg.src in part2 && edg.dst in part2)
+            return false
+        end
+    end
+    return true
+end
 
-
+#check if the config is a biclique
+function is_biclique(config,bc::BicliqueCover)
+    part2 = [i for i in 1:nv(bc.graph) if !(i in bc.part1)]
+    if all(i -> config[i]==0, bc.part1) || all(i -> config[i]==0, part2)
+        return false
+    end
+    return true
+end
