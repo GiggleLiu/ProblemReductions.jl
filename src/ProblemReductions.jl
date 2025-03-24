@@ -30,6 +30,7 @@ export Factoring, is_factoring
 export Matching, is_matching
 export MaximalIS
 export PaintShop
+export BinaryMatrixFactorization, is_binary_matrix_factorization
 export BicliqueCover, is_biclique_cover
 
 # rules
