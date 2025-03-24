@@ -5,8 +5,6 @@ using ProblemReductions
 using LinearAlgebra
 using Combinatorics
 
-include("combinations.jl")
-include("hypercube.jl")
 function Base.findmin(problem::AbstractProblem, solver::IPSolver)
     return _find(problem, solver,true)
 end
@@ -16,39 +14,26 @@ end
 
 # tag: true for min, false for max
 function _find(problem::AbstractProblem, solver::IPSolver,tag::Bool)
-    @assert num_flavors(problem) == 2 "findmin only supports boolean variables"
+    @assert num_flavors(problem) == 2 "IPSolver only supports boolean variables"
     cons = constraints(problem)
     nsc = ProblemReductions.num_variables(problem)
     maxN = maximum([length(c.variables) for c in cons])
-    @assert maxN <= 5 "findmin only supports constraints with at most 5 variables"
-    cuts = [all_sets_cuts(i) for i in 2:maxN]
+    combs = [ProblemReductions.combinations(2,i) for i in 1:maxN]
 
     objs = objectives(problem)
-    @assert all(length(obj.variables) <= 1 for obj in objs) "findmin only supports objectives with at most 1 variables"
+    @assert all(length(obj.variables) <= 1 for obj in objs) "IPSolver only supports objectives with at most 1 variables"
 
     # IP by JuMP
     model = JuMP.Model(solver.optimizer)
     !solver.verbose && JuMP.set_silent(model)
 
     JuMP.@variable(model, 0 <= x[i = 1:nsc] <= 1, Int)
-    # @objective(model, Max, sum(x[i] for i in 1:nsc))
+    
     for con in cons
-        subsets,ies = cuts[length(con.variables)-1]
-        coverset = findall(!,con.specification)
-        subset_pos = findall(set -> issubset(set, coverset),subsets)
-        result = minimal_set_cover(coverset, subsets[subset_pos], solver.optimizer)
-        for i in result
-            ie = ies[subset_pos[i]]
-            # 1: <=, 2: >=, 3: < , 4: >
-            if ie.symb == 1
-                JuMP.@constraint(model, sum(j-> x[con.variables[j]]*ie.hp.coefficients[j] , 1:length(con.variables)) <= ie.hp.offset)
-            elseif ie.symb == 2
-                JuMP.@constraint(model, sum(j-> x[con.variables[j]]*ie.hp.coefficients[j] , 1:length(con.variables)) >= ie.hp.offset)
-            elseif ie.symb == 3
-                JuMP.@constraint(model, sum(j-> x[con.variables[j]]*ie.hp.coefficients[j] , 1:length(con.variables)) <= ie.hp.offset-1e-2)
-            else
-                JuMP.@constraint(model, sum(j-> x[con.variables[j]]*ie.hp.coefficients[j] , 1:length(con.variables)) >= ie.hp.offset+1e-2)
-            end
+        f_vec = findall(!,con.specification)
+        num_vars = length(con.variables)
+        for f in f_vec
+            JuMP.@constraint(model, sum(j-> iszero(combs[num_vars][f][j]) ? (1 - x[con.variables[j]]) : x[con.variables[j]], 1:num_vars) <= num_vars -1)
         end
     end
     
