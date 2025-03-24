@@ -1,18 +1,22 @@
 """
 $TYPEDEF
     BicliqueCover{K}(graph::SimpleGraph{Int64}, k::Int64,weights::WT)
+    
 The Biclique Cover problem is defined on a bipartite simple graph. Given a bipartite graph, the goal is to find a set of bicliques that cover all the edges in the graph. A biclique is a complete bipartite subgraph, denoted by G = (U ∪ V, E), where U and V are the two disjoint sets of vertices, and all pairs of vertices from U and V are connected by an edge, i.e., (u, v) ∈ E for all u ∈ U and v ∈ V. What's more, each bipartite simple graph could be identified by an adjacent matrix, where the rows and columns are the vertices in U and V, respectively. 
 """
 struct BicliqueCover{Int64} <: ConstraintSatisfactionProblem{Int64}
     graph::SimpleGraph{Int64}
+    set1::Vector{Int64}
+    set2::Vector{Int64}
     k::Int64
     # when initialize the problem, ensure the first part of the vertices are in U, following the vertices of V
-    function BicliqueCover(graph::SimpleGraph{Int64},k::Int64)
+    function BicliqueCover(graph::SimpleGraph{Int64},set1::Vector{Int64},k::Int64)
         @assert Graphs.is_bipartite(graph) "The graph is not bipartite"
         new{Int64}(graph,k)
     end
 end
 
+# Constructor for BicliqueCover from a adjacent matrix
 function biclique_cover_from_matrix(A::AbstractMatrix{Int64},k::Int64)
     graph = SimpleGraph(size(A,1)+size(A,2))
     for i in [i for i in 1:size(A,1)]
@@ -30,7 +34,6 @@ problem_size(c::BicliqueCover) = (; num_vertices=nv(c.graph), num_edges=ne(c.gra
 # Variables Interface
 # each vertex is assigned to a biclique, with k bicliques, variables(c::BicliqueCover) = fill(1,c.k * nv(c.graph)) 
 num_variables(c::BicliqueCover) = nv(c.graph) * c.k
-flavors(::Type{<:BicliqueCover}) = (0,1)
 num_flavors(c::BicliqueCover) = 2
 
 # constraints interface
