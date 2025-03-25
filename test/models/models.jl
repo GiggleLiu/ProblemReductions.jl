@@ -69,3 +69,8 @@ end
 @testset "BMF" begin
     include("BMF.jl")
 end
+
+@testset "BicliqueCover" begin
+    include("BicliqueCover.jl")
+end
+
