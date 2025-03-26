@@ -35,7 +35,7 @@ problem_size(c::BicliqueCover) = (; num_vertices=nv(c.graph), num_edges=ne(c.gra
 # Variables Interface
 # each vertex is assigned to a biclique, with k bicliques, variables(c::BicliqueCover) = fill(1,c.k * nv(c.graph)) 
 num_variables(c::BicliqueCover) = nv(c.graph) * c.k
-num_flavors(c::BicliqueCover) = 2
+num_flavors(::Type{BicliqueCover{Int64}}) = 2
 
 # constraints interface
 function constraints(c::BicliqueCover)
@@ -46,6 +46,7 @@ function _biclique_cover(config)
 end
 # solution_size function for BicliqueCover, the solution size is the sum of the weights of the bicliques
 function solution_size_multiple(c::BicliqueCover, configs)
+    print(configs)
     @assert all(length(config) <= c.k for config in configs)
     return map(configs) do config
         return SolutionSize(sum(i -> count(k -> k ==1, i),config), is_biclique_cover(c,config))
