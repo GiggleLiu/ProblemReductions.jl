@@ -18,7 +18,7 @@ The Boolean Matrix Factorization (BMF) problem is defined on a binary matrix A i
 struct BinaryMatrixFactorization<: AbstractProblem
     A::BitMatrix
     k::Int
-    function BinaryMatrixFactorization(A::BitMatrix, k::Int) where K
+    function BinaryMatrixFactorization(A::BitMatrix, k::Int)
         new(A, k)
     end
 end
