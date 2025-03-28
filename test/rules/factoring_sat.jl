@@ -56,3 +56,17 @@ end
         @test ProblemReductions.solution_size(o, intermediate_variables[o.variables]) == 1
     end
 end
+
+@testset "very large circuit" begin
+    m = n = 62
+    a = BigInt(4611686018427387847)
+    b = BigInt(4611686018427387817)
+    fact = Factoring(m, n, a * b)
+    res = reduceto(CircuitSAT, fact)
+    circ = target_problem(res).circuit
+    assignment = Dict(vcat([Symbol(:p, i) => Bool(readbit(a, i)) for i=1:m], [Symbol(:q, i) => Bool(readbit(b, i)) for i=1:n]))
+    values = ProblemReductions.evaluate_expr(circ, assignment)
+    outcome = [values[res.circuit.symbols[i]] for i in res.m]
+    intermediate_variables = [values[s] for s in res.circuit.symbols]
+    @test outcome == [readbit(a * b, i) for i=1:m+n]
+end
