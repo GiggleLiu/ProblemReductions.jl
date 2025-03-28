@@ -1,9 +1,11 @@
+abstract type AbstractSolver end
+
 """
 $TYPEDEF
 
 A brute force method to find the best configuration of a problem.
 """
-Base.@kwdef struct BruteForce{T}
+Base.@kwdef struct BruteForce{T} <: AbstractSolver
     atol::T=eps(Float64)
     rtol::T=eps(Float64)
 end
@@ -37,4 +39,11 @@ function _find!(compare, best_configs, configs, sizes, initial, atol, rtol)
             push!(best_configs, config)
         end
     end
+end
+
+# Interface for IPSolver
+Base.@kwdef struct IPSolver <: AbstractSolver 
+    optimizer    # e.g. HiGHS.Optimizer
+    max_itr::Int = 20
+    verbose::Bool = false
 end

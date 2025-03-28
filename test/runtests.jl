@@ -6,6 +6,10 @@ using Documenter
     include("bitvector.jl")
 end
 
+@testset "solvers" begin
+    include("solvers.jl")
+end
+
 @testset "models" begin
     include("models/models.jl")
 end
