@@ -7,7 +7,7 @@ Fields
 -------------------------------
 - `m::Int`: number of bits for the first number
 - `n::Int`: number of bits for the second number
-- `input::Int`: the number to factorize
+- `input::T`: the number to factorize
 
 Example
 -------------------------------
@@ -16,7 +16,7 @@ In the following example, the two 2 is the factors' bit size and 6 is the number
 julia> using ProblemReductions
 
 julia> factoring = Factoring(2,2,6)
-Factoring(2, 2, 6)
+Factoring{Int64}(2, 2, 6)
 
 julia> variables(factoring) # return the sum of factors' bit size
 1:4
@@ -28,15 +28,15 @@ julia> solution_size(factoring,[0,1,1,1]) # 01 -> 2, 11 -> 3
 SolutionSize{Int64}(0, true)
 ```
 """
-struct Factoring <: AbstractProblem
+struct Factoring{T} <: AbstractProblem
     m::Int       # number of bits for the first number
     n::Int       # number of bits for the second number
-    input::Int   # the number to factorize
+    input::T   # the number to factorize
 end
 
 # variables interface
 num_variables(f::Factoring) = f.m+f.n
-num_flavors(::Type{Factoring}) = 2
+num_flavors(::Type{<:Factoring}) = 2
 problem_size(f::Factoring) = (; num_bits_first=f.m, num_bits_second=f.n)
 
 # utilities
