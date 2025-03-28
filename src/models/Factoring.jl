@@ -51,7 +51,7 @@ end
 solution_size(f::Factoring, config) = first(solution_size_multiple(f, [config]))
 energy_mode(::Type{<:Factoring}) = SmallerSizeIsBetter()
 
-pack_bits(bits) = sum(i->isone(bits[i]) ? 2^(i-1) : 0, 1:length(bits))
+pack_bits(bits) = sum(i->isone(bits[i]) ? BigInt(1) << (i-1) : BigInt(0), 1:length(bits); init=BigInt(0))
 
 function read_solution(factoring::Factoring,solution::AbstractVector) #return a tuple of 2 numbers result
     num_m = pack_bits(solution[1:factoring.m])
