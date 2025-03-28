@@ -89,7 +89,11 @@ num_variables(ex::Assignment) = length(symbols(ex))
 function evaluate_expr(exprs::Vector{Assignment}, dict::Dict{Symbol, Bool})
     for ex in exprs
         for o in ex.outputs
-            dict[o] = evaluate_expr(ex.expr, dict)
+            if haskey(dict, o)
+                @assert dict[o] == evaluate_expr(ex.expr, dict) "inconsistent assignment for $o"
+            else
+                dict[o] = evaluate_expr(ex.expr, dict)
+            end
         end
     end
     return dict
