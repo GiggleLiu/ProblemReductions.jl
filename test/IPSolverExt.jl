@@ -38,14 +38,14 @@ end
 end
 
 @testset "Factoring" begin
-    function factoring(m,n,N)
+    function factoring(m,n,N,solver)
         fact3 = Factoring(m, n, N)
         res3 = reduceto(CircuitSAT, fact3)
         problem = CircuitSAT(res3.circuit.circuit; use_constraints=true)
-        vals = findmin(problem, IPSolver(HiGHS.Optimizer,20,true))
+        vals = findmin(problem, IPSolver(solver,20,true))
         return ProblemReductions.read_solution(fact3, [vals[res3.p]...,vals[res3.q]...])
     end
-    a,b = factoring(5,5,899)
+    a,b = factoring(5,5,899,SCIP.Optimizer)
     @test a*b == 899
 
     # using BenchmarkTools
