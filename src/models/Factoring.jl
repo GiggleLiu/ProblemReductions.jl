@@ -16,7 +16,7 @@ In the following example, the two 2 is the factors' bit size and 6 is the number
 julia> using ProblemReductions
 
 julia> factoring = Factoring(2,2,6)
-Factoring(2, 2, 6)
+Factoring{Int64}(2, 2, 6)
 
 julia> variables(factoring) # return the sum of factors' bit size
 1:4
