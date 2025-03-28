@@ -1,4 +1,4 @@
-using Test, ProblemReductions
+using Test, ProblemReductions, BitBasis
 
 @testset "multiplier" begin
     s, c, p, q, spre, cpre = BooleanExpr.([:s, :c, :p, :q, :spre, :cpre])
@@ -37,4 +37,22 @@ end
     best_config3 = best_configs3[1]
     assignment3 = Dict(zip(res3.circuit.symbols, best_config3))
     @test (2* assignment3[:p2]+ assignment3[:p1]) * assignment3[:q1] == 3
+end
+
+@testset "large circuit" begin
+    m = n = 15
+    a = 1019
+    b = 1021
+    fact = Factoring(m, n, a * b)
+    res = reduceto(CircuitSAT, fact)
+    circ = target_problem(res).circuit
+    assignment = Dict(vcat([Symbol(:p, i) => Bool(readbit(a, i)) for i=1:m], [Symbol(:q, i) => Bool(readbit(b, i)) for i=1:n]))
+    values = ProblemReductions.evaluate_expr(circ, assignment)
+    outcome = [values[res.circuit.symbols[i]] for i in res.m]
+    intermediate_variables = [values[s] for s in res.circuit.symbols]
+    @test outcome == [readbit(a * b, i) for i=1:m+n]
+    objs = ProblemReductions.objectives(target_problem(res))
+    for (k,o) in enumerate(objs)
+        @test ProblemReductions.solution_size(o, intermediate_variables[o.variables]) == 1
+    end
 end
