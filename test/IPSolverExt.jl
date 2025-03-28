@@ -42,7 +42,7 @@ end
         fact3 = Factoring(m, n, N)
         res3 = reduceto(CircuitSAT, fact3)
         problem = CircuitSAT(res3.circuit.circuit; use_constraints=true)
-        vals = findmin(problem, IPSolver(SCIP.Optimizer,20,true))
+        vals = findmin(problem, IPSolver(HiGHS.Optimizer,20,true))
         return ProblemReductions.read_solution(fact3, [vals[res3.p]...,vals[res3.q]...])
     end
     a,b = factoring(5,5,899)
@@ -51,6 +51,3 @@ end
     # using BenchmarkTools
     # @btime factoring(10,10,1040399) # 37.499 ms (505559 allocations: 22.91 MiB)
 end
-
-
-
