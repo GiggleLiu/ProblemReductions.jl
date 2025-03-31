@@ -7,6 +7,9 @@ end
 @testset "read_solution" begin
     f = Factoring(3, 2, 8)
     @test ProblemReductions.read_solution(f, [0, 0, 1, 0, 1]) == (4, 2)
+    # large number
+    f = Factoring(256, 256, BigInt(4611686018427387847) * BigInt(4611686018427387817))
+    @test ProblemReductions.read_solution(f, ones(Bool, 512)) == ((BigInt(1) << 256) - 1, (BigInt(1) << 256) - 1)
 end
 
 @testset "factoring" begin
