@@ -46,7 +46,6 @@ function is_clique(c::CliqueCover,config::Vector{Int64})
         end
         # check if the edge exists in the graph, if not, return false
         if !has_edge(c.graph, v1, v2)
-            print("Edge ($v1, $v2) does not exist in the graph")
             return false
         end
     end
