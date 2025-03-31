@@ -13,4 +13,5 @@ using Test, ProblemReductions, Graphs
     @test res.bicliquecover.part1 == [i for i in 1:size(A,1)]
     @test target_problem(res) == bc1
     @test extract_solution(res,[[1,1,1,0],[0,1,0,1]]) == ([true false ; true true], [true false ; false true])
+    @test extract_multiple_solutions(res,[[[1,1,1,0],[0,1,0,1]]]) == [([true false ; true true], [true false ; false true])]
 end
