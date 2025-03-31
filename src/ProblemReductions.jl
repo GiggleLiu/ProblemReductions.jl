@@ -48,6 +48,7 @@ export ReductionIndependentSetToSetPacking, ReductionSetPackingToIndependentSet
 export ReductionSATToCircuit
 export ReductionIndependentSetToVertexCovering
 export ReductionMatchingToSetPacking
+export ReductionBMFToBicliqueCover
 
 # reduction path
 export ReductionGraph, reduction_graph, reduction_paths, ConcatenatedReduction

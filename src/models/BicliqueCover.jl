@@ -46,7 +46,6 @@ function _biclique_cover(config)
 end
 # solution_size function for BicliqueCover, the solution size is the sum of the weights of the bicliques
 function solution_size_multiple(c::BicliqueCover, configs)
-    print(configs)
     @assert all(length(config) <= c.k for config in configs)
     return map(configs) do config
         return SolutionSize(sum(i -> count(k -> k ==1, i),config), is_biclique_cover(c,config))
