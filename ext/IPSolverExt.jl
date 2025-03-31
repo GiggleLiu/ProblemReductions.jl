@@ -3,7 +3,6 @@ module IPSolverExt
 import JuMP
 using ProblemReductions
 using LinearAlgebra
-using Combinatorics
 
 function Base.findmin(problem::AbstractProblem, solver::IPSolver)
     return _find(problem, solver,true)

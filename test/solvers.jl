@@ -4,7 +4,9 @@ using Test, ProblemReductions, Graphs
     graph = smallgraph(:petersen)
     problem = IndependentSet(graph)
     solver = BruteForce()
-    res = solve(solver, problem)
+    res = findbest(problem, solver)
+    @test res == [[0, 0, 1, 0, 1, 1, 1, 0, 0, 0], [1, 0, 0, 1, 0, 0, 1, 1, 0, 0], [0, 1, 0, 0, 1, 0, 0, 1, 1, 0], [0, 1, 0, 1, 0, 1, 0, 0, 0, 1], [1, 0, 1, 0, 0, 0, 0, 0, 1, 1]]
     solver = BruteForce()
-    res = solve(solver, problem)
+    res = findbest(problem, solver)
+    @test res == [[0, 0, 1, 0, 1, 1, 1, 0, 0, 0], [1, 0, 0, 1, 0, 0, 1, 1, 0, 0], [0, 1, 0, 0, 1, 0, 0, 1, 1, 0], [0, 1, 0, 1, 0, 1, 0, 0, 0, 1], [1, 0, 1, 0, 0, 0, 0, 0, 1, 1]]
 end
