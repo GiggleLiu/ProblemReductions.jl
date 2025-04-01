@@ -94,3 +94,31 @@ function is_biclique(config,bc::BicliqueCover)
     end
     return true
 end
+
+"""
+
+    read_solution(bicliquecover::BicliqueCover, solution::Vector{Vector{Int64}})
+
+Read the solution of the BicliqueCover problem from the solution of the BMF problem, return a vector of two bit matrix
+"""
+function read_solution(bicliquecover::BicliqueCover, solution::Vector{Vector{Int64}})
+    len_part1 = length(bicliquecover.part1)
+    len_part2 = nv(bicliquecover.graph) - len_part1
+    k = bicliquecover.k
+    B = falses((len_part1,k))
+    C = falses((k,len_part1))
+    # each iteration, we update the a-th column of B and the a-th row of C
+    for a in range(1,k)
+        for i in range(1,len_part1)
+            if solution[a][i] == 1
+                B[i,a] = true
+            end
+        end
+        for j in range(1,len_part2)
+            if solution[a][j+len_part1] == 1
+                C[a,j] = true
+            end
+        end
+    end
+    return [B,C]
+end

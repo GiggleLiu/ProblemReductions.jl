@@ -25,4 +25,6 @@ using Test, ProblemReductions, Graphs
     @test ProblemReductions.is_satisfied(bc,[[1,1,0,1,1,0],[0,0,1,0,0,1]]) == true
     @test solution_size(bc, [[1,1,0,1,1,0],[0,0,1,0,0,1]]) == ProblemReductions.SolutionSize(6, true)
     @test solution_size(bc, [[1,1,0,1,1,0],[0,0,1,0,0,0]]) == ProblemReductions.SolutionSize(5, false)
+    B,C = BitMatrix([1 0;1 0;0 1]), BitMatrix([1 1 0;0 0 1])
+    @test read_solution(bc, [[1,1,0,1,1,0],[0,0,1,0,0,1]]) == [B,C]
 end
