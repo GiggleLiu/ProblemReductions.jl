@@ -12,5 +12,8 @@ using Test, ProblemReductions, Graphs
     @test Base.:(==)(c, CliqueCover(g,2))
     @test energy_mode(c) == SmallerSizeIsBetter()
     @test is_clique_cover([[1,0,1,0,1],[0,1,0,1,0]],c) == true
+    @test is_clique_cover([[1,0,1,0,0],[0,1,0,1,0],[0,0,0,0,0]],c) == false
+    @test ProblemReductions.is_clique(c,[1,0,1,0,0]) == true
+    @test ProblemReductions.is_clique(c,[0,1,0,1,1]) == false
     @test ProblemReductions.is_clique(c,[1,0,1,0,1]) == true
 end
