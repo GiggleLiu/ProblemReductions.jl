@@ -26,13 +26,20 @@ end
 energy_mode(::Type{<:CliqueCover}) = SmallerSizeIsBetter()
 
 function is_clique_cover(configs::Vector{Vector{Int64}}, c::CliqueCover)
+    # check if the number of cliques is equal to k
+    if length(configs) != c.k
+        print(1)
+        return false
+    end
     # check if they are all valid clique
     if any(config -> !is_clique(c, config), configs)
+        print(2)
         return false
     end
     vertices_covered = reduce(vcat, [findall(x-> x==1,config) for config in configs])
     # check if the vertices are covered by the cliques
     if length(vertices_covered) != nv(c.graph)
+        print(3)
         return false
     end
     return true
