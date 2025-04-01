@@ -34,5 +34,8 @@ end
     include("deprecated.jl")
 end
 
+@testset "IPSolverExt" begin
+    include("IPSolverExt.jl")
+end
 DocMeta.setdocmeta!(ProblemReductions, :DocTestSetup, :(using ProblemReductions); recursive=true)
 Documenter.doctest(ProblemReductions; manual=false, fix=false)
