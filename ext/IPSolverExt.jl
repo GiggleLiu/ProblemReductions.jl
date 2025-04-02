@@ -35,22 +35,18 @@ function _find(problem::AbstractProblem, solver::IPSolver,tag::Bool)
             JuMP.@constraint(model, sum(j-> iszero(combs[num_vars][f][j]) ? (1 - x[con.variables[j]]) : x[con.variables[j]], 1:num_vars) <= num_vars -1)
         end
     end
-    
-    obj_sum = 0
-    for obj in objs
-        obj_sum += (1-x[obj.variables[1]])*obj.specification[1] + x[obj.variables[1]]*obj.specification[2]
+    if isempty(objs)
+        JuMP.@objective(model,  Min, 0)
+    else
+        obj_sum = sum(objs) do obj
+            (1-x[obj.variables[1]])*obj.specification[1] + x[obj.variables[1]]*obj.specification[2]
+        end
+        tag ? JuMP.@objective(model,  Min, obj_sum) : JuMP.@objective(model,  Max, obj_sum)
     end
 
-    tag ? JuMP.@objective(model,  Min, obj_sum) : JuMP.@objective(model,  Max, obj_sum)
-
     JuMP.optimize!(model)
-    @assert JuMP.is_solved_and_feasible(model)
+    @assert JuMP.is_solved_and_feasible(model) "The problem is infeasible"
     return round.(Int, JuMP.value.(x))
-end
-
-function minimal_constraints(nflavor::Int, set::Vector)
-    subsets = [covering_items(c, totalset) for c in clauses]
-    return filter(set -> issubset(set, coverset), subsets)
 end
 
 """
@@ -67,7 +63,7 @@ The objective is to minimize the number of subsets used.
 # Returns
 - `Vector{Int}`: The indices of the subsets to choose.
 """
-function minimal_set_cover(coverset::Vector{Int}, subsets::Vector{Vector{Int}}, optimizer, verbose::Bool=false)
+function minimal_set_cover(coverset::Vector{Int}, subsets::Vector{Vector{Int}}, weights::AbstractVector, optimizer, verbose::Bool=false)
     # Remove subsets that cover not existing elements in the coverset
     @assert all(set -> issubset(set, coverset), subsets) "subsets ($subsets) must not cover any elements absent in the coverset ($coverset)"
 
@@ -89,16 +85,22 @@ function minimal_set_cover(coverset::Vector{Int}, subsets::Vector{Vector{Int}}, 
     end
     
     # Minimize the number of subsets used (optional objective)
-    JuMP.@objective(model, Min, sum(x))
+    JuMP.@objective(model, Min, sum(weights[i]*x[i] for i in 1:n))
     # Solve the model
     JuMP.optimize!(model)
     
     # Return the solution if feasible
-    if  JuMP.termination_status(model) ==  JuMP.MOI.OPTIMAL
-        return [i for i in 1:n if  JuMP.value(x[i]) > 0.5]
-    else
-        error("No solution found")
-    end
+    @assert JuMP.is_solved_and_feasible(model) "The problem is infeasible"
+    return [i for i in 1:n if  JuMP.value(x[i]) > 0.5]
+end
+minimal_set_cover(coverset::Vector{Int}, subsets::Vector{Vector{Int}}, optimizer, verbose::Bool=false) = minimal_set_cover(coverset, subsets, UnitWeight(length(subsets)), optimizer, verbose)
+
+function Base.findmin(problem::SetCovering, solver::IPSolver)
+    return minimal_set_cover(problem.elements, problem.sets, problem.weights, solver.optimizer, solver.verbose)
+end
+
+function Base.findmax(problem::SetCovering, solver::IPSolver)
+    return minimal_set_cover(problem.elements, problem.sets, - problem.weights, solver.optimizer, solver.verbose)
 end
 
 end

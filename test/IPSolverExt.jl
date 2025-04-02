@@ -17,6 +17,12 @@ using Graphs
     @test result == [1, 2, 4] || result == [1, 3, 4]
 end
 
+@testset "SetCovering" begin
+    problem = SetCovering([[1, 2], [2, 3], [3, 4], [4, 5]], [1, 2, 3, 4])
+    @test findmin(problem, IPSolver(SCIP.Optimizer,20,false)) == [1, 2, 4]
+    @test findmax(problem, IPSolver(SCIP.Optimizer,20,false)) == [1, 2, 3, 4]
+end
+
 @testset "IPSolver" begin
     graph = smallgraph(:petersen)
     problem = MaximalIS(graph)
@@ -47,7 +53,4 @@ end
     end
     a,b = factoring(5,5,899,SCIP.Optimizer)
     @test a*b == 899
-
-    # using BenchmarkTools
-    # @btime factoring(10,10,1040399) # 37.499 ms (505559 allocations: 22.91 MiB)
 end
