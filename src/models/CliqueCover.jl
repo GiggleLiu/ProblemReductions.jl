@@ -14,7 +14,7 @@ struct CliqueCover{Int64} <: ConstraintSatisfactionProblem{Int64}
 end
 problem_size(c::CliqueCover) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph), k=c.k)
 num_variables(c::CliqueCover) = nv(c.graph) * c.k
-num_flavors(c::CliqueCover) = 2
+num_flavors(::Type{<:CliqueCover}) = 2
 
 # constraints interface
 function constraints(c::CliqueCover)
