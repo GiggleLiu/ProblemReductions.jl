@@ -35,7 +35,7 @@ problem_size(c::BicliqueCover) = (; num_vertices=nv(c.graph), num_edges=ne(c.gra
 # Variables Interface
 # each vertex is assigned to a biclique, with k bicliques, variables(c::BicliqueCover) = fill(1,c.k * nv(c.graph)) 
 num_variables(c::BicliqueCover) = nv(c.graph) * c.k
-num_flavors(::Type{BicliqueCover{Int64}}) = 2
+num_flavors(::Type{<:BicliqueCover}) = 2
 
 # constraints interface
 function constraints(c::BicliqueCover)
