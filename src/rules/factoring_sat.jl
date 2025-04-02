@@ -32,8 +32,8 @@ function reduceto(::Type{<:CircuitSAT}, f::Factoring)
             # spre: the signal from the previous cycle
             # cpre: the signal from the previous computational step
             # s + 2c = p*q + s_pre + c_pre
-            c = BooleanExpr(Symbol("c$i$j"))
-            s = BooleanExpr(Symbol("s$i$j"))
+            c = BooleanExpr(Symbol("c$(i)_$(j)"))
+            s = BooleanExpr(Symbol("s$(i)_$(j)"))
             mul_exprs, ancillas = multiplier(s, c, p[i], q[j], spres[j+1], cpre)
             append!(exprs, mul_exprs)
             cpre = c
