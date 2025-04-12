@@ -6,6 +6,10 @@ using Documenter
     include("bitvector.jl")
 end
 
+@testset "solvers" begin
+    include("solvers.jl")
+end
+
 @testset "models" begin
     include("models/models.jl")
 end
@@ -30,5 +34,8 @@ end
     include("deprecated.jl")
 end
 
+@testset "IPSolverExt" begin
+    include("IPSolverExt.jl")
+end
 DocMeta.setdocmeta!(ProblemReductions, :DocTestSetup, :(using ProblemReductions); recursive=true)
 Documenter.doctest(ProblemReductions; manual=false, fix=false)

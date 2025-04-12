@@ -41,7 +41,7 @@ export LogicGadget, truth_table
 export ReductionSATTo3SAT
 export ReductionCircuitToSpinGlass, ReductionMaxCutToSpinGlass, ReductionSpinGlassToMaxCut, ReductionVertexCoveringToSetCovering, ReductionSatToColoring,
     ReductionSpinGlassToQUBO, ReductionQUBOToSpinGlass
-export findbest, BruteForce
+export findbest, BruteForce, AbstractSolver, IPSolver
 export CNF
 export ReductionSATToIndependentSet, ReductionSATToDominatingSet
 export ReductionIndependentSetToSetPacking, ReductionSetPackingToIndependentSet
@@ -57,7 +57,7 @@ include("topology.jl")
 include("bitvector.jl")
 include("models/models.jl")
 include("rules/rules.jl")
-include("bruteforce.jl")
+include("solvers.jl")
 include("reduction_path.jl")
 include("deprecated.jl")
 
