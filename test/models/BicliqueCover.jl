@@ -20,7 +20,6 @@ using Test, ProblemReductions, Graphs
     @test ProblemReductions.is_bipartite(g,[1,2,3,4]) == false
     @test is_biclique_cover(bc, [[1,1,0,1,1,0],[0,0,1,0,0,1]]) == true
     @test is_biclique_cover(bc, [[1,1,0,1,1,0],[0,0,1,0,0,0]]) == false
-    @test ProblemReductions.is_k_biclique_cover(bc, [[1,1,0,1,1,0],[0,0,1,0,0,1]]) == true
     @test ProblemReductions.is_satisfied(bc,[[1,1,0,1,1,0],[0,0,1,0,0,1]]) == true
     @test solution_size(bc, [[1,1,0,1,1,0],[0,0,1,0,0,1]]) == ProblemReductions.SolutionSize(6, true)
     @test solution_size(bc, [[1,1,0,1,1,0],[0,0,1,0,0,0]]) == ProblemReductions.SolutionSize(5, false)

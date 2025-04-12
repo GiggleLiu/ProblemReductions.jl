@@ -67,12 +67,7 @@ end
 
 # return true if the configuration is a biclique cover
 function is_biclique_cover(bc::BicliqueCover, config)
-    return is_satisfied(bc,config)
-end
-
-# return true if the configuration is a k-biclique cover
-function is_k_biclique_cover(bc::BicliqueCover, config)
-    return length(config) <= bc.k && is_biclique_cover(bc,config)
+    return length(config) <= bc.k && is_satisfied(bc,config)
 end
 
 # check if the original graph is bipartite
