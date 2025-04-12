@@ -10,6 +10,7 @@ using Test, ProblemReductions, Graphs
     # variable and weight interfaces
     @test num_variables(bc) == 12
     @test num_flavors(bc) == 2
+    @test num_flavors(BicliqueCover{Int64}) == 2
     @test problem_size(bc) == (num_vertices=6, num_edges=5, k=2)
     bc_matrix = ProblemReductions.biclique_cover_from_matrix([1 1 0;1 1 0;0 0 1],2)
     @test bc_matrix == bc
@@ -23,4 +24,6 @@ using Test, ProblemReductions, Graphs
     @test ProblemReductions.is_satisfied(bc,[[1,1,0,1,1,0],[0,0,1,0,0,1]]) == true
     @test solution_size(bc, [[1,1,0,1,1,0],[0,0,1,0,0,1]]) == ProblemReductions.SolutionSize(6, true)
     @test solution_size(bc, [[1,1,0,1,1,0],[0,0,1,0,0,0]]) == ProblemReductions.SolutionSize(5, false)
+    B,C = BitMatrix([1 0;1 0;0 1]), BitMatrix([1 1 0;0 0 1])
+    @test read_solution(bc, [[1,1,0,1,1,0],[0,0,1,0,0,1]]) == [B,C]
 end
