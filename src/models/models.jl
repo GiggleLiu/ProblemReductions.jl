@@ -352,6 +352,7 @@ energy_mode(problem::AbstractProblem) = energy_mode(typeof(problem))
 The energy of the `problem` given the configuration `config`. Please check the [`energy_mode`](@ref) for the definition of the energy function.
 """
 function energy(problem::AbstractProblem, config)
+    @assert all(x -> 0 <= x <= num_flavors(problem)-1, config) "The configuration must be a vector of integers in the range of 0 to $(num_flavors(problem)-1), got: $(config)"
     s = solution_size(problem, config)
     return s.is_valid ? (energy_mode(problem) == LargerSizeIsBetter() ? -s.size : s.size) : energy_max(typeof(s.size))
 end
