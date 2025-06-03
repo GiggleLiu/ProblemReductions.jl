@@ -311,7 +311,8 @@ The unit weight vector of length `n`.
 struct UnitWeight <: AbstractVector{Int}
     n::Int
 end
-Base.getindex(::UnitWeight, i) = 1
+Base.getindex(::UnitWeight, i::Integer) = 1
+Base.getindex(::UnitWeight, inds::AbstractVector) = UnitWeight(length(inds))
 Base.size(w::UnitWeight) = (w.n,)
 
 """
