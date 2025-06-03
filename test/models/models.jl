@@ -6,6 +6,14 @@ using Test, ProblemReductions
     @test ProblemReductions.combinations(3, 2) == [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2]]
 end
 
+@testset "UnitWeight" begin
+    w = UnitWeight(3)
+    @test w[1] == 1
+    @test w[2] == 1
+    @test w[3] == 1
+    @test w[1:2] === UnitWeight(2)
+end
+
 @testset "Circuit" begin
     include("Circuit.jl")
 end
