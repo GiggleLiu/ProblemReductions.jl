@@ -82,3 +82,6 @@ end
     include("BicliqueCover.jl")
 end
 
+@testset "CliqueCover" begin
+    include("CliqueCover.jl")
+end
