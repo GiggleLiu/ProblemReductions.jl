@@ -378,3 +378,5 @@ include("MaximalIS.jl")
 include("Paintshop.jl")
 include("BicliqueCover.jl")
 include("BMF.jl")
+
+include("fileio.jl")
