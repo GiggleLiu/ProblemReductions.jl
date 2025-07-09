@@ -9,7 +9,7 @@ Write a problem to a JSON file.
 """
 function writejson end
 
-for MODEL in [:BicliqueCover, :CircuitSAT, :Circuit, :SpinGlass, :IndependentSet, :MaxCut, :Factoring, :QUBO, :Satisfiability, :SetCovering, :DominatingSet, :SetPacking, :VertexCovering, :MaximalIS, :PaintShop, :Matching, :BinaryMatrixFactorization]
+for MODEL in [:BicliqueCover, :CircuitSAT, :SpinGlass, :IndependentSet, :MaxCut, :Factoring, :QUBO, :Satisfiability, :SetCovering, :DominatingSet, :SetPacking, :VertexCovering, :MaximalIS, :PaintShop, :Matching, :BinaryMatrixFactorization]
     @eval begin
         function writejson(filename::AbstractString, problem::$MODEL)
             js = JSON.parse(JSON.json(problem))
@@ -168,15 +168,6 @@ function readjson(filename::AbstractString)
         end
         circuit = Circuit(assignments)
         return CircuitSAT(circuit)
-    elseif problem_type == "Circuit"
-        circuit_data = js["exprs"]
-        assignments = []
-        for assign_data in circuit_data
-            outputs = Symbol.(assign_data["outputs"])
-            expr = deserialize_boolean_expr(assign_data["expr"])
-            push!(assignments, Assignment(outputs, expr))
-        end
-        return Circuit(assignments)
     else
         throw(ArgumentError("Unsupported problem type: $problem_type"))
     end
