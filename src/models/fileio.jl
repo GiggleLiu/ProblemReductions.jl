@@ -1,3 +1,14 @@
+"""
+    writejson(filename::AbstractString, problem::AbstractProblem)
+
+Write a problem to a JSON file.
+
+# Arguments
+- `filename::AbstractString`: The name of the file to write to.
+- `problem::AbstractProblem`: The problem to write to the file.
+"""
+function writejson end
+
 for MODEL in [:BicliqueCover, :CircuitSAT, :Circuit, :SpinGlass, :IndependentSet, :MaxCut, :Factoring, :QUBO, :Satisfiability, :SetCovering, :DominatingSet, :SetPacking, :VertexCovering, :MaximalIS, :PaintShop, :Matching, :BinaryMatrixFactorization]
     @eval begin
         function writejson(filename::AbstractString, problem::$MODEL)
@@ -28,6 +39,14 @@ function writejson(filename::AbstractString, problem::KSatisfiability)
     end
 end
 
+"""
+    readjson(filename::AbstractString)
+
+Read a problem from a JSON file.
+
+# Arguments
+- `filename::AbstractString`: The name of the file to read from.
+"""
 function readjson(filename::AbstractString)
     js = JSON.parsefile(filename)
     problem_type = js["type"]
