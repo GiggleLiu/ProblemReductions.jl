@@ -5,6 +5,7 @@ using DocStringExtensions
 using PrettyTables
 using BitBasis
 using MLStyle
+using JSON
 using InteractiveUtils: subtypes
 
 export @bit_str

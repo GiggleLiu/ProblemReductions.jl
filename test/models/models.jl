@@ -82,3 +82,6 @@ end
     include("BicliqueCover.jl")
 end
 
+@testset "fileio" begin
+    include("fileio.jl")
+end
