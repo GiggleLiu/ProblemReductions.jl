@@ -39,6 +39,14 @@ function writejson(filename::AbstractString, problem::KSatisfiability)
     end
 end
 
+function JSON.show_json(io::JSON.Writer.SC, s::JSON.Writer.CS, x::BooleanExpr)
+    if is_var(x)
+        return JSON.show_json(io, s, Dict("head" => "var", "var" => x.var))
+    else
+        return JSON.show_json(io, s, Dict("head" => x.head, "args" => x.args))
+    end
+end
+
 """
     readjson(filename::AbstractString)
 
@@ -56,17 +64,10 @@ function readjson(filename::AbstractString)
     elseif problem_type == "IndependentSet"
         graph = _render_graph(js["graph"])
         weights = js["weights"]
-        # Handle UnitWeight case
-        if weights isa Dict && haskey(weights, "n")
-            weights = UnitWeight(weights["n"])
-        end
         return IndependentSet(graph, weights)
     elseif problem_type == "MaxCut"
         graph = _render_graph(js["graph"])
         weights = js["weights"]
-        if weights isa Dict && haskey(weights, "n")
-            weights = UnitWeight(weights["n"])
-        end
         return MaxCut(graph, weights)
     elseif problem_type == "Factoring"
         return Factoring(js["m"], js["n"], js["input"])
@@ -77,9 +78,6 @@ function readjson(filename::AbstractString)
         symbols = js["symbols"]
         weights = js["weights"]
         cnf_data = js["cnf"]
-        if weights isa Dict && haskey(weights, "n")
-            weights = UnitWeight(weights["n"])
-        end
         # Deserialize CNF from JSON
         cnf_clauses = CNFClause{Symbol}[]
         for clause_data in cnf_data["clauses"]
@@ -95,37 +93,22 @@ function readjson(filename::AbstractString)
     elseif problem_type == "SetCovering"
         sets = js["sets"]
         weights = js["weights"]
-        if weights isa Dict && haskey(weights, "n")
-            weights = UnitWeight(weights["n"])
-        end
         return SetCovering(Vector{Int}.(sets), weights)
     elseif problem_type == "DominatingSet"
         graph = _render_graph(js["graph"])
         weights = js["weights"]
-        if weights isa Dict && haskey(weights, "n")
-            weights = UnitWeight(weights["n"])
-        end
         return DominatingSet(graph, weights)
     elseif problem_type == "SetPacking"
         sets = js["sets"]
         weights = js["weights"]
-        if weights isa Dict && haskey(weights, "n")
-            weights = UnitWeight(weights["n"])
-        end
         return SetPacking(Vector{Int}.(sets), weights)
     elseif problem_type == "VertexCovering"
         graph = _render_graph(js["graph"])
         weights = js["weights"]
-        if weights isa Dict && haskey(weights, "n")
-            weights = UnitWeight(weights["n"])
-        end
         return VertexCovering(graph, weights)
     elseif problem_type == "MaximalIS"
         graph = _render_graph(js["graph"])
         weights = js["weights"]
-        if weights isa Dict && haskey(weights, "n")
-            weights = UnitWeight(weights["n"])
-        end
         return MaximalIS(graph, weights)
     elseif problem_type == "PaintShop"
         sequence = js["sequence"]
@@ -133,9 +116,6 @@ function readjson(filename::AbstractString)
     elseif problem_type == "Matching"
         graph = _render_graph(js["graph"])
         weights = js["weights"]
-        if weights isa Dict && haskey(weights, "n")
-            weights = UnitWeight(weights["n"])
-        end
         return Matching(graph, weights)
     elseif problem_type == "BinaryMatrixFactorization"
         A = BitMatrix(hcat(js["A"]...))
@@ -143,7 +123,7 @@ function readjson(filename::AbstractString)
         return BinaryMatrixFactorization(A, k)
     elseif problem_type == "BicliqueCover"
         graph = _render_graph(js["graph"])
-        part1 = js["part1"]
+        part1 = Vector{Int}(js["part1"])
         k = js["k"]
         return BicliqueCover(graph, part1, k)
     elseif startswith(problem_type, "Coloring")
@@ -151,9 +131,6 @@ function readjson(filename::AbstractString)
         graph = _render_graph(js["graph"])
         weights = js["weights"]
         k = js["k"]  # Extract the K parameter
-        if weights isa Dict && haskey(weights, "n")
-            weights = UnitWeight(weights["n"])
-        end
         # Create Coloring{K} with the extracted K parameter
         # Use dynamic construction instead of eval
         return Coloring{k}(graph, weights)
@@ -164,9 +141,6 @@ function readjson(filename::AbstractString)
         cnf_data = js["cnf"]
         k = js["k"]  # Extract the K parameter
         allow_less = js["allow_less"]
-        if weights isa Dict && haskey(weights, "n")
-            weights = UnitWeight(weights["n"])
-        end
         # Deserialize CNF from JSON
         cnf_clauses = CNFClause{Symbol}[]
         for clause_data in cnf_data["clauses"]
@@ -185,9 +159,6 @@ function readjson(filename::AbstractString)
         circuit_data = js["circuit"]
         symbols = js["symbols"]
         weights = js["weights"]
-        if weights isa Dict && haskey(weights, "n")
-            weights = UnitWeight(weights["n"])
-        end
         # Deserialize Circuit from JSON
         assignments = []
         for assign_data in circuit_data["exprs"]

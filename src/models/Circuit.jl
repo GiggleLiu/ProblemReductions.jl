@@ -42,7 +42,7 @@ is_literal(x::BooleanExpr) = x.head == :var || (x.head == :¬ && x.args[1].head 
 is_cnf(x::BooleanExpr) = x.head == :∧ && all(a->(a.head == :∨ && all(is_literal, a.args)), x.args)
 is_dnf(x::BooleanExpr) = x.head == :∨ && all(a->(a.head == :∧ && all(is_literal, a.args)), x.args)
 
-Base.:(==)(x::BooleanExpr, y::BooleanExpr) = x.head == y.head && x.var == y.var && all(x.args .== y.args)
+Base.:(==)(x::BooleanExpr, y::BooleanExpr) = (is_var(x) && is_var(y) && x.var == y.var) || (!is_var(x) && !is_var(y) && x.head == y.head && x.args == y.args)
 Base.hash(x::BooleanExpr, h::UInt) = hash(x.head, hash(x.var, hash(x.args, h)))
 function evaluate_expr(ex::BooleanExpr, dict::Dict{BooleanExpr, Bool})
     @assert all(is_var, keys(dict))
@@ -85,6 +85,7 @@ function extract_symbols!(ex::Assignment, vars::Vector{Symbol})
     extract_symbols!(ex.expr, vars)
 end
 num_variables(ex::Assignment) = length(symbols(ex))
+Base.:(==)(x::Assignment, y::Assignment) = x.outputs == y.outputs && x.expr == y.expr
 
 function evaluate_expr(exprs::Vector{Assignment}, dict::Dict{Symbol, Bool})
     for ex in exprs
@@ -123,6 +124,7 @@ function print_statements(io::IO, exprs)
     end
 end
 Base.show(io::IO, ::MIME"text/plain", x::Circuit) = show(io, x)
+Base.:(==)(x::Circuit, y::Circuit) = x.exprs == y.exprs
 
 function extract_symbols!(c::Circuit, vars::Vector{Symbol})
     for ex in c.exprs
@@ -281,6 +283,7 @@ function Base.show(io::IO, x::CircuitSAT)
     print(io, "Symbols: ", x.symbols)
 end
 Base.show(io::IO, ::MIME"text/plain", x::CircuitSAT) = show(io, x)
+Base.:(==)(x::CircuitSAT, y::CircuitSAT) = x.circuit == y.circuit && x.symbols == y.symbols && x.weights == y.weights
 
 # variables interface
 num_variables(c::CircuitSAT) = length(c.symbols)
