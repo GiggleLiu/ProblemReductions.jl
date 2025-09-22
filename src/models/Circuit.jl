@@ -276,6 +276,11 @@ function CircuitSAT(circuit::Circuit; use_constraints::Bool=false)
     vars = symbols(simplified)
     CircuitSAT{OBJ}(simplified, vars, UnitWeight(length(simplified.exprs)))
 end
+const CircuitSATHard{T, WT} = CircuitSAT{T, WT, SAT} where {T, WT}
+function CircuitSATHard(sat::CircuitSAT)
+    return CircuitSAT{SAT}(sat.circuit, sat.symbols, sat.weights)
+end
+
 function Base.show(io::IO, x::CircuitSAT)
     println(io, "$(typeof(x)):")
     print_statements(io, x.circuit.exprs)
