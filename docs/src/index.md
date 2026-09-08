@@ -31,7 +31,7 @@ res = reduceto(paths[1], factoring); # perform the reduction
 problem_size(target_problem(res))
 ```
 The [`Factoring`](@ref) problem is defined with two inputs of bit width 2 and 1, respectively.
-We first query the reduction paths from the [Factoring](@ref) problem to the [SpinGlass](@ref) problem using [`reduction_paths`](@ref), and find multiple paths.
+We first query the reduction paths from the [`Factoring`](@ref) problem to the [`SpinGlass`](@ref) problem using [`reduction_paths`](@ref), and find multiple paths.
 Each path is a [`ReductionPath`](@ref) instance.
 We pick one reduction path and perform the reduction using [`reduceto`](@ref). The result is a [`ConcatenatedReduction`](@ref) instance, which contains not only the target problem, but also the intermediate reductions in the reduction path.
 The target problem is an Ising model with 25 spins, which is exactly solvable using the [`BruteForce`](@ref) method implemented in [`findbest`](@ref):

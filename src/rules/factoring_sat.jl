@@ -17,7 +17,14 @@ end
 
 target_problem(res::ReductionFactoringToSat) = res.circuit
 
-function reduceto(::Type{<:CircuitSAT}, f::Factoring)
+"""
+    reduceto(::Type{<:CircuitSAT}, f::Factoring; use_constraints::Bool=false)
+
+Reduce factoring to a Boolean circuit. Set `use_constraints=true` to enforce the
+circuit equations as hard constraints; the default uses soft objectives, as in
+[`CircuitSAT`](@ref).
+"""
+function reduceto(::Type{<:CircuitSAT}, f::Factoring; use_constraints::Bool=false)
     # construct a circuit that multiplies two numbers
     n1, n2, z = f.m, f.n, f.input
     p = [BooleanExpr(Symbol("p$i")) for i in 1:n1]
@@ -50,7 +57,7 @@ function reduceto(::Type{<:CircuitSAT}, f::Factoring)
     for i in 1:n1+n2
         push!(exprs, Assignment([m[i].var], BooleanExpr(Bool(readbit(z, i)))))
     end
-    sat = CircuitSAT(Circuit(exprs))
+    sat = CircuitSAT(Circuit(exprs); use_constraints)
     findvars(vars) = map(v->findfirst(==(v), sat.symbols), getfield.(vars, :var))
     return ReductionFactoringToSat(sat, findvars(p), findvars(q), findvars(m))
 end

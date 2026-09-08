@@ -39,6 +39,26 @@ end
     @test (2* assignment3[:p2]+ assignment3[:p1]) * assignment3[:q1] == 3
 end
 
+@testset "hard constraints" begin
+    for fact in (Factoring(1, 1, 1), Factoring(2, 1, 2), Factoring(2, 1, 3))
+        res = reduceto(CircuitSAT, fact; use_constraints=true)
+        sat = target_problem(res)
+        @test !isempty(ProblemReductions.constraints(sat))
+        @test isempty(ProblemReductions.objectives(sat))
+        solutions = extract_solution.(Ref(res), findbest(sat, BruteForce()))
+        @test Set(solutions) == Set(findbest(fact, BruteForce()))
+    end
+
+    # Two one-bit factors cannot multiply to two. Hard constraints must reject
+    # all assignments, whereas soft objectives still have a best approximation.
+    impossible = Factoring(1, 1, 2)
+    hard = reduceto(CircuitSAT, impossible; use_constraints=true)
+    @test isempty(findbest(target_problem(hard), BruteForce()))
+    soft = reduceto(CircuitSAT, impossible; use_constraints=false)
+    @test isempty(ProblemReductions.constraints(target_problem(soft)))
+    @test !isempty(findbest(target_problem(soft), BruteForce()))
+end
+
 @testset "large circuit" begin
     m = n = 15
     a = 1019
