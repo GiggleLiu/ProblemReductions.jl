@@ -15,7 +15,7 @@ for MODEL in [:BicliqueCover, :CircuitSAT, :SpinGlass, :IndependentSet, :MaxCut,
             js = JSON.parse(JSON.json(problem))
             js["type"] = "$(typeof(problem).name.name)"
             open(filename, "w") do f
-                JSON.print(f, js)
+                print(f, JSON.json(js))
             end
         end
     end
@@ -26,7 +26,7 @@ function writejson(filename::AbstractString, problem::Coloring)
     js["type"] = "$(typeof(problem).name.name)"
     js["k"] = num_flavors(problem)
     open(filename, "w") do f
-        JSON.print(f, js)
+        print(f, JSON.json(js))
     end
 end
 
@@ -35,15 +35,15 @@ function writejson(filename::AbstractString, problem::KSatisfiability)
     js["type"] = "$(typeof(problem).name.name)"
     js["k"] = get_k(typeof(problem))
     open(filename, "w") do f
-        JSON.print(f, js)
+        print(f, JSON.json(js))
     end
 end
 
-function JSON.show_json(io::JSON.Writer.SC, s::JSON.Writer.CS, x::BooleanExpr)
+function JSON.lower(x::BooleanExpr)
     if is_var(x)
-        return JSON.show_json(io, s, Dict("head" => "var", "var" => x.var))
+        return Dict("head" => "var", "var" => x.var)
     else
-        return JSON.show_json(io, s, Dict("head" => x.head, "args" => x.args))
+        return Dict("head" => x.head, "args" => x.args)
     end
 end
 
