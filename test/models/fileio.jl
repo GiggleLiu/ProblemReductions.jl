@@ -39,3 +39,15 @@ using JSON
         @test problem_restored == problem
     end
 end
+@testset "Boolean expression JSON representation" begin
+    @test JSON.parse(JSON.json(BooleanExpr(:x))) == Dict("head" => "var", "var" => "x")
+    @test JSON.parse(JSON.json(BooleanExpr(:∧, [BooleanExpr(:x), BooleanExpr(:y)]))) ==
+        Dict("head" => "∧", "args" => [Dict("head" => "var", "var" => "x"),
+                                       Dict("head" => "var", "var" => "y")])
+    # Existing saved files remain readable with either supported JSON release.
+    mktemp() do path, io
+        write(io, """{"type":"Factoring","m":2,"n":2,"input":6}""")
+        close(io)
+        @test ProblemReductions.readjson(path) == Factoring(2, 2, 6)
+    end
+end
