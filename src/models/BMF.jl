@@ -49,5 +49,27 @@ function is_binary_matrix_factorization(bmf::BinaryMatrixFactorization, b::BitMa
     return solution_size(bmf,b,c) == 0
 end
 
+"""
 
+    read_solution(bmf::BinaryMatrixFactorization, solution::Vector{BitMatrix})
+
+    Read the solution of the BinaryMatrixFactorization problem from the solution of the BMF problem, return a vector of cliques
+"""
+function read_solution(bmf::BinaryMatrixFactorization, a::BitMatrix, b::BitMatrix)
+    @assert size(a,2) == size(b,1) == bmf.k "Dimension mismatch"
+    cliques = [zeros(Int64,size(a,1)+size(b,2)) for i in range(1,bmf.k)]
+    for i in range(1,bmf.k)
+        for j in range(1,size(a,1))
+            if a[j,i]
+                cliques[i][j] = 1
+            end
+        end
+        for j in range(1,size(b,2))
+            if b[i,j]
+                cliques[i][j+size(a,1)] = 1
+            end
+        end
+    end
+    return cliques
+end
 

@@ -52,6 +52,10 @@ end
     include("matching_setpacking.jl")
 end
 
+@testset "BMF_BicliqueCover" begin
+    include("BMF_BicliqueCover.jl")
+end
+
 @testset "rules" begin
     circuit = CircuitSAT(@circuit begin
         x = a ∨ ¬b
