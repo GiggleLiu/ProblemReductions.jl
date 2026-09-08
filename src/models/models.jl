@@ -1,3 +1,12 @@
+# PrettyTables renamed `header` to `column_labels` in version 3.
+function _pretty_table(io::IO, data; header, kwargs...)
+    @static if pkgversion(PrettyTables) >= v"3"
+        pretty_table(io, data; column_labels=header, kwargs...)
+    else
+        pretty_table(io, data; header, kwargs...)
+    end
+end
+
 """
     AbstractProblem
 
@@ -81,7 +90,7 @@ function Base.show(io::IO, spec::LocalConstraint)
     print(io, "LocalConstraint on $(spec.variables)\n")
     data = hcat(collect(combinations(spec.num_flavors, length(spec.variables))), spec.specification)
     header = ["Configuration", "Valid"]
-    pretty_table(io, data, header=header, alignment=:c)
+    _pretty_table(io, data; header, alignment=:c)
 end
 Base.show(io::IO, ::MIME"text/plain", spec::LocalConstraint) = show(io, spec)
 """
@@ -126,7 +135,7 @@ function Base.show(io::IO, spec::LocalSolutionSize{T}) where T
     print(io, "LocalSolutionSize{$T} on $(spec.variables)\n")
     data = hcat(collect(combinations(spec.num_flavors, length(spec.variables))), spec.specification)
     header = ["Configuration", "Size"]
-    pretty_table(io, data, header=header, alignment=:c)
+    _pretty_table(io, data; header, alignment=:c)
 end
 Base.show(io::IO, ::MIME"text/plain", spec::LocalSolutionSize) = show(io, spec)
 """
