@@ -16,11 +16,11 @@ export num_variables, num_flavors, variables, flavors, flavor_names, weights, se
 export UnitWeight
 
 # models
-export BooleanExpr, Circuit, Assignment, simple_form, CircuitSAT, @circuit, booleans, ¬, ∨, ∧, ⊻, is_literal, is_cnf, is_dnf
+export BooleanExpr, Circuit, Assignment, simple_form, CircuitSAT, CircuitSATHard, @circuit, booleans, ¬, ∨, ∧, ⊻, is_literal, is_cnf, is_dnf
 export SpinGlass, spinglass_gadget
-export Coloring, is_vertex_coloring
+export Coloring, ColoringHard, is_vertex_coloring
 export SetCovering, is_set_covering
-export BoolVar, CNFClause, CNF, AbstractSatisfiabilityProblem, Satisfiability, is_kSAT, satisfiable, KSatisfiability
+export BoolVar, CNFClause, CNF, AbstractSatisfiabilityProblem, Satisfiability, SatisfiabilityHard, is_kSAT, satisfiable, KSatisfiability, KSatisfiabilityHard
 export MaxCut
 export IndependentSet, is_independent_set
 export VertexCovering, is_vertex_covering

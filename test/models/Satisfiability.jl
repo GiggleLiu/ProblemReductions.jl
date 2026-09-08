@@ -12,6 +12,8 @@ using ProblemReductions: KSatisfiability,clauses
 
     cnf_test = CNF([clause1, clause2])
     sat_test = Satisfiability(cnf_test)
+    @test !(sat_test isa SatisfiabilityHard)
+    @test SatisfiabilityHard(sat_test) isa SatisfiabilityHard
     @test set_weights(sat_test, [1, 2]) == Satisfiability(CNF([clause1, clause2]), [1, 2])
     
     @test sat_test isa Satisfiability
@@ -39,6 +41,8 @@ using ProblemReductions: KSatisfiability,clauses
 
     # Tests for KSatisfiability
     ksat_test = KSatisfiability{3}(cnf_test)
+    @test !(ksat_test isa KSatisfiabilityHard)
+    @test KSatisfiabilityHard(ksat_test) isa KSatisfiabilityHard
     @test_throws AssertionError KSatisfiability{3}(CNF([clause1, clause3]); allow_less=false)
     @test KSatisfiability{3}(CNF([clause1, clause3]); allow_less=true) isa KSatisfiability
     copied = set_weights(deepcopy(ksat_test), randn(length(ProblemReductions.weights(ksat_test))))

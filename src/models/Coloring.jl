@@ -44,6 +44,11 @@ function Coloring{K}(graph::SimpleGraph{Int64}, weights::AbstractVector=UnitWeig
     OBJ = use_constraints ? SAT : EXTREMA
     return Coloring{K, OBJ}(graph, weights)
 end
+const ColoringHard{K, T, WT} = Coloring{K, T, WT, SAT} where {K, T, WT}
+function ColoringHard(c::Coloring{K}) where {K}
+    return Coloring{K, SAT}(c.graph, c.weights)
+end
+
 Base.:(==)(a::Coloring, b::Coloring) = a.graph == b.graph && a.weights == b.weights
 problem_size(c::Coloring) = (; num_vertices=nv(c.graph), num_edges=ne(c.graph))
 

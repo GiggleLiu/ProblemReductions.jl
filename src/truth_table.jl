@@ -42,7 +42,7 @@ Base.show(io::IO, ::MIME"text/plain", tb::TruthTable) = show(io, tb)
 function Base.show(io::IO, tb::TruthTable)
     ni, no = length(tb.inputs), length(tb.outputs)
     entries = [Int(k > ni ? readbit(v, k-ni) : readbit(l-1, k)) for (l, v) in enumerate(tb.values), k in 1:ni+no]
-	pretty_table(io, entries; header=vcat(tb.inputs, tb.outputs))
+	pretty_table(io, entries; column_labels=vcat(tb.inputs, tb.outputs))
 	return nothing
 end
 

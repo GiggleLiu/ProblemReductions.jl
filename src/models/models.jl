@@ -81,7 +81,7 @@ function Base.show(io::IO, spec::LocalConstraint)
     print(io, "LocalConstraint on $(spec.variables)\n")
     data = hcat(collect(combinations(spec.num_flavors, length(spec.variables))), spec.specification)
     header = ["Configuration", "Valid"]
-    pretty_table(io, data, header=header, alignment=:c)
+    pretty_table(io, data, column_labels=header, alignment=:c)
 end
 Base.show(io::IO, ::MIME"text/plain", spec::LocalConstraint) = show(io, spec)
 """
@@ -126,7 +126,7 @@ function Base.show(io::IO, spec::LocalSolutionSize{T}) where T
     print(io, "LocalSolutionSize{$T} on $(spec.variables)\n")
     data = hcat(collect(combinations(spec.num_flavors, length(spec.variables))), spec.specification)
     header = ["Configuration", "Size"]
-    pretty_table(io, data, header=header, alignment=:c)
+    pretty_table(io, data, column_labels=header, alignment=:c)
 end
 Base.show(io::IO, ::MIME"text/plain", spec::LocalSolutionSize) = show(io, spec)
 """

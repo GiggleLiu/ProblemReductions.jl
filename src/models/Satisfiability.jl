@@ -162,6 +162,10 @@ function Satisfiability(cnf::CNF{S}, weights::AbstractVector=UnitWeight(length(c
     OBJ = use_constraints ? SAT : EXTREMA
     Satisfiability{OBJ}(symbols(cnf), cnf, weights)
 end
+const SatisfiabilityHard{S, T, WT} = Satisfiability{S, T, WT, SAT}
+function SatisfiabilityHard(sat::Satisfiability)
+    return Satisfiability{SAT}(sat.symbols, sat.cnf, sat.weights)
+end
 clauses(c::Satisfiability) = c.cnf.clauses
 num_variables(c::Satisfiability) = length(c.symbols)
 symbols(c::Satisfiability) = c.symbols
@@ -198,6 +202,10 @@ end
 function KSatisfiability{K}(cnf::CNF{S}, weights::WT=UnitWeight(length(cnf.clauses)); allow_less::Bool=false, use_constraints::Bool=false) where {K, S, WT<:AbstractVector}
     OBJ = use_constraints ? SAT : EXTREMA
     KSatisfiability{K, OBJ}(symbols(cnf), cnf, weights, allow_less)
+end
+const KSatisfiabilityHard{K, S, T, WT} = KSatisfiability{K, S, T, WT, SAT}
+function KSatisfiabilityHard(sat::KSatisfiability{K}) where {K}
+    return KSatisfiability{K, SAT}(sat.symbols, sat.cnf, sat.weights, sat.allow_less)
 end
 get_k(::Type{<:KSatisfiability{K}}) where K = K
 Base.:(==)(x::KSatisfiability, y::KSatisfiability) = x.cnf == y.cnf && x.weights == y.weights && x.allow_less == y.allow_less
